@@ -1,0 +1,87 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { 
+  Building, 
+  BarChart3, 
+  Settings, 
+  Users, 
+  Home, 
+  CheckCircle 
+} from 'lucide-react';
+
+const navigation = [
+  { name: 'Overview', href: '/super-admin', icon: BarChart3 },
+  { name: 'Restaurants', href: '/super-admin/restaurants', icon: Building },
+  { name: 'Users', href: '/super-admin/users', icon: Users },
+  { name: 'System Settings', href: '/super-admin/settings', icon: Settings },
+];
+
+export default function SuperAdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200">
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <Link href="/" className="flex items-center space-x-2">
+                <CheckCircle className="h-8 w-8 text-indigo-600" />
+                <span className="text-2xl font-bold text-gray-900">QuickCheck</span>
+              </Link>
+              <div className="hidden sm:flex items-center space-x-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                <span className="text-sm font-medium text-red-600">Super Admin</span>
+              </div>
+            </div>
+            <Link href="/">
+              <Button variant="outline" size="sm">
+                <Home className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex">
+        {/* Sidebar */}
+        <nav className="w-64 bg-white border-r border-gray-200 min-h-screen">
+          <div className="p-4">
+            <div className="space-y-2">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                    pathname === item.href
+                      ? "bg-red-100 text-red-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.name}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </nav>
+
+        {/* Main Content */}
+        <main className="flex-1 p-8">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
