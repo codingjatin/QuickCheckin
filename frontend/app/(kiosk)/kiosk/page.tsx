@@ -79,12 +79,12 @@ function KioskContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-green-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-sage/10 via-off-white to-sage/5 p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-between mb-4">
-            <Link href="/" className="inline-flex items-center text-indigo-600 hover:text-indigo-700">
+            <Link href="/" className="inline-flex items-center text-deep-brown hover:text-deep-brown/80">
               <Home className="h-5 w-5 mr-2" />
               {t('home')}
             </Link>
@@ -97,25 +97,25 @@ function KioskContent() {
             </div>
           </div>
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <CheckCircle className="h-10 w-10 text-indigo-600" />
-            <h1 className="text-4xl font-bold text-gray-900">QuickCheck</h1>
+            <CheckCircle className="h-10 w-10 text-deep-brown" />
+            <h1 className="text-4xl font-bold text-charcoal">QuickCheck</h1>
           </div>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-charcoal/70">
             {t('welcomeJoinWaitlist')}
           </p>
-          <p className="text-sm text-gray-500">{t('loggedInAs')} {phoneNumber}</p>
+          <p className="text-sm text-charcoal/60">{t('loggedInAs')} {phoneNumber}</p>
         </div>
 
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Flow */}
           <div className="lg:col-span-2">
-            <Card className="p-8">
+            <Card className="p-8 bg-off-white border-sage/20">
               {step === 'party-size' && (
                 <div>
                   <CardHeader className="text-center p-0 mb-8">
-                    <CardTitle className="text-2xl mb-2">{t('howManyPeople')}</CardTitle>
-                    <p className="text-gray-600">{t('selectPartySize')}</p>
+                    <CardTitle className="text-2xl mb-2 text-charcoal">{t('howManyPeople')}</CardTitle>
+                    <p className="text-charcoal/70">{t('selectPartySize')}</p>
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="grid grid-cols-5 gap-4">
@@ -124,7 +124,11 @@ function KioskContent() {
                           key={size}
                           size="lg"
                           variant={partySize === size ? "default" : "outline"}
-                          className="h-20 text-2xl font-bold"
+                          className={`h-20 text-2xl font-bold ${
+                            partySize === size 
+                              ? "bg-deep-brown hover:bg-deep-brown/90 text-off-white" 
+                              : "border-sage text-charcoal hover:bg-sage/10"
+                          }`}
                           onClick={() => handlePartySizeSelect(size)}
                         >
                           {size}
@@ -138,17 +142,17 @@ function KioskContent() {
               {step === 'details' && (
                 <div>
                   <CardHeader className="text-center p-0 mb-8">
-                    <CardTitle className="text-2xl mb-2">{t('yourInformation')}</CardTitle>
-                    <p className="text-gray-600">{t('wellTextYou')}</p>
+                    <CardTitle className="text-2xl mb-2 text-charcoal">{t('yourInformation')}</CardTitle>
+                    <p className="text-charcoal/70">{t('wellTextYou')}</p>
                   </CardHeader>
                   <CardContent className="p-0 space-y-6">
                     <div>
-                      <label className="block text-lg font-medium mb-3">{t('yourName')}</label>
+                      <label className="block text-lg font-medium mb-3 text-charcoal">{t('yourName')}</label>
                       <Input
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder={t('enterYourName')}
-                        className="h-14 text-lg"
+                        className="h-14 text-lg border-sage focus:ring-deep-brown"
                       />
                       {errors.name && (
                         <p className="text-red-500 text-sm mt-2">{errors.name}</p>
@@ -156,12 +160,12 @@ function KioskContent() {
                     </div>
                     
                     <div>
-                      <label className="block text-lg font-medium mb-3">{t('phoneNumber')}</label>
+                      <label className="block text-lg font-medium mb-3 text-charcoal">{t('phoneNumber')}</label>
                       <Input
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="(555) 123-4567"
-                        className="h-14 text-lg"
+                        className="h-14 text-lg border-sage focus:ring-deep-brown"
                       />
                       {errors.phone && (
                         <p className="text-red-500 text-sm mt-2">{errors.phone}</p>
@@ -173,14 +177,14 @@ function KioskContent() {
                         variant="outline"
                         size="lg"
                         onClick={() => setStep('party-size')}
-                        className="flex-1 h-14 text-lg"
+                        className="flex-1 h-14 text-lg border-sage text-charcoal hover:bg-sage/10"
                       >
                         {t('back')}
                       </Button>
                       <Button
                         size="lg"
                         onClick={handleConfirm}
-                        className="flex-1 h-14 text-lg"
+                        className="flex-1 h-14 text-lg bg-deep-brown hover:bg-deep-brown/90 text-off-white"
                       >
                         {t('continue')}
                         <ArrowRight className="ml-2 h-5 w-5" />
@@ -193,22 +197,22 @@ function KioskContent() {
               {step === 'confirmation' && (
                 <div>
                   <CardHeader className="text-center p-0 mb-8">
-                    <CardTitle className="text-2xl mb-2">{t('confirmYourDetails')}</CardTitle>
-                    <p className="text-gray-600">{t('doubleCheckEverything')}</p>
+                    <CardTitle className="text-2xl mb-2 text-charcoal">{t('confirmYourDetails')}</CardTitle>
+                    <p className="text-charcoal/70">{t('doubleCheckEverything')}</p>
                   </CardHeader>
                   <CardContent className="p-0 space-y-6">
-                    <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+                    <div className="bg-sage/10 rounded-lg p-6 space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-medium">{t('partySize')}</span>
-                        <span className="text-lg">{partySize} {t('people')}</span>
+                        <span className="text-lg font-medium text-charcoal">{t('partySize')}</span>
+                        <span className="text-lg text-charcoal">{partySize} {t('people')}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-medium">{t('name')}</span>
-                        <span className="text-lg">{name}</span>
+                        <span className="text-lg font-medium text-charcoal">{t('name')}</span>
+                        <span className="text-lg text-charcoal">{name}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-medium">{t('phone')}</span>
-                        <span className="text-lg">{phone}</span>
+                        <span className="text-lg font-medium text-charcoal">{t('phone')}</span>
+                        <span className="text-lg text-charcoal">{phone}</span>
                       </div>
                     </div>
 
@@ -217,14 +221,14 @@ function KioskContent() {
                         variant="outline"
                         size="lg"
                         onClick={() => setStep('details')}
-                        className="flex-1 h-14 text-lg"
+                        className="flex-1 h-14 text-lg border-sage text-charcoal hover:bg-sage/10"
                       >
                         {t('editDetails')}
                       </Button>
                       <Button
                         size="lg"
                         onClick={handleSubmit}
-                        className="flex-1 h-14 text-lg bg-green-600 hover:bg-green-700"
+                        className="flex-1 h-14 text-lg bg-sage hover:bg-sage/90 text-charcoal"
                       >
                         {t('joinWaitlist')}
                       </Button>
@@ -235,18 +239,18 @@ function KioskContent() {
 
               {step === 'success' && (
                 <div className="text-center">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <CheckCircle className="h-10 w-10 text-green-600" />
+                  <div className="w-20 h-20 bg-sage/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="h-10 w-10 text-deep-brown" />
                   </div>
-                  <h2 className="text-3xl font-bold mb-4">{t('youreInLine')}</h2>
-                  <p className="text-xl text-gray-600 mb-8">
+                  <h2 className="text-3xl font-bold mb-4 text-charcoal">{t('youreInLine')}</h2>
+                  <p className="text-xl text-charcoal/70 mb-8">
                     {t('weveSentTextMessage')}
                   </p>
-                  <div className="bg-indigo-50 rounded-lg p-6 mb-8">
-                    <h3 className="font-semibold mb-2">{t('currentWaitTime')}</h3>
-                    <p className="text-3xl font-bold text-indigo-600">25-30 {t('minutes')}</p>
+                  <div className="bg-sage/10 rounded-lg p-6 mb-8">
+                    <h3 className="font-semibold mb-2 text-charcoal">{t('currentWaitTime')}</h3>
+                    <p className="text-3xl font-bold text-deep-brown">25-30 {t('minutes')}</p>
                   </div>
-                  <Button size="lg" onClick={resetFlow} className="h-14 text-lg">
+                  <Button size="lg" onClick={resetFlow} className="h-14 text-lg bg-deep-brown hover:bg-deep-brown/90 text-off-white">
                     {t('addAnotherParty')}
                   </Button>
                 </div>
@@ -256,32 +260,32 @@ function KioskContent() {
 
           {/* SMS Preview Sidebar */}
           <div className="lg:col-span-1">
-            <Card>
+            <Card className="bg-off-white border-sage/20">
               <CardHeader>
-                <CardTitle className="flex items-center">
+                <CardTitle className="flex items-center text-charcoal">
                   <Phone className="h-5 w-5 mr-2" />
                   {t('smsPreview')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
-                    <p className="font-medium text-blue-900 mb-1">{t('tableReadyNotification')}</p>
-                    <p className="text-sm text-blue-700">
+                  <div className="bg-sage/10 rounded-lg p-4 border-l-4 border-deep-brown">
+                    <p className="font-medium text-charcoal mb-1">{t('tableReadyNotification')}</p>
+                    <p className="text-sm text-charcoal/70">
                       "Hi {name || 'Customer'}! Your table for {partySize || 'X'} at Bella Vista is ready. Please arrive within 15 {t('minutes')}."
                     </p>
                   </div>
                   
-                  <div className="bg-green-50 rounded-lg p-4 border-l-4 border-green-500">
-                    <p className="font-medium text-green-900 mb-1">{t('customerResponse')}</p>
-                    <p className="text-sm text-green-700">
+                  <div className="bg-sage/20 rounded-lg p-4 border-l-4 border-sage">
+                    <p className="font-medium text-charcoal mb-1">{t('customerResponse')}</p>
+                    <p className="text-sm text-charcoal/70">
                       "Y" (Yes, we're coming)
                     </p>
                   </div>
                   
-                  <div className="bg-yellow-50 rounded-lg p-4 border-l-4 border-yellow-500">
-                    <p className="font-medium text-yellow-900 mb-1">{t('reminderIfNoResponse')}</p>
-                    <p className="text-sm text-yellow-700">
+                  <div className="bg-sage/5 rounded-lg p-4 border-l-4 border-charcoal">
+                    <p className="font-medium text-charcoal mb-1">{t('reminderIfNoResponse')}</p>
+                    <p className="text-sm text-charcoal/70">
                       "Please reply quickly with Y (Yes) or N (No) so we can continue further."
                     </p>
                   </div>

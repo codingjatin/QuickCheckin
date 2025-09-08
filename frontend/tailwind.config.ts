@@ -20,6 +20,12 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       colors: {
+        // Custom color palette
+        'deep-brown': '#683326',
+        'sage': '#9DA993',
+        'charcoal': '#343d43',
+        'off-white': '#FDFDFB',
+        
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

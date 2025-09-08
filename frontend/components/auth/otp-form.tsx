@@ -67,20 +67,20 @@ export function OtpForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto bg-off-white border-sage/20">
       <CardHeader className="text-center">
-        <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-          <MessageSquare className="h-6 w-6 text-green-600" />
+        <div className="mx-auto w-12 h-12 bg-sage/20 rounded-full flex items-center justify-center mb-4">
+          <MessageSquare className="h-6 w-6 text-deep-brown" />
         </div>
-        <CardTitle className="text-2xl">{t('verifyYourNumber')}</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-2xl text-charcoal">{t('verifyYourNumber')}</CardTitle>
+        <CardDescription className="text-charcoal/70">
           {t('weveSentCode')}<br />
-          <span className="font-medium text-gray-900">{phoneNumber}</span>
+          <span className="font-medium text-charcoal">{phoneNumber}</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
-          <Label htmlFor="otp-input" className="text-base font-medium">
+          <Label htmlFor="otp-input" className="text-base font-medium text-charcoal">
             {t('enterOtpCode')}
           </Label>
           <Input
@@ -91,7 +91,7 @@ export function OtpForm() {
             value={otpInput}
             onChange={(e) => handleOtpChange(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="h-12 text-2xl text-center tracking-widest font-mono mt-2"
+            className="h-12 text-2xl text-center tracking-widest font-mono mt-2 border-sage focus:ring-deep-brown"
             maxLength={4}
           />
           {error && (
@@ -100,9 +100,9 @@ export function OtpForm() {
         </div>
 
         {/* Demo Helper */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800 font-medium mb-1">{t('demoMode')}</p>
-          <p className="text-sm text-blue-700">
+        <div className="bg-sage/10 border border-sage/20 rounded-lg p-4">
+          <p className="text-sm text-charcoal font-medium mb-1">{t('demoMode')}</p>
+          <p className="text-sm text-charcoal/70">
             {t('yourOtpIs')} <span className="font-mono font-bold">{generatedOtp}</span>
           </p>
         </div>
@@ -111,12 +111,12 @@ export function OtpForm() {
           <Button 
             onClick={handleVerifyOtp}
             disabled={otpInput.length !== 4 || isVerifying}
-            className="w-full h-12 text-lg"
+            className="w-full h-12 text-lg bg-deep-brown hover:bg-deep-brown/90 text-off-white"
             size="lg"
           >
             {isVerifying ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-off-white mr-2"></div>
                 {t('verifying')}
               </>
             ) : (
@@ -130,7 +130,7 @@ export function OtpForm() {
           <Button 
             variant="outline"
             onClick={logout}
-            className="w-full h-12 text-lg"
+            className="w-full h-12 text-lg border-sage text-charcoal hover:bg-sage/10"
             size="lg"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
@@ -139,10 +139,10 @@ export function OtpForm() {
         </div>
 
         <div className="text-center">
-          <p className="text-sm text-gray-500 mb-2">
+          <p className="text-sm text-charcoal/60 mb-2">
             {t('accessing')} <span className="font-medium capitalize">{t(userRole || 'guest')}</span> {t('panel')}
           </p>
-          <Button variant="link" className="text-sm text-indigo-600 p-0">
+          <Button variant="link" className="text-sm text-deep-brown p-0">
             {t('didntReceiveCode')}
           </Button>
         </div>

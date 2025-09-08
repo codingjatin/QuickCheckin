@@ -23,13 +23,13 @@ export default function AuthPage() {
   }, [isAuthenticated, userRole, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-green-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-sage/10 via-off-white to-sage/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <CheckCircle className="h-10 w-10 text-indigo-600" />
-            <h1 className="text-3xl font-bold text-gray-900">QuickCheck</h1>
+            <CheckCircle className="h-10 w-10 text-deep-brown" />
+            <h1 className="text-3xl font-bold text-charcoal">QuickCheck</h1>
           </div>
         </div>
 

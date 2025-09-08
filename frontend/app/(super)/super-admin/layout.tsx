@@ -28,23 +28,23 @@ export default function SuperAdminLayout({
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-sage/5">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-off-white border-b border-sage/20">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center space-x-2">
-                <CheckCircle className="h-8 w-8 text-indigo-600" />
-                <span className="text-2xl font-bold text-gray-900">QuickCheck</span>
+                <CheckCircle className="h-8 w-8 text-deep-brown" />
+                <span className="text-2xl font-bold text-charcoal">QuickCheck</span>
               </Link>
               <div className="hidden sm:flex items-center space-x-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                <span className="text-sm font-medium text-red-600">Super Admin</span>
+                <div className="w-2 h-2 bg-deep-brown rounded-full"></div>
+                <span className="text-sm font-medium text-deep-brown">Super Admin</span>
               </div>
             </div>
             <Link href="/">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-sage text-charcoal hover:bg-sage/10">
                 <Home className="h-4 w-4 mr-2" />
                 Back to Home
               </Button>
@@ -55,7 +55,7 @@ export default function SuperAdminLayout({
 
       <div className="flex">
         {/* Sidebar */}
-        <nav className="w-64 bg-white border-r border-gray-200 min-h-screen">
+        <nav className="w-64 bg-off-white border-r border-sage/20 min-h-screen">
           <div className="p-4">
             <div className="space-y-2">
               {navigation.map((item) => (
@@ -65,8 +65,8 @@ export default function SuperAdminLayout({
                   className={cn(
                     "flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                     pathname === item.href
-                      ? "bg-red-100 text-red-700"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                      ? "bg-deep-brown/20 text-deep-brown"
+                      : "text-charcoal/70 hover:text-charcoal hover:bg-sage/10"
                   )}
                 >
                   <item.icon className="h-5 w-5" />
