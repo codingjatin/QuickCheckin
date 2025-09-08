@@ -27,7 +27,7 @@ export const translations = {
     // Navigation
     home: 'Home',
     kioskDemo: 'Kiosk Demo',
-    adminDemo: 'Admin Demo',
+    RestaurantLogin: 'Restaurant Login',
     login: 'Login',
     logout: 'Logout',
     
@@ -152,7 +152,7 @@ export const translations = {
     // Navigation
     home: 'Accueil',
     kioskDemo: 'Démo Kiosque',
-    adminDemo: 'Démo Admin',
+    RestaurantLogin: 'Connexion au restaurant',
     login: 'Connexion',
     logout: 'Déconnexion',
     
