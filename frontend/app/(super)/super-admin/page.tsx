@@ -23,59 +23,59 @@ export default function SuperAdminOverview() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Platform Overview</h1>
-        <p className="text-gray-600">Monitor system performance and restaurant activity</p>
+        <h1 className="text-3xl font-bold text-charcoal mb-2">Platform Overview</h1>
+        <p className="text-charcoal/70">Monitor system performance and restaurant activity</p>
       </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Restaurants</CardTitle>
-            <Building className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-charcoal">Total Restaurants</CardTitle>
+            <Building className="h-4 w-4 text-charcoal/60" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRestaurants}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-charcoal">{totalRestaurants}</div>
+            <p className="text-xs text-charcoal/60">
               {activeRestaurants} active
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Customers Waiting</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-charcoal">Customers Waiting</CardTitle>
+            <Clock className="h-4 w-4 text-charcoal/60" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalWaiting}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-charcoal">{totalWaiting}</div>
+            <p className="text-xs text-charcoal/60">
               Across all locations
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Seated Today</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-charcoal">Seated Today</CardTitle>
+            <Users className="h-4 w-4 text-charcoal/60" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalSeated}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-charcoal">{totalSeated}</div>
+            <p className="text-xs text-charcoal/60">
               +12% from yesterday
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">SMS Sent</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-charcoal">SMS Sent</CardTitle>
+            <MessageSquare className="h-4 w-4 text-charcoal/60" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">324</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-2xl font-bold text-charcoal">324</div>
+            <p className="text-xs text-charcoal/60">
               Today's notifications
             </p>
           </CardContent>
@@ -84,47 +84,47 @@ export default function SuperAdminOverview() {
 
       {/* System Health */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader>
-            <CardTitle className="flex items-center">
+            <CardTitle className="flex items-center text-charcoal">
               <TrendingUp className="h-5 w-5 mr-2" />
               System Health
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-sage/10 rounded-lg">
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="font-medium">API Status</span>
+                  <CheckCircle className="h-5 w-5 text-deep-brown" />
+                  <span className="font-medium text-charcoal">API Status</span>
                 </div>
-                <Badge className="bg-green-100 text-green-800">Operational</Badge>
+                <Badge className="bg-sage/20 text-charcoal">Operational</Badge>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-sage/10 rounded-lg">
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <span className="font-medium">SMS Service</span>
+                  <CheckCircle className="h-5 w-5 text-deep-brown" />
+                  <span className="font-medium text-charcoal">SMS Service</span>
                 </div>
-                <Badge className="bg-green-100 text-green-800">Operational</Badge>
+                <Badge className="bg-sage/20 text-charcoal">Operational</Badge>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-sage/5 rounded-lg">
                 <div className="flex items-center space-x-2">
-                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                  <span className="font-medium">Database</span>
+                  <AlertTriangle className="h-5 w-5 text-charcoal/70" />
+                  <span className="font-medium text-charcoal">Database</span>
                 </div>
-                <Badge className="bg-yellow-100 text-yellow-800">Slow Queries</Badge>
+                <Badge className="bg-charcoal/10 text-charcoal">Slow Queries</Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Recent Activity */}
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest platform events</CardDescription>
+            <CardTitle className="text-charcoal">Recent Activity</CardTitle>
+            <CardDescription className="text-charcoal/70">Latest platform events</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -158,14 +158,14 @@ export default function SuperAdminOverview() {
                   type: 'success'
                 },
               ].map((activity, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 border-l-4 border-l-gray-200 bg-gray-50 rounded-r-lg">
+                <div key={index} className="flex items-center space-x-3 p-3 border-l-4 border-l-sage bg-sage/5 rounded-r-lg">
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{activity.restaurant}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-medium text-sm text-charcoal">{activity.restaurant}</p>
+                    <p className="text-sm text-charcoal/70">
                       {activity.action}: {activity.customer}
                     </p>
                   </div>
-                  <span className="text-xs text-gray-500">{activity.time}</span>
+                  <span className="text-xs text-charcoal/60">{activity.time}</span>
                 </div>
               ))}
             </div>
@@ -174,39 +174,39 @@ export default function SuperAdminOverview() {
       </div>
 
       {/* Restaurant Performance */}
-      <Card>
+      <Card className="bg-off-white border-sage/20">
         <CardHeader>
-          <CardTitle>Top Performing Restaurants</CardTitle>
-          <CardDescription>Based on customer satisfaction and efficiency</CardDescription>
+          <CardTitle className="text-charcoal">Top Performing Restaurants</CardTitle>
+          <CardDescription className="text-charcoal/70">Based on customer satisfaction and efficiency</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {mockSuperAdminRestaurants
               .filter(r => r.status === 'active')
               .map((restaurant, index) => (
-              <div key={restaurant.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div key={restaurant.id} className="flex items-center justify-between p-4 border border-sage/20 rounded-lg">
                 <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-indigo-600">{index + 1}</span>
+                  <div className="flex-shrink-0 w-8 h-8 bg-sage/20 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-deep-brown">{index + 1}</span>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">{restaurant.name}</h3>
-                    <p className="text-sm text-gray-500">{restaurant.city}</p>
+                    <h3 className="font-medium text-charcoal">{restaurant.name}</h3>
+                    <p className="text-sm text-charcoal/60">{restaurant.city}</p>
                   </div>
                 </div>
                 
                 <div className="flex items-center space-x-6 text-sm">
                   <div className="text-center">
-                    <p className="font-medium text-gray-900">23</p>
-                    <p className="text-gray-500">Avg Wait</p>
+                    <p className="font-medium text-charcoal">23</p>
+                    <p className="text-charcoal/60">Avg Wait</p>
                   </div>
                   <div className="text-center">
-                    <p className="font-medium text-gray-900">94%</p>
-                    <p className="text-gray-500">Show Rate</p>
+                    <p className="font-medium text-charcoal">94%</p>
+                    <p className="text-charcoal/60">Show Rate</p>
                   </div>
                   <div className="text-center">
-                    <p className="font-medium text-gray-900">4.8</p>
-                    <p className="text-gray-500">Rating</p>
+                    <p className="font-medium text-charcoal">4.8</p>
+                    <p className="text-charcoal/60">Rating</p>
                   </div>
                 </div>
               </div>

@@ -19,7 +19,7 @@ export function AuthWrapper({ children, requiredRole }: AuthWrapperProps) {
 
   // Show appropriate auth step
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-green-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-sage/10 via-off-white to-sage/5 flex items-center justify-center p-4">
       {currentStep === 'login' && <LoginForm />}
       {currentStep === 'otp' && <OtpForm />}
     </div>

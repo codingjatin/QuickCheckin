@@ -68,17 +68,17 @@ export default function AdminDashboard() {
   const getStatusColor = (status: Customer['status']) => {
     switch (status) {
       case 'waiting':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-sage/20 text-charcoal';
       case 'notified':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-deep-brown/20 text-deep-brown';
       case 'seated':
-        return 'bg-green-100 text-green-800';
+        return 'bg-sage/30 text-charcoal';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       case 'no-show':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-charcoal/20 text-charcoal';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-charcoal/20 text-charcoal';
     }
   };
 
@@ -103,83 +103,83 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('totalWaiting')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-charcoal">{t('totalWaiting')}</CardTitle>
+            <Users className="h-4 w-4 text-charcoal/60" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{waitingCustomers.length}</div>
-            <p className="text-xs text-muted-foreground">{t('activeInQueue')}</p>
+            <div className="text-2xl font-bold text-charcoal">{waitingCustomers.length}</div>
+            <p className="text-xs text-charcoal/60">{t('activeInQueue')}</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('avgWaitTime')}</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-charcoal">{t('avgWaitTime')}</CardTitle>
+            <Clock className="h-4 w-4 text-charcoal/60" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">28 min</div>
-            <p className="text-xs text-muted-foreground">{t('currentEstimate')}</p>
+            <div className="text-2xl font-bold text-charcoal">28 min</div>
+            <p className="text-xs text-charcoal/60">{t('currentEstimate')}</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('availableTables')}</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-charcoal">{t('availableTables')}</CardTitle>
+            <CheckCircle className="h-4 w-4 text-charcoal/60" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{availableTables.length}</div>
-            <p className="text-xs text-muted-foreground">{t('readyToSeat')}</p>
+            <div className="text-2xl font-bold text-charcoal">{availableTables.length}</div>
+            <p className="text-xs text-charcoal/60">{t('readyToSeat')}</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-off-white border-sage/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('todaysSeated')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-charcoal">{t('todaysSeated')}</CardTitle>
+            <Users className="h-4 w-4 text-charcoal/60" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">42</div>
-            <p className="text-xs text-muted-foreground">{t('totalCustomers')}</p>
+            <div className="text-2xl font-bold text-charcoal">42</div>
+            <p className="text-xs text-charcoal/60">{t('totalCustomers')}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Waitlist Management */}
-      <Card>
+      <Card className="bg-off-white border-sage/20">
         <CardHeader>
-          <CardTitle className="flex items-center">
+          <CardTitle className="flex items-center text-charcoal">
             <Users className="h-5 w-5 mr-2" />
             {t('activeWaitlist')}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-charcoal/70">
             {t('manageCustomerQueue')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {activeCustomers.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">{t('noCustomersWaiting')}</h3>
-              <p className="text-gray-500">{t('customersWillAppear')}</p>
+              <Users className="h-12 w-12 text-charcoal/40 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-charcoal mb-2">{t('noCustomersWaiting')}</h3>
+              <p className="text-charcoal/60">{t('customersWillAppear')}</p>
             </div>
           ) : (
             <div className="space-y-4">
               {activeCustomers.map((customer, index) => (
                 <div 
                   key={customer.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between p-4 border border-sage/20 rounded-lg hover:bg-sage/5 transition-colors"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0 w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-indigo-600">{index + 1}</span>
+                    <div className="flex-shrink-0 w-8 h-8 bg-sage/20 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-deep-brown">{index + 1}</span>
                     </div>
                     <div>
-                      <h3 className="font-medium text-gray-900">{customer.name}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <h3 className="font-medium text-charcoal">{customer.name}</h3>
+                      <div className="flex items-center space-x-4 text-sm text-charcoal/60">
                         <span className="flex items-center">
                           <Users className="h-4 w-4 mr-1" />
                           {t('partyOf')} {customer.partySize}
@@ -204,6 +204,7 @@ export default function AdminDashboard() {
                     {customer.status === 'waiting' && (
                       <Button
                         size="sm"
+                        className="bg-deep-brown hover:bg-deep-brown/90 text-off-white"
                         onClick={() => handleNotifyCustomer(customer)}
                         disabled={availableTables.length === 0}
                       >
@@ -216,7 +217,7 @@ export default function AdminDashboard() {
                       <Button
                         size="sm"
                         onClick={() => handleMarkSeated(customer.id)}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-sage hover:bg-sage/90 text-charcoal"
                       >
                         <CheckCircle className="h-4 w-4 mr-1" />
                         {t('markSeated')}
