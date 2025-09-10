@@ -24,13 +24,13 @@ export default function AdminDashboard() {
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  const waitingCustomers = customers.filter(c => ['waiting', 'notified'].includes(c.status));
-  const activeCustomers = customers.filter(c => ['waiting', 'notified', 'seated'].includes(c.status));
-  const availableTables = tables.filter(t => t.status === 'available');
+  const waitingCustomers = customers.filter((c) => ['waiting', 'notified'].includes(c.status));
+  const activeCustomers = customers.filter((c) => ['waiting', 'notified', 'seated'].includes(c.status));
+  const availableTables = tables.filter((t) => t.status === 'available');
 
   const handleNotifyCustomer = (customer: Customer) => {
-    const availableTable = availableTables.find(t => t.capacity >= customer.partySize);
-    
+    const availableTable = availableTables.find((t) => t.capacity >= customer.partySize);
+
     if (availableTable) {
       assignTable(customer.id, availableTable.id);
       sendSMS(
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
         `Hi ${customer.name}! Your table for ${customer.partySize} at Bella Vista is ready. Please arrive within 15 minutes.`,
         'notification'
       );
-      
+
       // Simulate customer response after 2 seconds for demo
       setTimeout(() => {
         updateCustomer(customer.id, {
@@ -54,7 +54,7 @@ export default function AdminDashboard() {
   };
 
   const handleCancel = (customerId: string) => {
-    const customer = customers.find(c => c.id === customerId);
+    const customer = customers.find((c) => c.id === customerId);
     if (customer) {
       cancelCustomer(customerId);
       sendSMS(
@@ -68,17 +68,17 @@ export default function AdminDashboard() {
   const getStatusColor = (status: Customer['status']) => {
     switch (status) {
       case 'waiting':
-        return 'bg-sage/20 text-charcoal';
+        return 'bg-off text-ink ring-1 ring-border';
       case 'notified':
-        return 'bg-deep-brown/20 text-deep-brown';
+        return 'bg-info/10 text-info border-0';
       case 'seated':
-        return 'bg-sage/30 text-charcoal';
+        return 'bg-success/10 text-success border-0';
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return 'bg-error/10 text-error border-0';
       case 'no-show':
-        return 'bg-charcoal/20 text-charcoal';
+        return 'bg-ink/10 text-ink border-0';
       default:
-        return 'bg-charcoal/20 text-charcoal';
+        return 'bg-ink/10 text-ink border-0';
     }
   };
 
@@ -100,86 +100,86 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-ink">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="bg-off-white border-sage/20">
+        <Card className="bg-panel border border-border shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-charcoal">{t('totalWaiting')}</CardTitle>
-            <Users className="h-4 w-4 text-charcoal/60" />
+            <CardTitle className="text-sm font-medium"> {t('totalWaiting')} </CardTitle>
+            <Users className="h-4 w-4 text-ink/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-charcoal">{waitingCustomers.length}</div>
-            <p className="text-xs text-charcoal/60">{t('activeInQueue')}</p>
+            <div className="text-2xl font-bold">{waitingCustomers.length}</div>
+            <p className="text-xs text-muted">{t('activeInQueue')}</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-off-white border-sage/20">
+        <Card className="bg-panel border border-border shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-charcoal">{t('avgWaitTime')}</CardTitle>
-            <Clock className="h-4 w-4 text-charcoal/60" />
+            <CardTitle className="text-sm font-medium">{t('avgWaitTime')}</CardTitle>
+            <Clock className="h-4 w-4 text-ink/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-charcoal">28 min</div>
-            <p className="text-xs text-charcoal/60">{t('currentEstimate')}</p>
+            <div className="text-2xl font-bold">28 min</div>
+            <p className="text-xs text-muted">{t('currentEstimate')}</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-off-white border-sage/20">
+        <Card className="bg-panel border border-border shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-charcoal">{t('availableTables')}</CardTitle>
-            <CheckCircle className="h-4 w-4 text-charcoal/60" />
+            <CardTitle className="text-sm font-medium">{t('availableTables')}</CardTitle>
+            <CheckCircle className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-charcoal">{availableTables.length}</div>
-            <p className="text-xs text-charcoal/60">{t('readyToSeat')}</p>
+            <div className="text-2xl font-bold">{availableTables.length}</div>
+            <p className="text-xs text-muted">{t('readyToSeat')}</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-off-white border-sage/20">
+        <Card className="bg-panel border border-border shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-charcoal">{t('todaysSeated')}</CardTitle>
-            <Users className="h-4 w-4 text-charcoal/60" />
+            <CardTitle className="text-sm font-medium">{t('todaysSeated')}</CardTitle>
+            <Users className="h-4 w-4 text-ink/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-charcoal">42</div>
-            <p className="text-xs text-charcoal/60">{t('totalCustomers')}</p>
+            <div className="text-2xl font-bold">42</div>
+            <p className="text-xs text-muted">{t('totalCustomers')}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Waitlist Management */}
-      <Card className="bg-off-white border-sage/20">
+      <Card className="bg-panel border border-border shadow-soft">
         <CardHeader>
-          <CardTitle className="flex items-center text-charcoal">
-            <Users className="h-5 w-5 mr-2" />
+          <CardTitle className="flex items-center">
+            <Users className="h-5 w-5 mr-2 text-primary" />
             {t('activeWaitlist')}
           </CardTitle>
-          <CardDescription className="text-charcoal/70">
+          <CardDescription className="text-muted">
             {t('manageCustomerQueue')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {activeCustomers.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="h-12 w-12 text-charcoal/40 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-charcoal mb-2">{t('noCustomersWaiting')}</h3>
-              <p className="text-charcoal/60">{t('customersWillAppear')}</p>
+              <Users className="h-12 w-12 text-muted mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">{t('noCustomersWaiting')}</h3>
+              <p className="text-muted">{t('customersWillAppear')}</p>
             </div>
           ) : (
             <div className="space-y-4">
               {activeCustomers.map((customer, index) => (
-                <div 
+                <div
                   key={customer.id}
-                  className="flex items-center justify-between p-4 border border-sage/20 rounded-lg hover:bg-sage/5 transition-colors"
+                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-off transition-colors"
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0 w-8 h-8 bg-sage/20 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-deep-brown">{index + 1}</span>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-semibold text-primary">{index + 1}</span>
                     </div>
                     <div>
-                      <h3 className="font-medium text-charcoal">{customer.name}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-charcoal/60">
+                      <h3 className="font-medium">{customer.name}</h3>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
                         <span className="flex items-center">
                           <Users className="h-4 w-4 mr-1" />
                           {t('partyOf')} {customer.partySize}
@@ -196,15 +196,15 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                    <Badge className={getStatusColor(customer.status)}>
+                  <div className="flex items-center gap-3">
+                    <Badge className={`${getStatusColor(customer.status)} rounded-md`}>
                       {getStatusText(customer.status)}
                     </Badge>
-                    
+
                     {customer.status === 'waiting' && (
                       <Button
                         size="sm"
-                        className="bg-deep-brown hover:bg-deep-brown/90 text-off-white"
+                        className="bg-primary hover:bg-primary-600 text-white"
                         onClick={() => handleNotifyCustomer(customer)}
                         disabled={availableTables.length === 0}
                       >
@@ -212,24 +212,20 @@ export default function AdminDashboard() {
                         {t('notify')}
                       </Button>
                     )}
-                    
+
                     {customer.status === 'notified' && customer.responseReceived === 'yes' && (
                       <Button
                         size="sm"
                         onClick={() => handleMarkSeated(customer.id)}
-                        className="bg-sage hover:bg-sage/90 text-charcoal"
+                        className="bg-success hover:bg-success/90 text-white"
                       >
                         <CheckCircle className="h-4 w-4 mr-1" />
                         {t('markSeated')}
                       </Button>
                     )}
-                    
+
                     {['waiting', 'notified'].includes(customer.status) && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleCancel(customer.id)}
-                      >
+                      <Button size="sm" variant="destructive" onClick={() => handleCancel(customer.id)}>
                         <X className="h-4 w-4 mr-1" />
                         {t('cancel')}
                       </Button>

@@ -5,15 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Users, 
-  Search, 
-  MoreHorizontal, 
-  Shield, 
+import {
+  Users,
+  Search,
+  Shield,
   Mail,
   Calendar,
   Building,
-  Plus
+  Plus,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -78,56 +77,57 @@ export default function UsersPage() {
   const [users, setUsers] = useState(mockUsers);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.restaurant?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.restaurant?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getRoleColor = (role: User['role']) => {
     switch (role) {
       case 'super_admin':
-        return 'bg-red-100 text-red-800';
+        return 'bg-primary/10 text-primary';
       case 'restaurant_admin':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-info/10 text-info';
       case 'staff':
-        return 'bg-green-100 text-green-800';
+        return 'bg-secondary/10 text-secondary-600';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-ink/10 text-ink';
     }
   };
 
   const getStatusColor = (status: User['status']) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success/10 text-success';
       case 'inactive':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-ink/10 text-ink';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-secondary/10 text-secondary-600';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-ink/10 text-ink';
     }
   };
 
   const toggleUserStatus = (id: string) => {
-    setUsers(users.map(u => 
-      u.id === id 
-        ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' }
-        : u
-    ));
+    setUsers(
+      users.map((u) =>
+        u.id === id ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' } : u
+      )
+    );
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-ink">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
-          <p className="text-gray-600">Manage platform users and permissions</p>
+          <h1 className="text-3xl font-display font-bold mb-2">User Management</h1>
+          <p className="text-muted">Manage platform users and permissions</p>
         </div>
-        
-        <Button>
+
+        <Button className="bg-primary hover:bg-primary-600 text-white">
           <Plus className="h-4 w-4 mr-2" />
           Invite User
         </Button>
@@ -135,96 +135,91 @@ export default function UsersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
+        <Card className="bg-panel border border-border shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-ink/70" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Platform-wide
-            </p>
+            <p className="text-xs text-muted">Platform-wide</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-panel border border-border shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Super Admins</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <Shield className="h-4 w-4 text-ink/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {users.filter(u => u.role === 'super_admin').length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Full access
-            </p>
+            <div className="text-2xl font-bold">{users.filter((u) => u.role === 'super_admin').length}</div>
+            <p className="text-xs text-muted">Full access</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-panel border border-border shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Restaurant Admins</CardTitle>
-            <Building className="h-4 w-4 text-muted-foreground" />
+            <Building className="h-4 w-4 text-ink/70" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {users.filter(u => u.role === 'restaurant_admin').length}
+              {users.filter((u) => u.role === 'restaurant_admin').length}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Location managers
-            </p>
+            <p className="text-xs text-muted">Location managers</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-panel border border-border shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-ink/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {users.filter(u => u.status === 'active').length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Currently active
-            </p>
+            <div className="text-2xl font-bold">{users.filter((u) => u.status === 'active').length}</div>
+            <p className="text-xs text-muted">Currently active</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Search */}
       <div className="relative max-w-md">
-        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted" />
         <Input
           placeholder="Search users..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+          className="pl-10 border-border focus-visible:ring-2 focus-visible:ring-primary"
         />
       </div>
 
-      {/* Users Table */}
-      <Card>
+      {/* Users List */}
+      <Card className="bg-panel border border-border shadow-soft">
         <CardHeader>
           <CardTitle>Platform Users</CardTitle>
-          <CardDescription>Manage user accounts and permissions</CardDescription>
+          <CardDescription className="text-muted">Manage user accounts and permissions</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {filteredUsers.map((user) => (
-              <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-medium">
-                      {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+              <div
+                key={user.id}
+                className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-off transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-primary/15 text-primary rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold">
+                      {user.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .toUpperCase()}
                     </span>
                   </div>
-                  
+
                   <div>
-                    <h3 className="font-medium text-gray-900">{user.name}</h3>
-                    <div className="flex items-center space-x-3 text-sm text-gray-500">
+                    <h3 className="font-medium">{user.name}</h3>
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                       <span className="flex items-center">
                         <Mail className="h-3 w-3 mr-1" />
                         {user.email}
@@ -236,25 +231,26 @@ export default function UsersPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted mt-1">
                       Last active: {formatDistanceToNow(user.lastActive, { addSuffix: true })}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3">
-                  <Badge className={getRoleColor(user.role)}>
+                <div className="flex items-center gap-3">
+                  <Badge className={`${getRoleColor(user.role)} rounded-md`}>
                     {user.role.replace('_', ' ')}
                   </Badge>
-                  
-                  <Badge className={getStatusColor(user.status)}>
+
+                  <Badge className={`${getStatusColor(user.status)} rounded-md`}>
                     {user.status}
                   </Badge>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => toggleUserStatus(user.id)}
+                    className="border-border text-ink hover:bg-off"
                   >
                     {user.status === 'active' ? 'Deactivate' : 'Activate'}
                   </Button>
@@ -265,9 +261,9 @@ export default function UsersPage() {
 
           {filteredUsers.length === 0 && (
             <div className="text-center py-12">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
-              <p className="text-gray-500">
+              <Users className="h-12 w-12 text-muted mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No users found</h3>
+              <p className="text-muted">
                 {searchTerm ? 'Try adjusting your search term' : 'No users match your criteria'}
               </p>
             </div>

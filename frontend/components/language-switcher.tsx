@@ -16,12 +16,10 @@ export function LanguageSwitcher() {
       variant="default"
       size="sm"
       onClick={toggleLanguage}
-      className="flex items-center space-x-2 bg-deep-brown hover:bg-deep-brown/90 text-off-white border-deep-brown"
+      className="flex items-center space-x-2 bg-primary hover:bg-primary/90 text-white border border-border"
     >
       <Globe className="h-4 w-4" />
-      <span className="font-medium">
-        {language === 'en' ? 'FR' : 'EN'}
-      </span>
+      <span className="font-medium">{language === 'en' ? 'FR' : 'EN'}</span>
     </Button>
   );
 }

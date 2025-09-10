@@ -15,21 +15,22 @@ export default function MessagesPage() {
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredMessages = messages.filter(message => {
-    const customer = customers.find(c => c.id === message.customerId);
-    return customer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           customer?.phone.includes(searchTerm) ||
-           message.message.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredMessages = messages.filter((message) => {
+    const customer = customers.find((c) => c.id === message.customerId);
+    return (
+      customer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer?.phone.includes(searchTerm) ||
+      message.message.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
 
-  const getCustomerMessages = (customerId: string) => {
-    return messages.filter(m => m.customerId === customerId)
-                  .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-  };
+  const getCustomerMessages = (customerId: string) =>
+    messages
+      .filter((m) => m.customerId === customerId)
+      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-  const getCustomerForMessage = (customerId: string) => {
-    return customers.find(c => c.id === customerId);
-  };
+  const getCustomerForMessage = (customerId: string) =>
+    customers.find((c) => c.id === customerId);
 
   const handleSendMessage = () => {
     if (selectedCustomerId && newMessage.trim()) {
@@ -38,48 +39,49 @@ export default function MessagesPage() {
     }
   };
 
+  // Token-based badge colors
   const getMessageTypeColor = (type: string) => {
     switch (type) {
       case 'notification':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-info/10 text-info';
       case 'reminder':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-secondary/10 text-secondary-600';
       case 'response':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success/10 text-success';
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return 'bg-error/10 text-error';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-ink/10 text-ink';
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 text-ink">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Message Center</h1>
-        <p className="text-gray-600">View and manage SMS communications with customers</p>
+        <h1 className="text-3xl font-display font-bold mb-2">Message Center</h1>
+        <p className="text-muted">View and manage SMS communications with customers</p>
       </div>
 
       {/* Search and Stats */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted" />
           <Input
             placeholder="Search messages, names, or phone numbers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 border-border focus-visible:ring-2 focus-visible:ring-primary"
           />
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-6">
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{messages.filter(m => m.direction === 'outgoing').length}</p>
-            <p className="text-xs text-gray-500">Sent Today</p>
+            <p className="text-2xl font-bold">{messages.filter((m) => m.direction === 'outgoing').length}</p>
+            <p className="text-xs text-muted">Sent Today</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">{messages.filter(m => m.direction === 'incoming').length}</p>
-            <p className="text-xs text-gray-500">Responses</p>
+            <p className="text-2xl font-bold text-success">{messages.filter((m) => m.direction === 'incoming').length}</p>
+            <p className="text-xs text-muted">Responses</p>
           </div>
         </div>
       </div>
@@ -87,37 +89,37 @@ export default function MessagesPage() {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Conversation List */}
         <div className="lg:col-span-1">
-          <Card>
+          <Card className="bg-panel border border-border shadow-soft">
             <CardHeader>
               <CardTitle className="text-lg">Recent Conversations</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="space-y-0">
+              <div className="divide-y divide-border">
                 {customers
-                  .filter(c => messages.some(m => m.customerId === c.id))
+                  .filter((c) => messages.some((m) => m.customerId === c.id))
                   .map((customer) => {
                     const customerMessages = getCustomerMessages(customer.id);
                     const lastMessage = customerMessages[customerMessages.length - 1];
                     const isSelected = selectedCustomerId === customer.id;
-                    
+
                     return (
                       <div
                         key={customer.id}
-                        className={`p-4 border-b cursor-pointer hover:bg-gray-50 transition-colors ${
-                          isSelected ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''
+                        className={`p-4 cursor-pointer transition-colors ${
+                          isSelected
+                            ? 'bg-primary/5 border-l-4 border-l-primary'
+                            : 'hover:bg-off'
                         }`}
                         onClick={() => setSelectedCustomerId(customer.id)}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="font-medium">{customer.name}</h3>
-                          <Badge className={getMessageTypeColor(lastMessage.type)}>
+                          <Badge className={`${getMessageTypeColor(lastMessage.type)} border-0`}>
                             {lastMessage.type}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 truncate mb-1">
-                          {lastMessage.message}
-                        </p>
-                        <div className="flex items-center justify-between text-xs text-gray-500">
+                        <p className="text-sm text-muted truncate mb-1">{lastMessage.message}</p>
+                        <div className="flex items-center justify-between text-xs text-muted">
                           <span className="flex items-center">
                             <Phone className="h-3 w-3 mr-1" />
                             {customer.phone}
@@ -136,22 +138,21 @@ export default function MessagesPage() {
 
         {/* Message Thread */}
         <div className="lg:col-span-2">
-          <Card className="h-[600px] flex flex-col">
+          <Card className="h-[600px] flex flex-col bg-panel border border-border shadow-soft">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <MessageSquare className="h-5 w-5 mr-2" />
-                {selectedCustomerId ? 
-                  `Conversation with ${getCustomerForMessage(selectedCustomerId)?.name}` : 
-                  'Select a conversation'
-                }
+                <MessageSquare className="h-5 w-5 mr-2 text-primary" />
+                {selectedCustomerId
+                  ? `Conversation with ${getCustomerForMessage(selectedCustomerId)?.name}`
+                  : 'Select a conversation'}
               </CardTitle>
               {selectedCustomerId && (
-                <CardDescription>
+                <CardDescription className="text-muted">
                   {getCustomerForMessage(selectedCustomerId)?.phone}
                 </CardDescription>
               )}
             </CardHeader>
-            
+
             <CardContent className="flex-1 flex flex-col">
               {selectedCustomerId ? (
                 <>
@@ -165,25 +166,27 @@ export default function MessagesPage() {
                         <div
                           className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                             message.direction === 'outgoing'
-                              ? 'bg-indigo-600 text-white'
-                              : 'bg-gray-200 text-gray-900'
+                              ? 'bg-primary text-white'
+                              : 'bg-off ring-1 ring-border text-ink'
                           }`}
                         >
                           <p className="text-sm">{message.message}</p>
                           <div className="flex items-center justify-between mt-2">
-                            <Badge 
-                              variant="outline" 
+                            <Badge
+                              variant="outline"
                               className={`text-xs ${
-                                message.direction === 'outgoing' 
-                                  ? 'border-indigo-300 text-indigo-100' 
-                                  : 'border-gray-300 text-gray-600'
+                                message.direction === 'outgoing'
+                                  ? 'border-white/30 text-white/90'
+                                  : 'border-border text-muted'
                               }`}
                             >
                               {message.type}
                             </Badge>
-                            <span className={`text-xs ${
-                              message.direction === 'outgoing' ? 'text-indigo-200' : 'text-gray-500'
-                            }`}>
+                            <span
+                              className={`text-xs ${
+                                message.direction === 'outgoing' ? 'text-white/70' : 'text-muted'
+                              }`}
+                            >
                               {formatDistanceToNow(message.timestamp, { addSuffix: true })}
                             </span>
                           </div>
@@ -198,12 +201,13 @@ export default function MessagesPage() {
                       placeholder="Type a message..."
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className="flex-1"
+                      onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                      className="flex-1 border-border focus-visible:ring-2 focus-visible:ring-primary"
                     />
-                    <Button 
+                    <Button
                       onClick={handleSendMessage}
                       disabled={!newMessage.trim()}
+                      className="bg-primary hover:bg-primary-600 text-white"
                     >
                       <Send className="h-4 w-4" />
                     </Button>
@@ -212,9 +216,9 @@ export default function MessagesPage() {
               ) : (
                 <div className="flex-1 flex items-center justify-center">
                   <div className="text-center">
-                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No conversation selected</h3>
-                    <p className="text-gray-500">Select a customer from the list to view their message history</p>
+                    <MessageSquare className="h-12 w-12 text-muted mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-2">No conversation selected</h3>
+                    <p className="text-muted">Select a customer from the list to view their message history</p>
                   </div>
                 </div>
               )}
@@ -224,42 +228,42 @@ export default function MessagesPage() {
       </div>
 
       {/* All Messages List */}
-      <Card>
+      <Card className="bg-panel border border-border shadow-soft">
         <CardHeader>
           <CardTitle>All Messages</CardTitle>
-          <CardDescription>Complete SMS activity log</CardDescription>
+          <CardDescription className="text-muted">Complete SMS activity log</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {filteredMessages.length === 0 ? (
               <div className="text-center py-8">
-                <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No messages found</p>
+                <MessageSquare className="h-12 w-12 text-muted mx-auto mb-4" />
+                <p className="text-muted">No messages found</p>
               </div>
             ) : (
               filteredMessages.map((message) => {
                 const customer = getCustomerForMessage(message.customerId);
-                
                 return (
-                  <div key={message.id} className="flex items-start space-x-4 p-4 border rounded-lg">
-                    <div className={`w-3 h-3 rounded-full mt-2 ${
-                      message.direction === 'outgoing' ? 'bg-indigo-600' : 'bg-green-600'
-                    }`} />
-                    
+                  <div key={message.id} className="flex items-start space-x-4 p-4 border border-border rounded-lg bg-off">
+                    <div
+                      className={`w-3 h-3 rounded-full mt-2 ${
+                        message.direction === 'outgoing' ? 'bg-primary' : 'bg-success'
+                      }`}
+                    />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
+                      <div className="flex items-center flex-wrap gap-2 mb-1">
                         <p className="font-medium">{customer?.name || 'Unknown'}</p>
-                        <Badge className={getMessageTypeColor(message.type)}>
+                        <Badge className={`${getMessageTypeColor(message.type)} border-0`}>
                           {message.type}
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs border-border text-muted">
                           {message.direction === 'outgoing' ? 'Sent' : 'Received'}
                         </Badge>
                       </div>
-                      
-                      <p className="text-gray-900 mb-2">{message.message}</p>
-                      
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+
+                      <p className="mb-2">{message.message}</p>
+
+                      <div className="flex items-center gap-4 text-sm text-muted">
                         <span className="flex items-center">
                           <Phone className="h-3 w-3 mr-1" />
                           {customer?.phone}
