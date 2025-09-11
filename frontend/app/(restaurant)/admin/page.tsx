@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,11 +24,22 @@ export default function AdminDashboard() {
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
-  const waitingCustomers = customers.filter((c) => ['waiting', 'notified'].includes(c.status));
-  const activeCustomers = customers.filter((c) => ['waiting', 'notified', 'seated'].includes(c.status));
-  const availableTables = tables.filter((t) => t.status === 'available');
+  const waitingCustomers = useMemo(() =>
+    customers.filter((c) => ['waiting', 'notified'].includes(c.status)),
+    [customers]
+  );
 
-  const handleNotifyCustomer = (customer: Customer) => {
+  const activeCustomers = useMemo(() =>
+    customers.filter((c) => ['waiting', 'notified', 'seated'].includes(c.status)),
+    [customers]
+  );
+
+  const availableTables = useMemo(() =>
+    tables.filter((t) => t.status === 'available'),
+    [tables]
+  );
+
+  const handleNotifyCustomer = useCallback((customer: Customer) => {
     const availableTable = availableTables.find((t) => t.capacity >= customer.partySize);
 
     if (availableTable) {
@@ -47,13 +58,13 @@ export default function AdminDashboard() {
         });
       }, 2000);
     }
-  };
+  }, [availableTables, assignTable, sendSMS, updateCustomer]);
 
-  const handleMarkSeated = (customerId: string) => {
+  const handleMarkSeated = useCallback((customerId: string) => {
     markSeated(customerId);
-  };
+  }, [markSeated]);
 
-  const handleCancel = (customerId: string) => {
+  const handleCancel = useCallback((customerId: string) => {
     const customer = customers.find((c) => c.id === customerId);
     if (customer) {
       cancelCustomer(customerId);
@@ -63,7 +74,7 @@ export default function AdminDashboard() {
         'cancelled'
       );
     }
-  };
+  }, [customers, cancelCustomer, sendSMS]);
 
   const getStatusColor = (status: Customer['status']) => {
     switch (status) {

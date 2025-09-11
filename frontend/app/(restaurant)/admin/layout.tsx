@@ -9,6 +9,8 @@ import { useAuthStore } from '@/lib/auth-store';
 import { AuthWrapper } from '@/components/auth/auth-wrapper';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useTranslation } from '@/lib/i18n';
+import { Loading } from '@/components/Loading';
+import dynamic from 'next/dynamic';
 import {
   Users,
   Table,
@@ -18,6 +20,15 @@ import {
   CheckCircle,
   LogOut,
 } from 'lucide-react';
+
+// Lazy load icons for better performance
+const UsersIcon = dynamic(() => Promise.resolve(Users), { ssr: false });
+const TableIcon = dynamic(() => Promise.resolve(Table), { ssr: false });
+const MessageSquareIcon = dynamic(() => Promise.resolve(MessageSquare), { ssr: false });
+const SettingsIcon = dynamic(() => Promise.resolve(Settings), { ssr: false });
+const HomeIcon = dynamic(() => Promise.resolve(Home), { ssr: false });
+const CheckCircleIcon = dynamic(() => Promise.resolve(CheckCircle), { ssr: false });
+const LogOutIcon = dynamic(() => Promise.resolve(LogOut), { ssr: false });
 
 const navigation = [
   { name: 'Waitlist', href: '/admin', icon: Users },
