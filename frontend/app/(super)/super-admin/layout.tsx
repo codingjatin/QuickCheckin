@@ -14,11 +14,12 @@ import {
   CheckCircle,
   LogOut,
 } from 'lucide-react';
+import Image from 'next/image';
 
 const navigation = [
-  { name: 'Overview', href: '/super-admin', icon: BarChart3 },
+  // { name: 'Overview', href: '/super-admin', icon: BarChart3 },
   { name: 'Restaurants', href: '/super-admin/restaurants', icon: Building },
-  { name: 'Users', href: '/super-admin/users', icon: Users },
+  // { name: 'Users', href: '/super-admin/users', icon: Users },
   { name: 'System Settings', href: '/super-admin/settings', icon: Settings },
 ];
 
@@ -64,7 +65,7 @@ export default function SuperAdminLayout({
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
               <Link href="/" className="flex items-center gap-2">
-                <CheckCircle className="h-8 w-8 text-primary" />
+                <Image src="/QuickCheck.svg" alt="QuickCheck Logo" width={36} height={36}></Image>
                 <span className="text-2xl font-display font-bold">QuickCheck</span>
               </Link>
 
