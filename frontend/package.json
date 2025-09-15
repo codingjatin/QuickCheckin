@@ -14,7 +14,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "type-check": "tsc --noEmit",
-    "prepare": "husky install"
+  "prepare": "node -e \"if(!process.env.CI){require('child_process').spawnSync('husky',{stdio:'inherit',shell:true})}\""
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

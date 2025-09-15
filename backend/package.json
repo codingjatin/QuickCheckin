@@ -2,10 +2,15 @@
   "name": "quickcheck-backend",
   "version": "1.0.0",
   "description": "Backend for QuickCheck - Digital Waitlist and Reservation Platform",
+  "type": "commonjs",
   "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "health": "node -e \"require('http').get('http://127.0.0.1:'+(process.env.PORT||5172)+'/health',res=>console.log('health',res.statusCode))\""
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.490.0",
@@ -29,6 +34,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "license": "ISC"
 }
