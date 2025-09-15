@@ -28,22 +28,17 @@ app.use(
   })
 );
 
-// --- CORS (env-driven) ---
-/**
- * Set ALLOWED_ORIGINS="https://main.xxxxx.amplifyapp.com,https://www.yourdomain.com,http://localhost:3000"
- */
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
+// --- CORS ---
+const allowedOrigins = [
+  'https://quickcheckin.vercel.app',
+  'http://localhost:3000', // for local development
+  // Add other origins as needed
+];
 
 const corsOptions = {
   origin(origin, callback) {
     if (!origin) return callback(null, true); // allow server-to-server / curl
-    const allowed =
-      allowedOrigins.includes(origin) ||
-      // allow *.amplifyapp.com if you prefer a wildcard:
-      /\.amplifyapp\.com$/.test(new URL(origin).hostname);
+    const allowed = allowedOrigins.includes(origin);
     return allowed ? callback(null, true) : callback(new Error('CORS: Origin not allowed'));
   },
   methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
