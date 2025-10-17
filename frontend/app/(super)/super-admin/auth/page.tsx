@@ -110,7 +110,7 @@ export default function SuperAdminAuth() {
         sessionStorage.setItem('superAdminAuth', 'true');
       } catch {}
 
-      router.push('/super-admin/');
+      router.push('/super-admin/restaurants');
     } catch (err: any) {
       setErrors({
         form: err?.message || 'Login failed. Please try again.',

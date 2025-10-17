@@ -9,39 +9,43 @@ const { formatPhoneNumber } = require('../utils/helpers');
 // Restaurant Admin Login - Request OTP
 const requestLoginOTP = async (req, res) => {
   try {
-    const { restaurantId, phone } = req.body;
-    
-    if (!restaurantId || !phone) {
-      return res.status(400).json({ message: 'Restaurant ID and phone number are required.' });
+    const { phone, role } = req.body;
+
+    if (!phone || !role) {
+      return res.status(400).json({ message: 'Phone number and role are required.' });
     }
-    
-    const restaurant = await Restaurant.findById(restaurantId);
+
+    if (!['admin', 'guest'].includes(role)) {
+      return res.status(400).json({ message: 'Invalid role. Must be admin or guest.' });
+    }
+
+    const restaurant = await Restaurant.findOne({ phone });
     if (!restaurant || !restaurant.isActive) {
-      return res.status(404).json({ message: 'Restaurant not found or inactive.' });
+      return res.status(404).json({ message: 'Account not found or not activated.' });
     }
-    
+
     // Generate OTP
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
-    
+
     // Save session with OTP
     await Session.findOneAndUpdate(
-      { restaurantId, phone },
+      { restaurantId: restaurant._id, phone, role },
       { otp, expiresAt },
       { upsert: true, new: true }
     );
-    
+
     // Format phone number for SMS
     const formattedPhone = formatPhoneNumber(phone);
-    
+
     // Send OTP via SMS
     const message = `Your QuickCheck login OTP is: ${otp}. It will expire in 10 minutes.`;
     const smsSent = await sendSMS(formattedPhone, message);
-    
+
     if (!smsSent) {
       return res.status(500).json({ message: 'Failed to send OTP. Please try again.' });
     }
-    
+
     res.json({ message: 'OTP sent successfully to your phone number' });
   } catch (error) {
     console.error('Request login OTP error:', error);
@@ -52,29 +56,36 @@ const requestLoginOTP = async (req, res) => {
 // Restaurant Admin Login - Verify OTP
 const verifyLoginOTP = async (req, res) => {
   try {
-    const { restaurantId, phone, otp } = req.body;
-    
-    if (!restaurantId || !phone || !otp) {
-      return res.status(400).json({ message: 'Restaurant ID, phone number, and OTP are required.' });
+    const { phone, role, otp } = req.body;
+
+    if (!phone || !role || !otp) {
+      return res.status(400).json({ message: 'Phone number, role, and OTP are required.' });
     }
-    
+
+    if (!['admin', 'guest'].includes(role)) {
+      return res.status(400).json({ message: 'Invalid role. Must be admin or guest.' });
+    }
+
+    // Find restaurant by phone
+    const restaurant = await Restaurant.findOne({ phone });
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found.' });
+    }
+
     // Verify OTP
-    const session = await Session.findOne({ restaurantId, phone, otp });
+    const session = await Session.findOne({ restaurantId: restaurant._id, phone, role, otp });
     if (!session) {
       return res.status(400).json({ message: 'Invalid OTP.' });
     }
-    
+
     if (session.expiresAt < new Date()) {
       await Session.findByIdAndDelete(session._id);
       return res.status(400).json({ message: 'OTP has expired.' });
     }
-    
-    // Get restaurant details
-    const restaurant = await Restaurant.findById(restaurantId);
-    
+
     // Delete used session
     await Session.findByIdAndDelete(session._id);
-    
+
     res.json({
       message: 'Login successful',
       restaurant: {

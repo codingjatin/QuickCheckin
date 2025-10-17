@@ -11,6 +11,11 @@ const sessionSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  role: {
+    type: String,
+    enum: ['admin', 'guest'],
+    required: true
+  },
   otp: {
     type: String,
     required: true

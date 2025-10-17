@@ -64,6 +64,12 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// --- Route Logging Middleware ---
+app.use((req, res, next) => {
+  console.log(`Route hit: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
 // --- Routes ---
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/restaurant', restaurantRoutes);

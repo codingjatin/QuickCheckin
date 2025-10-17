@@ -16,8 +16,8 @@
 
 | Endpoint                                      | Description                                  | Request Type | Headers / Body                                                                                   |
 |-----------------------------------------------|----------------------------------------------|--------------|------------------------------------------------------------------------------------------------|
-| /api/restaurant/request-login-otp              | Restaurant Admin login - request OTP         | POST         | Body: { restaurantId, phone }                                                                  |
-| /api/restaurant/verify-login-otp               | Restaurant Admin login - verify OTP          | POST         | Body: { restaurantId, phone, otp }                                                             |
+| /api/restaurant/request-login-otp              | Restaurant login - request OTP                | POST         | Body: { phone, role } (role: 'admin' or 'guest')                                              |
+| /api/restaurant/verify-login-otp               | Restaurant login - verify OTP                 | POST         | Body: { phone, role, otp }                                                                     |
 | /api/restaurant/:restaurantId/dashboard         | Get restaurant dashboard data                 | GET          | Body: { restaurantId, sessionToken }                                                           |
 | /api/restaurant/:restaurantId/tables            | Update restaurant tables configuration        | PUT          | Body: { restaurantId, sessionToken, tables: [{ capacity, quantity }] }                          |
 | /api/restaurant/:restaurantId/logo              | Update restaurant logo                        | POST         | Body: { restaurantId, sessionToken }, Multipart form-data: logo image                           |
