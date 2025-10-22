@@ -16,7 +16,7 @@ export default function LandingPage() {
       {/* <HowItWorksSection /> */}
       <FeaturesSection />
       <LiveDemoSection />
-      <IntegrationsSection />
+      {/* <IntegrationsSection /> */}
       {/* <PricingPreviewSection /> */}
       <TestimonialsSection />
       <ReliabilitySection />

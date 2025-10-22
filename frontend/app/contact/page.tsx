@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,30 +23,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useI18nStore } from '@/lib/i18n';
 
-type FormShape = typeof initialForm;
-type Errors = Partial<Record<keyof FormShape, string>>;
-
-const initialForm = {
-  name: '',
-  email: '',
-  company: '',
-  phone: '',
-  subject: '',
-  message: '',
-  // spam honeypot (keep empty)
-  website: '',
-  consent: false as boolean,
-  topic: '' as '' | 'Support' | 'Sales' | 'Partnerships' | 'Other',
-};
-
 const EMAIL = 'info@quickcheckin.ca';
 const PHONE_DISPLAY = '+1 (289) 332-0707';
 const PHONE_TEL = '+12893320707';
 const MESSAGE_MIN = 20;
 const MESSAGE_MAX = 1200;
-
-// change this to your real thank-you page
-const NEXT_URL = '/contact?submitted=1';
 
 // ---------------- i18n strings ----------------
 const STRINGS = {
@@ -129,7 +110,8 @@ const STRINGS = {
       },
     ],
     // autoresponse
-    autoHi: (name: string) => `Hi ${name || ''},\n\nThanks for contacting QuickCheck! We received your message and will reply soon.\n\n— QuickCheck Team`,
+    autoHi: (name: string) =>
+      `Hi ${name || ''},\n\nThanks for contacting QuickCheck! We received your message and will reply soon.\n\n— QuickCheck Team`,
   },
   fr: {
     navBack: "Retour à l'accueil",
@@ -192,8 +174,7 @@ const STRINGS = {
     vBot: 'Bot détecté.',
     // FAQ
     faqTitle: 'Questions fréquentes',
-    faqSubtitle:
-      'Des réponses rapides aux questions courantes sur QuickCheck',
+    faqSubtitle: 'Des réponses rapides aux questions courantes sur QuickCheck',
     faqs: [
       {
         q: 'En combien de temps peut-on démarrer ?',
@@ -217,6 +198,24 @@ const STRINGS = {
       `Bonjour ${name || ''},\n\nMerci d’avoir contacté QuickCheck ! Nous avons bien reçu votre message et vous répondrons rapidement.\n\n— L’équipe QuickCheck`,
   },
 } as const;
+
+// ---------------- form model ----------------
+const initialForm = {
+  name: '',
+  email: '',
+  company: '',
+  phone: '',
+  subject: '',
+  message: '',
+  // spam honeypot (keep empty)
+  website: '',
+  consent: false as boolean,
+  topic: '' as '' | 'Support' | 'Sales' | 'Partnerships' | 'Other',
+};
+
+type FormShape = typeof initialForm;
+type Errors = Partial<Record<keyof FormShape, string>>;
+
 // ------------------------------------------------
 
 export default function ContactPage() {
@@ -224,19 +223,11 @@ export default function ContactPage() {
   const lang = (language === 'fr' ? 'fr' : 'en') as 'en' | 'fr';
   const s = STRINGS[lang];
 
-  const [formData, setFormData] = useState(initialForm);
+  const [formData, setFormData] = useState<FormShape>(initialForm);
   const [errors, setErrors] = useState<Errors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [copied, setCopied] = useState<{ email?: boolean; phone?: boolean }>({});
-
-  // detect ?submitted=1 for simple thank-you page behavior
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('submitted') === '1') setIsSubmitted(true);
-    }
-  }, []);
 
   const chars = formData.message.length;
   const messageHelp =
@@ -272,15 +263,62 @@ export default function ContactPage() {
     setFormData((prev) => ({ ...prev, [name]: nextValue }));
   };
 
-  // IMPORTANT: allow native form submit to FormSubmit unless invalid
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    const ok = validate();
-    if (!ok) {
-      e.preventDefault();
-      return;
+  // Submit via FormSubmit AJAX to avoid redirect and stay on page
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // we’ll handle the POST manually
+    if (!validate()) return;
+
+    try {
+      setIsSubmitting(true);
+
+      // Build the payload expected by FormSubmit AJAX API
+      const payload: Record<string, string> = {
+        name: formData.name,
+        email: formData.email,
+        company: formData.company,
+        phone: formData.phone,
+        topic: formData.topic || 'General',
+        subject: formData.subject,
+        message: formData.message,
+        _subject: `QuickCheck Contact • ${formData.topic || 'General'} • ${formData.subject || ''}`,
+        _template: 'table',
+        _captcha: 'false',
+        _autoresponse: s.autoHi(formData.name),
+        // Honeypot (if filled, many services ignore or treat as spam)
+        _honey: formData.website || '',
+      };
+
+      const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(EMAIL)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      // FormSubmit returns 200 with JSON { success: "..." } on OK
+      if (!res.ok) {
+        // Best-effort error surface
+        const text = await res.text();
+        throw new Error(text || 'Submission failed');
+      }
+
+      setIsSubmitted(true);
+      setFormData(initialForm);
+    } catch (err) {
+      // If the AJAX call fails, you can optionally fall back to normal form POST by removing e.preventDefault,
+      // but we keep it inline to stay on page. Show inline errors or a toast (not included here).
+      setErrors((prev) => ({
+        ...prev,
+        subject:
+          lang === 'fr'
+            ? "Une erreur s'est produite. Réessayez ou écrivez-nous à l’adresse e-mail."
+            : 'Something went wrong. Please try again or email us directly.',
+      }));
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(true);
-    // do NOT preventDefault — browser posts to FormSubmit and redirects to _next
   };
 
   const canSubmit = useMemo(() => {
@@ -464,7 +502,7 @@ export default function ContactPage() {
             </Card>
           </aside>
 
-          {/* Contact Form (FormSubmit) */}
+          {/* Contact Form (AJAX to FormSubmit) */}
           <section className="lg:col-span-2">
             <Card className="bg-panel border border-border shadow-soft">
               <CardHeader>
@@ -472,7 +510,6 @@ export default function ContactPage() {
                 <CardDescription className="text-muted">{s.headerFormDesc}</CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Use FormSubmit */}
                 <form
                   action={`https://formsubmit.co/${EMAIL}`}
                   method="POST"
@@ -480,7 +517,7 @@ export default function ContactPage() {
                   className="space-y-6"
                   noValidate
                 >
-                  {/* FormSubmit options */}
+                  {/* Keep hidden helpers for parity, though AJAX handles them */}
                   <input
                     type="hidden"
                     name="_subject"
@@ -488,8 +525,7 @@ export default function ContactPage() {
                   />
                   <input type="hidden" name="_template" value="table" />
                   <input type="hidden" name="_captcha" value="false" />
-                  <input type="hidden" name="_next" value={NEXT_URL} />
-                  {/* Optional auto-response */}
+                  {/* Removed _next to avoid redirection */}
                   <input type="hidden" name="_autoresponse" value={s.autoHi(formData.name)} />
                   {/* Honeypot recognized by FormSubmit */}
                   <input type="text" name="_honey" className="hidden" tabIndex={-1} autoComplete="off" />
@@ -542,9 +578,7 @@ export default function ContactPage() {
                         onChange={handleInputChange}
                         required
                         className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
-                        placeholder={
-                          lang === 'fr' ? 'jean@restaurant.com' : 'john@restaurant.com'
-                        }
+                        placeholder={lang === 'fr' ? 'jean@restaurant.com' : 'john@restaurant.com'}
                         autoComplete="email"
                         aria-invalid={!!errors.email}
                         aria-describedby={errors.email ? 'email-error' : undefined}
