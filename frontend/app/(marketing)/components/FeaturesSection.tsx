@@ -1,59 +1,34 @@
 "use client";
 
-import React, { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTranslation } from "@/lib/i18n";
-import { Clock, MessageSquare, Monitor, Users, CheckCircle, Smartphone, Utensils, BarChart3, Shield, PlugZap } from "lucide-react";
+import { useMarketingContent } from "../content";
+import { SectionHeading } from "./SectionHeading";
 
-export const FeaturesSection = React.memo(function FeaturesSection() {
-  const { t } = useTranslation();
-
-  const features = useMemo(() => [
-    {
-      icon: Users,
-      title: t("selfCheckIn"),
-      desc: t("selfCheckInDesc"),
-    },
-    {
-      icon: MessageSquare,
-      title: t("smsNotifications"),
-      desc: t("smsNotificationsDesc"),
-    },
-    {
-      icon: Monitor,
-      title: t("realTimeDashboard"),
-      desc: t("realTimeDashboardDesc"),
-    },
-    {
-      icon: BarChart3,
-      title: t("smartAnalytics"),
-      desc: t("smartAnalyticsDesc"),
-    },
-  ], [t]);
+export function FeaturesSection() {
+  const { landing } = useMarketingContent();
+  const { title, description, highlights } = landing.features;
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="font-display font-bold" style={{ fontSize: "clamp(1.75rem, 1.1vw + 1rem, 2.25rem)" }}>
-            Do more with the team you've got
-          </h2>
-          <p className="text-muted max-w-2xl mx-auto text-lg">
-            Replace manual lists with one system that keeps guests informed and your floor flowing.
-          </p>
-        </div>
+    <section className="bg-off py-20">
+      <div className="mx-auto flex max-w-7xl flex-col gap-12 px-4 sm:px-6 lg:px-8">
+        <SectionHeading title={title} description={description} />
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map(({ icon: Icon, title, desc }, i) => (
-            <Card key={i} className="border border-border hover:shadow-soft transition-shadow">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {highlights.map(({ title, description, icon: Icon }) => (
+            <Card
+              key={title}
+              className="border border-border bg-panel shadow-none transition hover:-translate-y-1 hover:shadow-soft"
+            >
               <CardHeader>
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                  <Icon className="w-6 h-6 text-primary" />
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Icon className="h-6 w-6" aria-hidden />
                 </div>
-                <CardTitle>{title}</CardTitle>
+                <CardTitle className="text-lg font-semibold text-ink">{title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-muted">{desc}</CardDescription>
+                <CardDescription className="text-sm text-muted">
+                  {description}
+                </CardDescription>
               </CardContent>
             </Card>
           ))}
@@ -61,4 +36,4 @@ export const FeaturesSection = React.memo(function FeaturesSection() {
       </div>
     </section>
   );
-});
+}

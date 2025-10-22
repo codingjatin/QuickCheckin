@@ -179,3 +179,10 @@
 * **Simple auth**
 
   * I have already created this
+
+## Marketing implementation status
+
+- Landing page now includes hero, problem/outcome tiles, how-it-works steps, feature teasers, interactive SMS preview, integrations strip, pricing teaser, compliance summary, testimonials, FAQ teaser, and final CTA.
+- Dedicated routes implemented for `/how-it-works`, `/features`, `/pricing`, `/case-studies`, `/resources`, `/security`, and `/faq`, each matching the sections above and linking back to key conversions.
+- Navigation and footer updated with the new routes plus contact/demo actions; contact form remains available at `/contact`.
+- New shared marketing components (`PageHero`, `SectionHeading`, etc.) centralize styling for consistency and easier maintenance.
