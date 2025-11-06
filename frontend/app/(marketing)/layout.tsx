@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-off text-ink">
-      <AnnouncementBar />
+      {/* <AnnouncementBar /> */}
       <NavigationSection />
       <main>{children}</main>
       <FooterSection />

@@ -38,13 +38,13 @@ export function HeroSection() {
               {secondaryCta.label}
             </Link>
           </div>
-          <div className="mt-4 flex flex-wrap gap-6 text-sm text-muted">
+          {/* <div className="mt-4 flex flex-wrap gap-6 text-sm text-muted">
             {stats.map((stat) => (
               <div key={stat.label} className="flex items-center gap-2">
                 <span className="font-semibold text-ink">{stat.value}</span> {stat.label}
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
 
         <div className="relative">

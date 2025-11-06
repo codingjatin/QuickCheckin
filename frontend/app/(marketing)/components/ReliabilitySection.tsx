@@ -1,15 +1,15 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { ShieldCheck, Activity, Lock, Server } from "lucide-react";
-import { useMarketingContent } from "../content";
-import { SectionHeading } from "./SectionHeading";
+import Link from 'next/link'
+import { ShieldCheck, Activity, Lock, Server } from 'lucide-react'
+import { useMarketingContent } from '../content'
+import { SectionHeading } from './SectionHeading'
 
-const icons = [ShieldCheck, Activity, Lock, Server];
+const icons = [ShieldCheck, Activity, Lock, Server]
 
 export function ReliabilitySection() {
-  const { landing } = useMarketingContent();
-  const r = landing.reliability;
+  const { landing } = useMarketingContent()
+  const r = landing.reliability
 
   return (
     <section className="relative overflow-hidden bg-ink text-off py-20">
@@ -38,7 +38,7 @@ export function ReliabilitySection() {
         {/* spotlight cards */}
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           {r.highlights.map(({ stat, description }, i) => {
-            const Icon = icons[i % icons.length];
+            const Icon = icons[i % icons.length]
             return (
               <article key={`${stat}-${description}`} className="group">
                 <div className="rounded-2xl bg-gradient-to-br from-primary/35 via-white/5 to-amber-200/30 p-[1px]">
@@ -51,21 +51,17 @@ export function ReliabilitySection() {
                   </div>
                 </div>
               </article>
-            );
+            )
           })}
         </div>
 
-        {/* CTA banner */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-white/10 via-white/5 to-white/10 p-6 sm:p-7">
+        {/* <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-white/10 via-white/5 to-white/10 p-6 sm:p-7">
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <p className="text-sm text-off/80">
-              {/* keep copy i18n-driven; the link provides the label */}
-              <span className="mr-2 inline-flex h-6 items-center rounded-full bg-primary/20 px-2 text-xs font-semibold text-primary">
+\              <span className="mr-2 inline-flex h-6 items-center rounded-full bg-primary/20 px-2 text-xs font-semibold text-primary">
                 SOC / SLA / Compliance
               </span>
-              {/** optional helper text — non-translated accent only */}
               <span className="hidden sm:inline">
-                {/* lightweight supporting line; no hardcoded locale text from content */}
               </span>
             </p>
 
@@ -90,9 +86,8 @@ export function ReliabilitySection() {
               </svg>
             </Link>
           </div>
-        </div>
+        </div> */}
       </div>
     </section>
-  );
+  )
 }
-  

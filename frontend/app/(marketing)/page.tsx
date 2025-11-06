@@ -18,8 +18,8 @@ export default function LandingPage() {
       <LiveDemoSection />
       {/* <IntegrationsSection /> */}
       {/* <PricingPreviewSection /> */}
-      <TestimonialsSection />
-      <ReliabilitySection />
+      {/* <TestimonialsSection /> */}
+      {/* <ReliabilitySection /> */}
       <CTASection />
     </>
   );

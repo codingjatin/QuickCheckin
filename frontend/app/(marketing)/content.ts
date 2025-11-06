@@ -571,6 +571,7 @@ const content: Record<Language, MarketingContent> = {
             { label: 'Features', href: '/features' },
             { label: 'Pricing', href: '/pricing' },
             { label: 'Security & compliance', href: '#' },
+            { label: 'Contact', href: '/contact' },
           ],
         },
         {

@@ -376,7 +376,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-off text-ink">
       {/* Navigation */}
-      <nav className="border-b border-border bg-panel/90 backdrop-blur supports-[backdrop-filter]:bg-panel/75 sticky top-0 z-40">
+      {/* <nav className="border-b border-border bg-panel/90 backdrop-blur supports-[backdrop-filter]:bg-panel/75 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link
@@ -397,7 +397,7 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
-      </nav>
+      </nav> */}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         {/* Header */}
@@ -471,7 +471,7 @@ export default function ContactPage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-panel border border-border shadow-soft">
+            {/* <Card className="bg-panel border border-border shadow-soft">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-primary/10 rounded-lg grid place-items-center">
@@ -484,7 +484,7 @@ export default function ContactPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
 
             <Card className="bg-ink text-off shadow-soft">
               <CardContent className="p-6">
