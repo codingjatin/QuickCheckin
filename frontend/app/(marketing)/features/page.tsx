@@ -1,19 +1,14 @@
+"use client";
+
 import type { Metadata } from "next";
 
 import { CTASection } from "../components/CTASection";
 import { PageHero } from "../components/PageHero";
 import { SectionHeading } from "../components/SectionHeading";
-import { getMarketingContent } from "../content";
-
-export const metadata: Metadata = {
-  title: "QuickCheck Features | Waitlist, Messaging, Analytics, and More",
-  description:
-    "Explore the complete QuickCheck feature set including digital waitlists, messaging engine, smart seating, analytics, branding controls, and integrations.",
-};
+import { useMarketingContent } from "../content";
 
 export default function FeaturesPage() {
-  // Server-safe read (defaults to English; wire your locale here if you have one)
-  const content = getMarketingContent();
+  const content = useMarketingContent();
   const features = content.pages.features;
   const pricing = content.pages.pricing;
 
@@ -28,11 +23,11 @@ export default function FeaturesPage() {
 
       <section className="py-20">
         <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 sm:px-6 lg:px-8">
-          <SectionHeading
+          {/* <SectionHeading
             align="left"
             title="Feature deep dives"
             description="Each module is modular and customizable—enable what you need today and expand as guest volume grows."
-          />
+          /> */}
           <div className="space-y-10">
             {features.clusters.map((cluster) => (
               <article

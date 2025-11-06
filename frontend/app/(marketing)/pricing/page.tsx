@@ -1,33 +1,27 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
 
+import Link from "next/link";
 import { CTASection } from "../components/CTASection";
 import { PageHero } from "../components/PageHero";
 import { SectionHeading } from "../components/SectionHeading";
-import { comparisonMatrix, pricingFaq, pricingPlans, usageNotes } from "../content";
-
-export const metadata: Metadata = {
-  title: "Pricing | QuickCheck Waitlist & Messaging Plans",
-  description:
-    "Choose the QuickCheck plan that fits your restaurant. Starter for single locations, Pro for growing groups, and Enterprise for custom SLAs.",
-};
+import { useMarketingContent } from "../content";
 
 export default function PricingPage() {
+  const { pages } = useMarketingContent(); // <-- language-aware content
+  const { plans, usageNotes, comparison, faq, hero } = pages.pricing;
+
   return (
     <div className="bg-off text-ink">
       <PageHero
-        eyebrow="Pricing"
-        title="Plans that flex with service volume"
-        description="No per-user fees. Activate new locations in minutes and only pay for the seats you manage."
-        actions={[
-          { label: "Start free trial", href: "/contact" },
-          { label: "Talk to sales", href: "/contact", variant: "secondary" },
-        ]}
+        eyebrow={hero.eyebrow}
+        title={hero.title}
+        description={hero.description}
+        actions={hero.actions}
       />
 
       <section className="py-20">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
-          {pricingPlans.map((plan) => (
+          {plans.map((plan) => (
             <article
               key={plan.name}
               className={`flex flex-col rounded-3xl border border-border bg-panel p-6 shadow-soft sm:p-8 ${
@@ -36,18 +30,20 @@ export default function PricingPage() {
             >
               <div className="flex items-baseline justify-between">
                 <h2 className="text-xl font-semibold text-ink">{plan.name}</h2>
-                {plan.featured ? (
+                {plan.featured && (
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
-                    Most popular
+                    {plan.highlight.includes("popular") ? "Most popular" : ""}
                   </span>
-                ) : null}
+                )}
               </div>
 
               <p className="mt-2 text-sm text-muted">{plan.description}</p>
 
               <div className="mt-6">
                 <span className="text-4xl font-bold text-ink">{plan.price}</span>
-                {plan.cadence ? <span className="ml-1 text-sm text-muted">{plan.cadence}</span> : null}
+                {plan.cadence && (
+                  <span className="ml-1 text-sm text-muted">{plan.cadence}</span>
+                )}
               </div>
 
               <p className="mt-3 text-sm font-semibold text-primary">{plan.highlight}</p>
@@ -98,14 +94,14 @@ export default function PricingPage() {
             <table className="min-w-full divide-y divide-border text-sm">
               <thead className="bg-off/70">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left font-semibold text-muted">Feature</th>
-                  <th scope="col" className="px-4 py-3 text-left font-semibold text-muted">Starter</th>
-                  <th scope="col" className="px-4 py-3 text-left font-semibold text-muted">Pro</th>
-                  <th scope="col" className="px-4 py-3 text-left font-semibold text-muted">Enterprise</th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted">Feature</th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted">Starter</th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted">Pro</th>
+                  <th className="px-4 py-3 text-left font-semibold text-muted">Enterprise</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {comparisonMatrix.map((row) => (
+                {comparison.map((row) => (
                   <tr key={row.feature}>
                     <th scope="row" className="whitespace-nowrap px-4 py-4 text-left text-ink">{row.feature}</th>
                     <td className="whitespace-nowrap px-4 py-4 text-muted">{row.starter}</td>
@@ -126,7 +122,7 @@ export default function PricingPage() {
             description="Common questions about billing, trials, and credits."
           />
           <div className="space-y-4">
-            {pricingFaq.map((item) => (
+            {faq.map((item) => (
               <details key={item.question} className="group rounded-2xl border border-border bg-off/60 p-6 shadow-soft">
                 <summary className="cursor-pointer text-base font-semibold text-ink">
                   {item.question}
