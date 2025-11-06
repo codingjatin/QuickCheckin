@@ -1,27 +1,33 @@
-'use client';
+"use client";
 
-import { useAuthStore } from '@/lib/auth-store';
-import { LoginForm } from './login-form';
-import { OtpForm } from './otp-form';
+import { useAuthStore } from "@/lib/auth-store";
+import { LoginForm } from "./login-form";
+import { OtpForm } from "./otp-form";
+import { motion } from "framer-motion";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
-  requiredRole?: 'guest' | 'admin';
+  requiredRole?: "guest" | "admin";
 }
 
 export function AuthWrapper({ children, requiredRole }: AuthWrapperProps) {
   const { isAuthenticated, userRole, currentStep } = useAuthStore();
 
-  // If user is authenticated and has the required role, show the content
   if (isAuthenticated && (!requiredRole || userRole === requiredRole)) {
     return <>{children}</>;
   }
 
-  // Show appropriate auth step
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-off to-primary/10 flex items-center justify-center p-4">
-      {currentStep === 'login' && <LoginForm />}
-      {currentStep === 'otp' && <OtpForm />}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-off to-primary/10 p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md rounded-2xl border border-border bg-panel/70 backdrop-blur-md shadow-2xl p-6"
+      >
+        {currentStep === "login" && <LoginForm />}
+        {currentStep === "otp" && <OtpForm />}
+      </motion.div>
     </div>
   );
 }

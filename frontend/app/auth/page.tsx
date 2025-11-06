@@ -1,11 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/auth-store';
-import { LoginForm } from '@/components/auth/login-form';
-import { OtpForm } from '@/components/auth/otp-form';
-import { CheckCircle } from 'lucide-react';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/auth-store";
+import { LoginForm } from "@/components/auth/login-form";
+import { OtpForm } from "@/components/auth/otp-form";
+import { motion } from "framer-motion";
+import { ShieldCheck } from "lucide-react";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -13,35 +14,37 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (isAuthenticated && userRole) {
-      // Redirect based on user role
-      if (userRole === 'guest') {
-        router.push('/kiosk');
-      } else if (userRole === 'admin') {
-        router.push('/admin');
-      }
+      router.push(userRole === "guest" ? "/kiosk" : "/admin");
     }
   }, [isAuthenticated, userRole, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-off to-sage/10 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-panel/60 backdrop-blur supports-[backdrop-filter]:bg-panel/50 rounded-xl2 border border-border shadow-soft">
-        {/* Logo */}
-        <div className="text-center pt-8 pb-4 px-6">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <CheckCircle className="h-10 w-10 text-primary" />
-            <h1 className="text-3xl font-display font-extrabold text-ink">QuickCheck</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-off to-sage/10 p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md rounded-2xl border border-border bg-panel/70 backdrop-blur-xl shadow-2xl overflow-hidden"
+      >
+        <div className="text-center pt-10 pb-6 px-6 border-b border-border/50 bg-gradient-to-b from-panel/50 to-transparent">
+          <div className="flex justify-center items-center gap-3 mb-3">
+            <ShieldCheck className="w-10 h-10 text-primary" />
+            <h1 className="text-3xl font-display font-extrabold text-ink tracking-tight">
+              QuickCheck
+            </h1>
           </div>
-          <p className="text-muted text-sm">
-            Secure sign-in to access your dashboard
+          <p className="text-sm text-muted">
+            {currentStep === "otp"
+              ? "Verify your number to continue"
+              : "Welcome back — let’s sign you in"}
           </p>
         </div>
 
-        {/* Auth Forms */}
-        <div className="px-6 pb-8">
-          {currentStep === 'login' && <LoginForm />}
-          {currentStep === 'otp' && <OtpForm />}
+        <div className="px-6 py-8">
+          {currentStep === "login" && <LoginForm />}
+          {currentStep === "otp" && <OtpForm />}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
