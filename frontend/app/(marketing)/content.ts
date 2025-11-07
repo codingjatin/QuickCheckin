@@ -554,7 +554,7 @@ const content: Record<Language, MarketingContent> = {
           { question: 'How long is the free trial?', answer: 'Starter plans include a 14-day trial with full access to kiosk, messaging, and analytics features.' },
           { question: 'What payment methods do you accept?', answer: 'Credit card or ACH for monthly plans. Annual contracts support invoicing and procurement workflows.' },
           { question: 'Can we cancel anytime?', answer: "Yes. Monthly plans can be cancelled anytime. Annual plans require 30 days' notice before renewal." },
-          { question: 'Do you charge per SMS?', answer: 'Each plan includes pooled SMS credits sized to typical usage. Overages are billed at regional market rates.' },
+          { question: 'Do you charge per SMS?', answer: 'Each plan includes free SMS credits for typical monthly usage. If your usage goes beyond the limit, you’ll get an alert before any extra charge.' },
           { question: 'Is onboarding included?', answer: 'Starter includes guided setup. Pro and Enterprise add dedicated onboarding sessions and staff training materials.' },
         ],
       },

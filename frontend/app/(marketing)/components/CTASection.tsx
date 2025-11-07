@@ -66,12 +66,12 @@ export function CTASection() {
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-off/60">
               <span className="inline-flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
-                99.9% uptime target
+                Reliable performance
               </span>
               <span className="hidden h-3 w-px bg-white/15 sm:inline-block" />
               <span className="inline-flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-300/70" />
-                Two-way SMS & multi-location
+                Realtime monitoring
               </span>
             </div>
           </div>
