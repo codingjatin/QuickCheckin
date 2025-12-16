@@ -2,8 +2,10 @@ const Restaurant = require('../models/Restaurant');
 const Table = require('../models/Table');
 const Booking = require('../models/Booking');
 const Session = require('../models/Session');
+const jwt = require('jsonwebtoken');
 const generateOTP = require('../utils/otpGenerator');
 const { sendSMS, formatPhoneNumber } = require('../utils/telnyxService');
+
 
 // Restaurant Admin Login - Request OTP
 const requestLoginOTP = async (req, res) => {
@@ -85,8 +87,20 @@ const verifyLoginOTP = async (req, res) => {
     // Delete used session
     await Session.findByIdAndDelete(session._id);
 
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        restaurantId: restaurant._id,
+        phone,
+        role
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRE }
+    );
+
     res.json({
       message: 'Login successful',
+      token,
       restaurant: {
         id: restaurant._id,
         name: restaurant.name,

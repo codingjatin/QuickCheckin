@@ -17,17 +17,32 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<{ data?: T; error?: ApiError }> {
     try {
+      // Get token from localStorage
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...((options.headers as Record<string, string>) || {}),
+      };
+
+      // Add Authorization header if token exists
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
+        headers,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        // If 401, token is invalid - clear it
+        if (response.status === 401 && typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+        }
+
         return {
           error: {
             message: data.message || 'An error occurred',
@@ -56,6 +71,7 @@ class ApiClient {
   async verifyOTP(phone: string, role: 'admin' | 'guest', otp: string) {
     return this.request<{
       message: string;
+      token: string;
       restaurant: {
         id: string;
         name: string;
@@ -67,6 +83,26 @@ class ApiClient {
     }>('/api/restaurant/verify-login-otp', {
       method: 'POST',
       body: JSON.stringify({ phone, role, otp }),
+    });
+  }
+
+  async validateToken(token: string) {
+    return this.request<{
+      restaurantId: string;
+      phone: string;
+      role: 'admin' | 'guest';
+      restaurant: {
+        id: string;
+        name: string;
+        city: string;
+        email: string;
+        phone: string;
+        logo: string;
+      };
+    }>('/api/restaurant/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
   }
 

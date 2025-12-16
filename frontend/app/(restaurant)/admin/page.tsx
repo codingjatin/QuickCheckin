@@ -15,16 +15,18 @@ import { formatDistanceToNow } from 'date-fns';
 export default function AdminDashboard() {
   const router = useRouter();
   const { t } = useTranslation();
-  const { isAuthenticated, userRole } = useAuthStore();
+  const { isAuthenticated, userRole, isLoading } = useAuthStore();
   
   // Redirect to /auth if not authenticated or not admin
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/auth');
-    } else if (userRole !== 'admin') {
-      router.push('/kiosk');
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.replace('/auth');
+      } else if (userRole !== 'admin') {
+        router.replace('/kiosk');
+      }
     }
-  }, [isAuthenticated, userRole, router]);
+  }, [isAuthenticated, userRole, isLoading, router]);
 
   const {
     customers,
@@ -124,10 +126,15 @@ export default function AdminDashboard() {
     }
   };
 
-  // Don't render dashboard until auth check is complete
-  if (!isAuthenticated || userRole !== 'admin') {
-    return null;
+  // Don't render dashboard until auth check is complete and user is authenticated admin
+  if (isLoading || !isAuthenticated || userRole !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
   }
+
 
   return (
     <div className="space-y-8 text-ink">

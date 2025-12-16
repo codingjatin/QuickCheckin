@@ -25,6 +25,36 @@ const authenticateSuperAdmin = async (req, res, next) => {
   }
 };
 
+// Verify User (Restaurant Admin/Guest) JWT token
+const authenticateUser = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ message: 'Access denied. No token provided.' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Verify restaurant exists
+    const restaurant = await Restaurant.findById(decoded.restaurantId);
+    if (!restaurant || !restaurant.isActive) {
+      return res.status(401).json({ message: 'Restaurant not found or inactive.' });
+    }
+    
+    req.user = {
+      restaurantId: decoded.restaurantId,
+      phone: decoded.phone,
+      role: decoded.role,
+      restaurant
+    };
+    
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Token is not valid.' });
+  }
+};
+
 // Verify Restaurant Admin session
 const authenticateRestaurantAdmin = async (req, res, next) => {
   try {
@@ -60,5 +90,6 @@ const authenticateRestaurantAdmin = async (req, res, next) => {
 
 module.exports = {
   authenticateSuperAdmin,
+  authenticateUser,
   authenticateRestaurantAdmin
 };

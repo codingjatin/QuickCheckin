@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/lib/auth-store';
-import { AuthWrapper } from '@/components/auth/auth-wrapper';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useTranslation } from '@/lib/i18n';
 import { Loading } from '@/components/Loading';
@@ -37,16 +36,36 @@ const navigation = [
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
-function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
-  const { logout, phoneNumber } = useAuthStore();
+  const { logout, phoneNumber, isAuthenticated, userRole, isLoading } = useAuthStore();
+
+  // Redirect to /auth if not authenticated or not admin
+  useEffect(() => {
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.replace('/auth');
+      } else if (userRole !== 'admin') {
+        router.replace('/kiosk');
+      }
+    }
+  }, [isAuthenticated, userRole, isLoading, router]);
 
   const handleLogout = () => {
     logout();
     router.push('/');
   };
+
+  // Show loading while checking auth
+  if (isLoading || !isAuthenticated || userRole !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-off">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-off text-ink">
@@ -123,13 +142,5 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <main className="flex-1 p-8">{children}</main>
       </div>
     </div>
-  );
-}
-
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <AuthWrapper requiredRole="admin">
-      <AdminLayoutContent>{children}</AdminLayoutContent>
-    </AuthWrapper>
   );
 }
