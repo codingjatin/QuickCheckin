@@ -69,6 +69,28 @@ class ApiClient {
       body: JSON.stringify({ phone, role, otp }),
     });
   }
+
+  async createBooking(
+    restaurantId: string,
+    customerName: string,
+    customerPhone: string,
+    partySize: number
+  ) {
+    return this.request<{
+      message: string;
+      booking: {
+        id: string;
+        customerName: string;
+        customerPhone: string;
+        partySize: number;
+        waitTime: number;
+        estimatedSeatingTime: string;
+      };
+    }>(`/api/${restaurantId}/bookings`, {
+      method: 'POST',
+      body: JSON.stringify({ customerName, customerPhone, partySize }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);

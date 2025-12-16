@@ -1,17 +1,31 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useWaitlistStore } from '@/lib/store';
+import { useAuthStore } from '@/lib/auth-store';
 import { Customer } from '@/lib/types';
 import { useTranslation } from '@/lib/i18n';
 import { Clock, Users, MessageCircle, CheckCircle, X, Phone } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const { t } = useTranslation();
+  const { isAuthenticated, userRole } = useAuthStore();
+  
+  // Redirect to /auth if not authenticated or not admin
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/auth');
+    } else if (userRole !== 'admin') {
+      router.push('/kiosk');
+    }
+  }, [isAuthenticated, userRole, router]);
+
   const {
     customers,
     tables,
@@ -109,6 +123,11 @@ export default function AdminDashboard() {
         return status;
     }
   };
+
+  // Don't render dashboard until auth check is complete
+  if (!isAuthenticated || userRole !== 'admin') {
+    return null;
+  }
 
   return (
     <div className="space-y-8 text-ink">

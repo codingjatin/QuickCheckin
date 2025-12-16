@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Phone, ArrowRight, Home, LogOut } from 'lucide-react';
-import { useWaitlistStore } from '@/lib/store';
+import { CheckCircle, Phone, ArrowRight, Home, LogOut, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { AuthWrapper } from '@/components/auth/auth-wrapper';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { apiClient } from '@/lib/api-client';
+import { toast } from 'sonner';
 import Link from 'next/link';
 
 type KioskStep = 'party-size' | 'details' | 'confirmation' | 'success';
@@ -22,10 +23,15 @@ function KioskContent() {
   const [partySize, setPartySize] = useState<number>(0);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+1');
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [waitTime, setWaitTime] = useState<number>(0);
 
-  const addCustomer = useWaitlistStore((state) => state.addCustomer);
-  const { logout, phoneNumber } = useAuthStore();
+  const { logout, phoneNumber, restaurantData } = useAuthStore();
+  
+  // Get restaurant ID from auth or use a default
+  const restaurantId = restaurantData?.id || '675e3c5b2e4c8f001234abcd'; // TODO: Handle missing restaurant ID
 
   const handleLogout = () => {
     logout();
@@ -46,7 +52,7 @@ function KioskContent() {
 
     if (!phone.trim()) {
       newErrors.phone = t('pleaseEnterPhone');
-    } else if (!/^\+?[\d\s()-]{10,}$/.test(phone)) {
+    } else if (!/^\d{10,}$/.test(phone)) {
       newErrors.phone = t('pleaseEnterValidPhone');
     }
 
@@ -60,14 +66,36 @@ function KioskContent() {
     }
   };
 
-  const handleSubmit = () => {
-    addCustomer({
-      name,
-      phone,
-      partySize,
-      status: 'waiting',
-    });
-    setStep('success');
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      const fullPhone = `${countryCode}${phone}`;
+      
+      const { data, error } = await apiClient.createBooking(
+        restaurantId,
+        name,
+        fullPhone,
+        partySize
+      );
+
+      if (error) {
+        toast.error(error.message || 'Failed to create booking');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (data) {
+        setWaitTime(data.booking.waitTime);
+        setStep('success');
+        toast.success('Booking confirmed! SMS sent to your phone.');
+      }
+    } catch (err) {
+      toast.error('An error occurred while creating your booking');
+      console.error('Booking error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetFlow = () => {
@@ -172,12 +200,22 @@ function KioskContent() {
                       <label className="block text-lg font-medium mb-3 text-ink">
                         {t('phoneNumber')}
                       </label>
-                      <Input
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="(555) 123-4567"
-                        className="h-14 text-lg border-border focus-visible:ring-2 focus-visible:ring-primary"
-                      />
+                      <div className="flex gap-2">
+                        <select
+                          value={countryCode}
+                          onChange={(e) => setCountryCode(e.target.value)}
+                          className="h-14 px-3 rounded-md border-border border bg-panel text-lg font-mono focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                          <option value="+1">+1</option>
+                          <option value="+91">+91</option>
+                        </select>
+                        <Input
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                          placeholder="5551234567"
+                          className="flex-1 h-14 text-lg border-border focus-visible:ring-2 focus-visible:ring-primary"
+                        />
+                      </div>
                       {errors.phone && (
                         <p className="text-error text-sm mt-2">{errors.phone}</p>
                       )}
@@ -241,9 +279,17 @@ function KioskContent() {
                       <Button
                         size="lg"
                         onClick={handleSubmit}
+                        disabled={isSubmitting}
                         className="flex-1 h-14 text-lg bg-sage hover:bg-sage/90 text-ink"
                       >
-                        {t('joinWaitlist')}
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                            Creating booking...
+                          </>
+                        ) : (
+                          t('joinWaitlist')
+                        )}
                       </Button>
                     </div>
                   </CardContent>
@@ -263,7 +309,9 @@ function KioskContent() {
                   </p>
                   <div className="bg-off ring-1 ring-border rounded-xl2 p-6 mb-8">
                     <h3 className="font-semibold mb-2 text-ink">{t('currentWaitTime')}</h3>
-                    <p className="text-3xl font-bold text-primary">25-30 {t('minutes')}</p>
+                    <p className="text-3xl font-bold text-primary">
+                      {waitTime || 25}-{(waitTime || 25) + 5} {t('minutes')}
+                    </p>
                   </div>
                   <Button
                     size="lg"
