@@ -1,6 +1,8 @@
 'use client';
 
 import { create } from 'zustand';
+import { apiClient } from './api-client';
+import { toast } from 'sonner';
 
 export type UserRole = 'guest' | 'admin';
 
@@ -10,9 +12,10 @@ interface AuthState {
   phoneNumber: string;
   currentStep: 'login' | 'otp' | 'authenticated';
   otp: string;
-  generatedOtp: string;
-  login: (phone: string, role: UserRole) => void;
-  verifyOtp: (enteredOtp: string) => boolean;
+  isLoading: boolean;
+  restaurantData: any | null;
+  login: (phone: string, role: UserRole) => Promise<void>;
+  verifyOtp: (enteredOtp: string) => Promise<boolean>;
   logout: () => void;
   setOtp: (otp: string) => void;
 }
@@ -23,36 +26,59 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   phoneNumber: '',
   currentStep: 'login',
   otp: '',
-  generatedOtp: '',
+  isLoading: false,
+  restaurantData: null,
 
-  login: (phone: string, role: UserRole) => {
-    // Generate a random 4-digit OTP for demo
-    const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  login: async (phone: string, role: UserRole) => {
+    set({ isLoading: true });
     
+    const { data, error } = await apiClient.requestOTP(phone, role);
+    
+    set({ isLoading: false });
+    
+    if (error) {
+      toast.error(error.message || 'Failed to send OTP');
+      return;
+    }
+
     set({
       phoneNumber: phone,
       userRole: role,
       currentStep: 'otp',
-      generatedOtp,
       otp: '',
     });
 
-    // In demo, show the OTP in console for testing
-    console.log(`Demo OTP for ${phone}: ${generatedOtp}`);
+    toast.success('OTP sent to your phone number');
   },
 
-  verifyOtp: (enteredOtp: string) => {
-    const { generatedOtp } = get();
+  verifyOtp: async (enteredOtp: string) => {
+    const { phoneNumber, userRole } = get();
     
-    if (enteredOtp === generatedOtp) {
-      set({
-        isAuthenticated: true,
-        currentStep: 'authenticated',
-        otp: '',
-      });
-      return true;
+    if (!phoneNumber || !userRole) {
+      toast.error('Session expired. Please login again.');
+      return false;
     }
-    return false;
+
+    set({ isLoading: true });
+    
+    const { data, error } = await apiClient.verifyOTP(phoneNumber, userRole, enteredOtp);
+    
+    set({ isLoading: false });
+    
+    if (error) {
+      toast.error(error.message || 'Invalid OTP');
+      return false;
+    }
+
+    set({
+      isAuthenticated: true,
+      currentStep: 'authenticated',
+      otp: '',
+      restaurantData: data?.restaurant || null,
+    });
+
+    toast.success('Login successful!');
+    return true;
   },
 
   logout: () => {
@@ -62,7 +88,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       phoneNumber: '',
       currentStep: 'login',
       otp: '',
-      generatedOtp: '',
+      isLoading: false,
+      restaurantData: null,
     });
   },
 

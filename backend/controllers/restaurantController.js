@@ -3,8 +3,7 @@ const Table = require('../models/Table');
 const Booking = require('../models/Booking');
 const Session = require('../models/Session');
 const generateOTP = require('../utils/otpGenerator');
-const { sendSMS } = require('../utils/twilioService');
-const { formatPhoneNumber } = require('../utils/helpers');
+const { sendSMS, formatPhoneNumber } = require('../utils/telnyxService');
 
 // Restaurant Admin Login - Request OTP
 const requestLoginOTP = async (req, res) => {
@@ -39,10 +38,10 @@ const requestLoginOTP = async (req, res) => {
     const formattedPhone = formatPhoneNumber(phone);
 
     // Send OTP via SMS
-    const message = `Your QuickCheck login OTP is: ${otp}. It will expire in 10 minutes.`;
+    const message = `QuickCheck: Your verification code is ${otp}. Enter it on the screen to proceed.`;
     const smsSent = await sendSMS(formattedPhone, message);
 
-    if (!smsSent) {
+    if (!smsSent.success) {
       return res.status(500).json({ message: 'Failed to send OTP. Please try again.' });
     }
 
@@ -107,30 +106,30 @@ const verifyLoginOTP = async (req, res) => {
 const getDashboardData = async (req, res) => {
   try {
     const { restaurantId } = req.params;
-    
+
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant || !restaurant.isActive) {
       return res.status(404).json({ message: 'Restaurant not found or inactive.' });
     }
-    
+
     // Get current bookings
     const currentBookings = await Booking.find({ restaurantId, status: 'waiting' })
       .sort({ createdAt: 1 });
-    
+
     // Get table configuration
     const tables = await Table.find({ restaurantId });
-    
+
     // Calculate available tables
     const availableTables = tables.reduce((total, table) => {
       return total + (table.isAvailable ? table.quantity : 0);
     }, 0);
-    
+
     // Calculate total waiting customers
     const totalWaiting = currentBookings.length;
-    
+
     // Calculate average wait time
     const avgWaitTime = restaurant.avgWaitTime;
-    
+
     res.json({
       restaurant: {
         name: restaurant.name,
@@ -155,14 +154,14 @@ const updateTables = async (req, res) => {
   try {
     const { restaurantId } = req.params;
     const { tables } = req.body;
-    
+
     if (!Array.isArray(tables)) {
       return res.status(400).json({ message: 'Tables array is required.' });
     }
-    
+
     // Delete existing tables for this restaurant
     await Table.deleteMany({ restaurantId });
-    
+
     // Create new tables
     const tablePromises = tables.map(table => {
       return Table.create({
@@ -172,9 +171,9 @@ const updateTables = async (req, res) => {
         isAvailable: true
       });
     });
-    
+
     await Promise.all(tablePromises);
-    
+
     res.json({ message: 'Tables updated successfully' });
   } catch (error) {
     console.error('Update tables error:', error);
@@ -186,20 +185,20 @@ const updateTables = async (req, res) => {
 const updateLogo = async (req, res) => {
   try {
     const { restaurantId } = req.params;
-    
+
     if (!req.file) {
       return res.status(400).json({ message: 'Logo image is required.' });
     }
-    
+
     // Get the S3 URL from the uploaded file
     const logoUrl = req.file.location;
-    
+
     // Update restaurant logo
     await Restaurant.findByIdAndUpdate(restaurantId, { logo: logoUrl });
-    
-    res.json({ 
+
+    res.json({
       message: 'Logo updated successfully',
-      logoUrl 
+      logoUrl
     });
   } catch (error) {
     console.error('Update logo error:', error);

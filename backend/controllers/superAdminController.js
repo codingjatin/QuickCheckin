@@ -3,8 +3,7 @@ const SuperAdmin = require('../models/SuperAdmin');
 const Restaurant = require('../models/Restaurant');
 const Otp = require('../models/Otp');
 const generateOTP = require('../utils/otpGenerator');
-const { sendSMS } = require('../utils/twilioService');
-const { formatPhoneNumber } = require('../utils/helpers');
+const { sendSMS, formatPhoneNumber } = require('../utils/telnyxService');
 
 // Super Admin Login
 const login = async (req, res) => {

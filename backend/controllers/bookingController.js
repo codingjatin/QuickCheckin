@@ -3,7 +3,7 @@ const Restaurant = require('../models/Restaurant');
 const Session = require('../models/Session');
 const generateOTP = require('../utils/otpGenerator');
 const calculateWaitTime = require('../utils/waitTimeCalculator');
-const { sendSMS } = require('../utils/twilioService');
+const { sendSMS } = require('../utils/telnyxService');
 const { formatPhoneNumber } = require('../utils/helpers');
 
 // Create a new booking
@@ -95,7 +95,16 @@ const notifyCustomer = async (req, res) => {
 // Handle customer response
 const handleCustomerResponse = async (req, res) => {
   try {
-    const { from, body } = req.body;
+    // Telnyx webhook payload structure
+    const { data } = req.body;
+    
+    if (!data || !data.payload) {
+      return res.status(400).json({ message: 'Invalid webhook payload.' });
+    }
+
+    const { payload } = data;
+    const from = payload.from.phone_number;
+    const body = payload.text;
     
     if (!from || !body) {
       return res.status(400).json({ message: 'Phone number and message body are required.' });
@@ -103,12 +112,20 @@ const handleCustomerResponse = async (req, res) => {
     
     // Find the most recent booking from this phone number
     const booking = await Booking.findOne({
-      customerPhone: from.replace('+', ''),
+      customerPhone: from.replace('+', ''), // Adjust based on how you store phones
       status: 'notified'
     }).sort({ notificationSentAt: -1 }).populate('restaurantId');
     
     if (!booking) {
-      return res.status(404).json({ message: 'No active booking found for this phone number.' });
+      // Try with + prefix if stored that way
+       const bookingWithPlus = await Booking.findOne({
+        customerPhone: from,
+        status: 'notified'
+      }).sort({ notificationSentAt: -1 }).populate('restaurantId');
+
+      if (!bookingWithPlus) {
+          return res.status(404).json({ message: 'No active booking found for this phone number.' });
+      }
     }
     
     const response = body.trim().toUpperCase();

@@ -19,30 +19,60 @@ export default function AuthPage() {
   }, [isAuthenticated, userRole, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-off to-sage/10 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-off p-4 relative overflow-hidden">
+      {/* Left Fade */}
+      <div className="absolute left-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-r from-off to-transparent z-10 pointer-events-none" />
+      {/* Right Fade */}
+      <div className="absolute right-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-l from-off to-transparent z-10 pointer-events-none" />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md rounded-2xl border border-border bg-panel/70 backdrop-blur-xl shadow-2xl overflow-hidden"
+        className="w-full max-w-[1200px] grid grid-cols-1 md:grid-cols-2 bg-panel rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden"
       >
-        <div className="text-center pt-10 pb-6 px-6 border-b border-border/50 bg-gradient-to-b from-panel/50 to-transparent">
-          <div className="flex justify-center items-center gap-3 mb-3">
-            <ShieldCheck className="w-10 h-10 text-primary" />
-            <h1 className="text-3xl font-display font-extrabold text-ink tracking-tight">
-              QuickCheck
-            </h1>
+        {/* Left Side - Form */}
+        <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-primary/10 rounded-xl">
+                <ShieldCheck className="w-8 h-8 text-primary" />
+              </div>
+              <h1 className="text-2xl font-display font-bold text-ink tracking-tight">
+                QuickCheck
+              </h1>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
+              {currentStep === "otp" ? "Verify Code" : "Create an account"}
+            </h2>
+            <p className="text-muted text-lg">
+              {currentStep === "otp"
+                ? "Enter the code sent to your mobile"
+                : "Sign up and get 30 day free trial"}
+            </p>
           </div>
-          <p className="text-sm text-muted">
-            {currentStep === "otp"
-              ? "Verify your number to continue"
-              : "Welcome back — let’s sign you in"}
-          </p>
+
+          <div className="w-full max-w-sm">
+            {currentStep === "login" && <LoginForm />}
+            {currentStep === "otp" && <OtpForm />}
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-border/50 flex justify-between text-xs text-muted">
+             <span>Have any account? <span className="underline cursor-pointer hover:text-primary">Sign in</span></span>
+             <span className="underline cursor-pointer hover:text-primary">Terms & Conditions</span>
+          </div>
         </div>
 
-        <div className="px-6 py-8">
-          {currentStep === "login" && <LoginForm />}
-          {currentStep === "otp" && <OtpForm />}
+        {/* Right Side - Image */}
+        <div className="hidden md:block relative bg-sage/20">
+          <img
+            src="/Restaurant_Login_image.avif"
+            alt="Restaurant Team"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex flex-col justify-end p-12 text-white">
+             {/* Optional overlay content can go here if needed, keeping it clean for now as per image inspiration */}
+          </div>
         </div>
       </motion.div>
     </div>

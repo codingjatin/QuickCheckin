@@ -12,15 +12,16 @@ import { Phone, UserCircle2, ArrowRight } from "lucide-react";
 
 export function LoginForm() {
   const { t } = useTranslation();
+  const [countryCode, setCountryCode] = useState("+1");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | "">("");
   const [errors, setErrors] = useState<{ phone?: string; role?: string }>({});
-  const { login } = useAuthStore();
+  const { login, isLoading } = useAuthStore();
 
   const validateForm = () => {
     const e: { phone?: string; role?: string } = {};
     if (!phoneNumber.trim()) e.phone = t("pleaseEnterPhone");
-    else if (!/^\+?[\d\s()-]{10,}$/.test(phoneNumber))
+    else if (!/^\d{10,}$/.test(phoneNumber))
       e.phone = t("pleaseEnterValidPhone");
     if (!selectedRole) e.role = t("pleaseSelectAccessType");
     setErrors(e);
@@ -28,7 +29,10 @@ export function LoginForm() {
   };
 
   const handleContinue = () => {
-    if (validateForm()) login(phoneNumber, selectedRole as UserRole);
+    if (validateForm()) {
+      const fullPhone = `${countryCode}${phoneNumber}`;
+      login(fullPhone, selectedRole as UserRole);
+    }
   };
 
   return (
@@ -43,16 +47,34 @@ export function LoginForm() {
         <Label htmlFor="phone" className="text-sm font-medium text-ink">
           {t("mobileNumber")}
         </Label>
-        <div className="relative mt-2">
-          <Phone className="absolute left-3 top-3 h-5 w-5 text-muted" />
-          <Input
-            id="phone"
-            type="tel"
-            placeholder="+1 (555) 123-4567"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            className="pl-10 h-12 text-lg rounded-xl border-border focus-visible:ring-2 focus-visible:ring-primary"
-          />
+        <div className="flex gap-2 mt-2">
+          {/* Country Code Dropdown */}
+          <Select value={countryCode} onValueChange={setCountryCode}>
+            <SelectTrigger className="w-24 h-12 rounded-xl border-border focus-visible:ring-2 focus-visible:ring-primary">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="+1">
+                <span className="font-mono">+1</span>
+              </SelectItem>
+              <SelectItem value="+91">
+                <span className="font-mono">+91</span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Phone Number Input */}
+          <div className="relative flex-1">
+            <Phone className="absolute left-3 top-3 h-5 w-5 text-muted" />
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="5551234567"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+              className="pl-10 h-12 text-lg rounded-xl border-border focus-visible:ring-2 focus-visible:ring-primary"
+            />
+          </div>
         </div>
         {errors.phone && <p className="text-error text-sm mt-2">{errors.phone}</p>}
       </div>
@@ -87,14 +109,24 @@ export function LoginForm() {
       {/* CTA */}
       <Button
         onClick={handleContinue}
+        disabled={isLoading}
         className="w-full h-12 text-lg bg-primary text-white hover:bg-primary-600 rounded-xl shadow-md transition"
       >
-        {t("continue")}
-        <ArrowRight className="ml-2 h-5 w-5" />
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+            Sending...
+          </div>
+        ) : (
+          <>
+            {t("continue")}
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </>
+        )}
       </Button>
 
       <p className="text-center text-sm text-muted">
-        You’ll receive a 4-digit OTP via SMS to verify your number.
+        You'll receive a 6-digit OTP via SMS to verify your number.
       </p>
     </motion.div>
   );

@@ -13,23 +13,28 @@ export function OtpForm() {
   const { t } = useTranslation();
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
-  const [isVerifying, setIsVerifying] = useState(false);
-  const { phoneNumber, userRole, generatedOtp, verifyOtp, logout } = useAuthStore();
+  const { phoneNumber, userRole, verifyOtp, logout, isLoading } = useAuthStore();
 
   useEffect(() => {
     document.getElementById("otp-input")?.focus();
   }, []);
 
   const handleVerify = async () => {
-    if (otp.length !== 4) return setError(t("pleaseEnterCompleteOtp"));
-    setIsVerifying(true);
-    await new Promise((r) => setTimeout(r, 800));
-    const valid = verifyOtp(otp);
+    if (otp.length !== 6) return setError(t("pleaseEnterCompleteOtp"));
+    setError("");
+    
+    const valid = await verifyOtp(otp);
+    
     if (!valid) {
       setError(t("invalidOtp"));
       setOtp("");
     }
-    setIsVerifying(false);
+  };
+
+  const handleResendOTP = async () => {
+    // TODO: Implement resend OTP logic
+    setOtp("");
+    setError("");
   };
 
   return (
@@ -54,28 +59,21 @@ export function OtpForm() {
         <Input
           id="otp-input"
           value={otp}
-          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))}
-          maxLength={4}
+          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+          maxLength={6}
           inputMode="numeric"
           className="mt-2 text-center text-2xl tracking-widest font-mono h-12 rounded-xl border-border focus-visible:ring-2 focus-visible:ring-primary"
         />
         {error && <p className="text-error text-sm mt-2">{error}</p>}
       </div>
 
-      <div className="bg-off/50 rounded-lg border border-border p-3 text-center text-sm">
-        <p className="text-muted">
-          {t("demoMode")} — {t("yourOtpIs")}{" "}
-          <span className="font-mono font-bold text-ink">{generatedOtp}</span>
-        </p>
-      </div>
-
       <div className="space-y-3">
         <Button
           onClick={handleVerify}
-          disabled={isVerifying}
+          disabled={isLoading || otp.length !== 6}
           className="w-full h-12 text-lg bg-primary text-white hover:bg-primary-600 rounded-xl shadow transition"
         >
-          {isVerifying ? (
+          {isLoading ? (
             <div className="flex items-center justify-center gap-2">
               <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
               {t("verifying")}
@@ -91,6 +89,7 @@ export function OtpForm() {
         <Button
           variant="outline"
           onClick={logout}
+          disabled={isLoading}
           className="w-full h-12 text-lg border-border text-ink hover:bg-off rounded-xl"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
@@ -104,6 +103,13 @@ export function OtpForm() {
           <span className="font-medium text-ink capitalize">{t(userRole || "guest")}</span>{" "}
           {t("panel")}
         </p>
+        <button
+          onClick={handleResendOTP}
+          disabled={isLoading}
+          className="mt-2 text-primary hover:underline disabled:opacity-50"
+        >
+          Didn't receive code? Resend
+        </button>
       </div>
     </motion.div>
   );
