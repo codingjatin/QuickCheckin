@@ -2,10 +2,10 @@ const Restaurant = require('../models/Restaurant');
 const Table = require('../models/Table');
 const Booking = require('../models/Booking');
 const Session = require('../models/Session');
+const Message = require('../models/Message');
 const jwt = require('jsonwebtoken');
 const generateOTP = require('../utils/otpGenerator');
 const { sendSMS, formatPhoneNumber } = require('../utils/telnyxService');
-
 
 // Restaurant Admin Login - Request OTP
 const requestLoginOTP = async (req, res) => {
@@ -20,27 +20,30 @@ const requestLoginOTP = async (req, res) => {
       return res.status(400).json({ message: 'Invalid role. Must be admin or guest.' });
     }
 
+    // Find restaurant by phone
     const restaurant = await Restaurant.findOne({ phone });
-    if (!restaurant || !restaurant.isActive) {
-      return res.status(404).json({ message: 'Account not found or not activated.' });
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found.' });
     }
 
     // Generate OTP
     const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    // Save session with OTP
-    await Session.findOneAndUpdate(
-      { restaurantId: restaurant._id, phone, role },
-      { otp, expiresAt },
-      { upsert: true, new: true }
-    );
-
-    // Format phone number for SMS
-    const formattedPhone = formatPhoneNumber(phone);
+    // Store OTP in session
+    const session = new Session({
+      restaurantId: restaurant._id,
+      phone,
+      role,
+      otp,
+      expiresAt
+    });
+    await session.save();
 
     // Send OTP via SMS
-    const message = `QuickCheck: Your verification code is ${otp}. Enter it on the screen to proceed.`;
+    const formattedPhone = formatPhoneNumber(phone);
+    const message = `Your QuickCheck login OTP is: ${otp}. Valid for 10 minutes.`;
+    
     const smsSent = await sendSMS(formattedPhone, message);
 
     if (!smsSent.success) {
@@ -89,10 +92,10 @@ const verifyLoginOTP = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      {
+      { 
         restaurantId: restaurant._id,
         phone,
-        role
+        role 
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRE }
@@ -116,7 +119,138 @@ const verifyLoginOTP = async (req, res) => {
   }
 };
 
-// Get restaurant dashboard data
+// Get restaurant settings
+const getSettings = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found.' });
+    }
+
+    // Get tables
+    const tables = await Table.find({ restaurantId, isActive: true }).sort({ tableNumber: 1 });
+
+    res.json({
+      settings: {
+        // Read-only fields
+        name: restaurant.name,
+        phone: restaurant.phone,
+        address: restaurant.address,
+        city: restaurant.city,
+        logo: restaurant.logo,
+        // Editable fields
+        gracePeriodMinutes: restaurant.gracePeriodMinutes,
+        reminderDelayMinutes: restaurant.reminderDelayMinutes,
+        allowedPartySizes: restaurant.allowedPartySizes,
+        smsTemplates: restaurant.smsTemplates
+      },
+      tables
+    });
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({ message: 'Server error fetching settings.' });
+  }
+};
+
+// Update restaurant settings
+const updateSettings = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+    const { gracePeriodMinutes, reminderDelayMinutes, allowedPartySizes, smsTemplates } = req.body;
+
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found.' });
+    }
+
+    // Only update allowed fields (not name, phone, address)
+    if (gracePeriodMinutes !== undefined) {
+      restaurant.gracePeriodMinutes = Math.min(60, Math.max(5, gracePeriodMinutes));
+    }
+    if (reminderDelayMinutes !== undefined) {
+      restaurant.reminderDelayMinutes = Math.min(30, Math.max(3, reminderDelayMinutes));
+    }
+    if (allowedPartySizes !== undefined) {
+      restaurant.allowedPartySizes = allowedPartySizes;
+    }
+    if (smsTemplates !== undefined) {
+      restaurant.smsTemplates = { ...restaurant.smsTemplates, ...smsTemplates };
+    }
+
+    await restaurant.save();
+
+    res.json({ 
+      message: 'Settings updated successfully',
+      settings: {
+        gracePeriodMinutes: restaurant.gracePeriodMinutes,
+        reminderDelayMinutes: restaurant.reminderDelayMinutes,
+        allowedPartySizes: restaurant.allowedPartySizes,
+        smsTemplates: restaurant.smsTemplates
+      }
+    });
+  } catch (error) {
+    console.error('Update settings error:', error);
+    res.status(500).json({ message: 'Server error updating settings.' });
+  }
+};
+
+// Update tables configuration
+const updateTables = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+    const { tables } = req.body;
+
+    if (!Array.isArray(tables)) {
+      return res.status(400).json({ message: 'Tables array is required.' });
+    }
+
+    // Get existing table IDs to track deletions
+    const existingTables = await Table.find({ restaurantId });
+    const existingIds = existingTables.map(t => t._id.toString());
+    const newIds = tables.filter(t => t.id).map(t => t.id);
+
+    // Delete removed tables
+    const toDelete = existingIds.filter(id => !newIds.includes(id));
+    if (toDelete.length > 0) {
+      await Table.deleteMany({ _id: { $in: toDelete } });
+    }
+
+    // Update or create tables
+    for (const tableData of tables) {
+      if (tableData.id) {
+        // Update existing
+        await Table.findByIdAndUpdate(tableData.id, {
+          tableNumber: tableData.tableNumber,
+          capacity: tableData.capacity,
+          isActive: tableData.isActive !== false
+        });
+      } else {
+        // Create new
+        await Table.create({
+          restaurantId,
+          tableNumber: tableData.tableNumber,
+          capacity: tableData.capacity,
+          status: 'available',
+          isActive: true
+        });
+      }
+    }
+
+    const updatedTables = await Table.find({ restaurantId, isActive: true }).sort({ tableNumber: 1 });
+
+    res.json({ 
+      message: 'Tables updated successfully',
+      tables: updatedTables
+    });
+  } catch (error) {
+    console.error('Update tables error:', error);
+    res.status(500).json({ message: 'Server error updating tables.' });
+  }
+};
+
+// Get restaurant dashboard data (legacy)
 const getDashboardData = async (req, res) => {
   try {
     const { restaurantId } = req.params;
@@ -127,22 +261,18 @@ const getDashboardData = async (req, res) => {
     }
 
     // Get current bookings
-    const currentBookings = await Booking.find({ restaurantId, status: 'waiting' })
-      .sort({ createdAt: 1 });
+    const currentBookings = await Booking.find({ 
+      restaurantId, 
+      status: { $in: ['waiting', 'notified', 'confirmed'] } 
+    }).sort({ createdAt: 1 });
 
     // Get table configuration
-    const tables = await Table.find({ restaurantId });
+    const tables = await Table.find({ restaurantId, isActive: true });
 
     // Calculate available tables
-    const availableTables = tables.reduce((total, table) => {
-      return total + (table.isAvailable ? table.quantity : 0);
-    }, 0);
-
-    // Calculate total waiting customers
+    const availableTables = tables.filter(t => t.status === 'available').length;
     const totalWaiting = currentBookings.length;
-
-    // Calculate average wait time
-    const avgWaitTime = restaurant.avgWaitTime;
+    const avgWaitTime = restaurant.avgWaitTime || 15;
 
     res.json({
       restaurant: {
@@ -163,35 +293,49 @@ const getDashboardData = async (req, res) => {
   }
 };
 
-// Update restaurant tables configuration
-const updateTables = async (req, res) => {
+// Get messages for a restaurant
+const getMessages = async (req, res) => {
   try {
     const { restaurantId } = req.params;
-    const { tables } = req.body;
+    const { customerPhone, limit = 50 } = req.query;
 
-    if (!Array.isArray(tables)) {
-      return res.status(400).json({ message: 'Tables array is required.' });
+    const query = { restaurantId };
+    if (customerPhone) {
+      query.customerPhone = { $regex: customerPhone, $options: 'i' };
     }
 
-    // Delete existing tables for this restaurant
-    await Table.deleteMany({ restaurantId });
+    const messages = await Message.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
 
-    // Create new tables
-    const tablePromises = tables.map(table => {
-      return Table.create({
-        restaurantId,
-        capacity: table.capacity,
-        quantity: table.quantity,
-        isAvailable: true
-      });
+    // Group by customer phone for conversation view
+    const conversations = {};
+    messages.forEach(msg => {
+      const phone = msg.customerPhone;
+      if (!conversations[phone]) {
+        conversations[phone] = {
+          customerPhone: phone,
+          customerName: msg.customerName,
+          messages: [],
+          lastMessage: null
+        };
+      }
+      conversations[phone].messages.push(msg);
     });
 
-    await Promise.all(tablePromises);
+    // Sort conversations by last message time
+    const sortedConversations = Object.values(conversations)
+      .map(conv => ({
+        ...conv,
+        lastMessage: conv.messages[0],
+        messages: conv.messages.reverse()
+      }))
+      .sort((a, b) => new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt));
 
-    res.json({ message: 'Tables updated successfully' });
+    res.json({ conversations: sortedConversations });
   } catch (error) {
-    console.error('Update tables error:', error);
-    res.status(500).json({ message: 'Server error updating tables.' });
+    console.error('Get messages error:', error);
+    res.status(500).json({ message: 'Server error fetching messages.' });
   }
 };
 
@@ -204,10 +348,7 @@ const updateLogo = async (req, res) => {
       return res.status(400).json({ message: 'Logo image is required.' });
     }
 
-    // Get the S3 URL from the uploaded file
     const logoUrl = req.file.location;
-
-    // Update restaurant logo
     await Restaurant.findByIdAndUpdate(restaurantId, { logo: logoUrl });
 
     res.json({
@@ -223,7 +364,10 @@ const updateLogo = async (req, res) => {
 module.exports = {
   requestLoginOTP,
   verifyLoginOTP,
+  getSettings,
+  updateSettings,
   getDashboardData,
   updateTables,
-  updateLogo
+  updateLogo,
+  getMessages
 };

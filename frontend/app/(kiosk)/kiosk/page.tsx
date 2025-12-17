@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Phone, ArrowRight, Home, LogOut, Loader2 } from 'lucide-react';
+import { CheckCircle, Phone, ArrowRight, Home, LogOut, Loader2, Users } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { AuthWrapper } from '@/components/auth/auth-wrapper';
 import { useTranslation } from '@/lib/i18n';
@@ -14,24 +14,49 @@ import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
-type KioskStep = 'party-size' | 'details' | 'confirmation' | 'success';
+type KioskStep = 'party-size' | 'details' | 'confirmation' | 'success' | 'custom-request';
 
 function KioskContent() {
   const { t } = useTranslation();
   const router = useRouter();
   const [step, setStep] = useState<KioskStep>('party-size');
   const [partySize, setPartySize] = useState<number>(0);
+  const [isCustom, setIsCustom] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [countryCode, setCountryCode] = useState('+1');
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [waitTime, setWaitTime] = useState<number>(0);
+  const [allowedPartySizes, setAllowedPartySizes] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8]);
+  const [loadingSettings, setLoadingSettings] = useState(true);
 
   const { logout, phoneNumber, restaurantData } = useAuthStore();
   
-  // Get restaurant ID from auth or use a default
-  const restaurantId = restaurantData?.id || '675e3c5b2e4c8f001234abcd'; // TODO: Handle missing restaurant ID
+  const restaurantId = restaurantData?.id || '';
+
+  // Fetch allowed party sizes from settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!restaurantId) {
+        setLoadingSettings(false);
+        return;
+      }
+      
+      try {
+        const result = await apiClient.getSettings(restaurantId);
+        if (result.data?.settings?.allowedPartySizes) {
+          setAllowedPartySizes(result.data.settings.allowedPartySizes);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      } finally {
+        setLoadingSettings(false);
+      }
+    };
+
+    fetchSettings();
+  }, [restaurantId]);
 
   const handleLogout = () => {
     logout();
@@ -40,7 +65,13 @@ function KioskContent() {
 
   const handlePartySizeSelect = (size: number) => {
     setPartySize(size);
+    setIsCustom(false);
     setStep('details');
+  };
+
+  const handleCustomSelect = () => {
+    setIsCustom(true);
+    setStep('custom-request');
   };
 
   const validateDetails = () => {
@@ -101,6 +132,7 @@ function KioskContent() {
   const resetFlow = () => {
     setStep('party-size');
     setPartySize(0);
+    setIsCustom(false);
     setName('');
     setPhone('');
     setErrors({});
@@ -151,28 +183,123 @@ function KioskContent() {
                     <p className="text-muted">{t('selectPartySize')}</p>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <div className="grid grid-cols-5 gap-4">
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((size) => (
+                    {loadingSettings ? (
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-5 gap-4 mb-6">
+                          {allowedPartySizes.map((size) => (
+                            <Button
+                              key={size}
+                              size="lg"
+                              variant={partySize === size ? 'default' : 'outline'}
+                              className={`h-20 text-2xl font-bold ${
+                                partySize === size
+                                  ? 'bg-primary hover:bg-primary-600 text-white'
+                                  : 'border-ink/15 text-ink hover:bg-off'
+                              }`}
+                              onClick={() => handlePartySizeSelect(size)}
+                            >
+                              {size}
+                            </Button>
+                          ))}
+                        </div>
+                        {/* Custom Option */}
                         <Button
-                          key={size}
                           size="lg"
-                          variant={partySize === size ? 'default' : 'outline'}
-                          className={`h-20 text-2xl font-bold ${
-                            partySize === size
-                              ? 'bg-primary hover:bg-primary-600 text-white'
-                              : 'border-ink/15 text-ink hover:bg-off'
-                          }`}
-                          onClick={() => handlePartySizeSelect(size)}
+                          variant="outline"
+                          className="w-full h-16 text-lg font-medium border-2 border-dashed border-primary/50 text-primary hover:bg-primary/5"
+                          onClick={handleCustomSelect}
                         >
-                          {size}
+                          <Users className="h-5 w-5 mr-2" />
+                          Custom Party Size (Larger Groups)
                         </Button>
-                      ))}
-                    </div>
+                      </>
+                    )}
                   </CardContent>
                 </div>
               )}
 
+              {step === 'custom-request' && (
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Users className="h-10 w-10 text-primary" />
+                  </div>
+                  <h2 className="text-2xl font-bold mb-4 text-ink">
+                    Large Party Request
+                  </h2>
+                  <p className="text-lg text-muted mb-6">
+                    For larger groups, our executive will contact you shortly to arrange the best seating.
+                  </p>
+                  
+                  <div className="space-y-4 mb-8">
+                    <div>
+                      <label className="block text-lg font-medium mb-2 text-ink">Your Name</label>
+                      <Input
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Enter your name"
+                        className="h-14 text-lg border-border focus-visible:ring-2 focus-visible:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-lg font-medium mb-2 text-ink">Phone Number</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={countryCode}
+                          onChange={(e) => setCountryCode(e.target.value)}
+                          className="h-14 px-3 rounded-md border-border border bg-panel text-lg font-mono"
+                        >
+                          <option value="+1">+1</option>
+                          <option value="+91">+91</option>
+                        </select>
+                        <Input
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                          placeholder="5551234567"
+                          className="flex-1 h-14 text-lg border-border focus-visible:ring-2 focus-visible:ring-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-off ring-1 ring-border rounded-xl p-4 mb-6">
+                    <p className="text-sm text-muted">
+                      📞 An executive will call you within 5 minutes to discuss your party size and seating preferences.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => setStep('party-size')}
+                      className="flex-1 h-14 text-lg border-ink/15 text-ink hover:bg-off"
+                    >
+                      {t('back')}
+                    </Button>
+                    <Button
+                      size="lg"
+                      onClick={() => {
+                        if (name && phone) {
+                          toast.success('Request submitted! Our executive will contact you shortly.');
+                          resetFlow();
+                        } else {
+                          toast.error('Please enter your name and phone number');
+                        }
+                      }}
+                      className="flex-1 h-14 text-lg bg-primary hover:bg-primary-600 text-white"
+                    >
+                      Request Call
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {step === 'details' && (
+
                 <div>
                   <CardHeader className="text-center p-0 mb-8">
                     <CardTitle className="text-2xl mb-2 text-ink">

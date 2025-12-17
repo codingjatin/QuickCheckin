@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/database');
+const sseEmitter = require('./utils/sseEmitter');
 require('dotenv').config();
 
 const superAdminRoutes = require('./routes/superAdmin');
@@ -15,6 +16,9 @@ const app = express();
 
 // --- DB ---
 connectDB();
+
+// Register SSE emitter for use in controllers
+app.set('sseEmitter', sseEmitter);
 
 // --- Proxy awareness (needed behind App Runner/ELB for rate limits & IPs) ---
 app.set('trust proxy', 1);

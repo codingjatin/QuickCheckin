@@ -1,49 +1,78 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useWaitlistStore } from '@/lib/store';
-import { MessageSquare, Send, Phone, Clock, Search } from 'lucide-react';
+import { useAuthStore } from '@/lib/auth-store';
+import { apiClient, Conversation, Message } from '@/lib/api-client';
+import { useSSE } from '@/hooks/useSSE';
+import { MessageSquare, Send, Phone, Clock, Search, Loader2, Wifi, WifiOff } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function MessagesPage() {
-  const { messages, customers, sendSMS } = useWaitlistStore();
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
-  const [newMessage, setNewMessage] = useState('');
+  const { restaurantData } = useAuthStore();
+  const restaurantId = restaurantData?.id;
+
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredMessages = messages.filter((message) => {
-    const customer = customers.find((c) => c.id === message.customerId);
+  // Fetch messages from backend
+  const fetchMessages = useCallback(async () => {
+    if (!restaurantId) return;
+    
+    try {
+      const result = await apiClient.getMessages(restaurantId);
+      if (result.data) {
+        setConversations(result.data.conversations);
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [restaurantId]);
+
+  // SSE handler for new messages
+  const handleNewMessage = useCallback(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  // Connect to SSE for real-time updates
+  const { isConnected } = useSSE({
+    restaurantId: restaurantId || '',
+    onNewMessage: handleNewMessage,
+    playSound: false
+  });
+
+  // Initial load
+  useEffect(() => {
+    fetchMessages();
+    // Poll every 30 seconds as backup
+    const interval = setInterval(fetchMessages, 30000);
+    return () => clearInterval(interval);
+  }, [fetchMessages]);
+
+  const selectedConversation = conversations.find(c => c.customerPhone === selectedPhone);
+
+  const filteredConversations = conversations.filter((conv) => {
+    const q = searchTerm.toLowerCase();
     return (
-      customer?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer?.phone.includes(searchTerm) ||
-      message.message.toLowerCase().includes(searchTerm.toLowerCase())
+      conv.customerName?.toLowerCase().includes(q) ||
+      conv.customerPhone.includes(q) ||
+      conv.messages.some(m => m.content.toLowerCase().includes(q))
     );
   });
 
-  const getCustomerMessages = (customerId: string) =>
-    messages
-      .filter((m) => m.customerId === customerId)
-      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-
-  const getCustomerForMessage = (customerId: string) =>
-    customers.find((c) => c.id === customerId);
-
-  const handleSendMessage = () => {
-    if (selectedCustomerId && newMessage.trim()) {
-      sendSMS(selectedCustomerId, newMessage, 'notification');
-      setNewMessage('');
-    }
-  };
-
-  // Token-based badge colors
   const getMessageTypeColor = (type: string) => {
     switch (type) {
-      case 'notification':
+      case 'confirmation':
         return 'bg-info/10 text-info';
+      case 'tableReady':
+        return 'bg-primary/10 text-primary';
       case 'reminder':
         return 'bg-secondary/10 text-secondary-600';
       case 'response':
@@ -55,12 +84,35 @@ export default function MessagesPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 text-ink">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-display font-bold mb-2">Message Center</h1>
-        <p className="text-muted">View and manage SMS communications with customers</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold mb-2">Message Center</h1>
+          <p className="text-muted">View SMS communications with customers</p>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          {isConnected ? (
+            <>
+              <Wifi className="h-4 w-4 text-success" />
+              <span className="text-success">Live</span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="h-4 w-4 text-muted" />
+              <span className="text-muted">Connecting...</span>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Search and Stats */}
@@ -76,211 +128,146 @@ export default function MessagesPage() {
         </div>
         <div className="flex gap-6">
           <div className="text-center">
-            <p className="text-2xl font-bold">{messages.filter((m) => m.direction === 'outgoing').length}</p>
+            <p className="text-2xl font-bold">
+              {conversations.reduce((sum, c) => sum + c.messages.filter(m => m.direction === 'outbound').length, 0)}
+            </p>
             <p className="text-xs text-muted">Sent Today</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-success">{messages.filter((m) => m.direction === 'incoming').length}</p>
+            <p className="text-2xl font-bold text-success">
+              {conversations.reduce((sum, c) => sum + c.messages.filter(m => m.direction === 'inbound').length, 0)}
+            </p>
             <p className="text-xs text-muted">Responses</p>
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Conversation List */}
-        <div className="lg:col-span-1">
-          <Card className="bg-panel border border-border shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Conversations</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-border">
-                {customers
-                  .filter((c) => messages.some((m) => m.customerId === c.id))
-                  .map((customer) => {
-                    const customerMessages = getCustomerMessages(customer.id);
-                    const lastMessage = customerMessages[customerMessages.length - 1];
-                    const isSelected = selectedCustomerId === customer.id;
+      {conversations.length === 0 ? (
+        <Card className="bg-panel border border-border shadow-soft">
+          <CardContent className="py-12 text-center">
+            <MessageSquare className="h-12 w-12 text-muted mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No messages yet</h3>
+            <p className="text-muted">SMS conversations will appear here when customers are notified</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Conversation List */}
+          <div className="lg:col-span-1">
+            <Card className="bg-panel border border-border shadow-soft">
+              <CardHeader>
+                <CardTitle className="text-lg">Conversations</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-border max-h-[600px] overflow-y-auto">
+                  {filteredConversations.map((conv) => {
+                    const lastMessage = conv.lastMessage;
+                    const isSelected = selectedPhone === conv.customerPhone;
 
                     return (
                       <div
-                        key={customer.id}
+                        key={conv.customerPhone}
                         className={`p-4 cursor-pointer transition-colors ${
                           isSelected
                             ? 'bg-primary/5 border-l-4 border-l-primary'
                             : 'hover:bg-off'
                         }`}
-                        onClick={() => setSelectedCustomerId(customer.id)}
+                        onClick={() => setSelectedPhone(conv.customerPhone)}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-medium">{customer.name}</h3>
-                          <Badge className={`${getMessageTypeColor(lastMessage.type)} border-0`}>
-                            {lastMessage.type}
+                          <h3 className="font-medium">{conv.customerName || 'Unknown'}</h3>
+                          <Badge className={`${getMessageTypeColor(lastMessage.messageType)} border-0`}>
+                            {lastMessage.messageType}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted truncate mb-1">{lastMessage.message}</p>
+                        <p className="text-sm text-muted truncate mb-1">{lastMessage.content}</p>
                         <div className="flex items-center justify-between text-xs text-muted">
                           <span className="flex items-center">
                             <Phone className="h-3 w-3 mr-1" />
-                            {customer.phone}
+                            {conv.customerPhone}
                           </span>
                           <span>
-                            {formatDistanceToNow(lastMessage.timestamp, { addSuffix: true })}
+                            {formatDistanceToNow(new Date(lastMessage.createdAt), { addSuffix: true })}
                           </span>
                         </div>
                       </div>
                     );
                   })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Message Thread */}
-        <div className="lg:col-span-2">
-          <Card className="h-[600px] flex flex-col bg-panel border border-border shadow-soft">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <MessageSquare className="h-5 w-5 mr-2 text-primary" />
-                {selectedCustomerId
-                  ? `Conversation with ${getCustomerForMessage(selectedCustomerId)?.name}`
-                  : 'Select a conversation'}
-              </CardTitle>
-              {selectedCustomerId && (
-                <CardDescription className="text-muted">
-                  {getCustomerForMessage(selectedCustomerId)?.phone}
-                </CardDescription>
-              )}
-            </CardHeader>
+          {/* Message Thread */}
+          <div className="lg:col-span-2">
+            <Card className="h-[600px] flex flex-col bg-panel border border-border shadow-soft">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <MessageSquare className="h-5 w-5 mr-2 text-primary" />
+                  {selectedConversation
+                    ? `Conversation with ${selectedConversation.customerName || selectedConversation.customerPhone}`
+                    : 'Select a conversation'}
+                </CardTitle>
+                {selectedConversation && (
+                  <CardDescription className="text-muted">
+                    {selectedConversation.customerPhone}
+                  </CardDescription>
+                )}
+              </CardHeader>
 
-            <CardContent className="flex-1 flex flex-col">
-              {selectedCustomerId ? (
-                <>
-                  {/* Message History */}
-                  <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-                    {getCustomerMessages(selectedCustomerId).map((message) => (
+              <CardContent className="flex-1 flex flex-col">
+                {selectedConversation ? (
+                  <div className="flex-1 overflow-y-auto space-y-4">
+                    {selectedConversation.messages.map((message) => (
                       <div
-                        key={message.id}
-                        className={`flex ${message.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}
+                        key={message._id}
+                        className={`flex ${message.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
                           className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            message.direction === 'outgoing'
+                            message.direction === 'outbound'
                               ? 'bg-primary text-white'
                               : 'bg-off ring-1 ring-border text-ink'
                           }`}
                         >
-                          <p className="text-sm">{message.message}</p>
+                          <p className="text-sm">{message.content}</p>
                           <div className="flex items-center justify-between mt-2">
                             <Badge
                               variant="outline"
                               className={`text-xs ${
-                                message.direction === 'outgoing'
+                                message.direction === 'outbound'
                                   ? 'border-white/30 text-white/90'
                                   : 'border-border text-muted'
                               }`}
                             >
-                              {message.type}
+                              {message.messageType}
                             </Badge>
                             <span
                               className={`text-xs ${
-                                message.direction === 'outgoing' ? 'text-white/70' : 'text-muted'
+                                message.direction === 'outbound' ? 'text-white/70' : 'text-muted'
                               }`}
                             >
-                              {formatDistanceToNow(message.timestamp, { addSuffix: true })}
+                              {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
                             </span>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
-
-                  {/* Send Message */}
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Type a message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                      className="flex-1 border-border focus-visible:ring-2 focus-visible:ring-primary"
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={!newMessage.trim()}
-                      className="bg-primary hover:bg-primary-600 text-white"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="text-center">
-                    <MessageSquare className="h-12 w-12 text-muted mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No conversation selected</h3>
-                    <p className="text-muted">Select a customer from the list to view their message history</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* All Messages List */}
-      <Card className="bg-panel border border-border shadow-soft">
-        <CardHeader>
-          <CardTitle>All Messages</CardTitle>
-          <CardDescription className="text-muted">Complete SMS activity log</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredMessages.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageSquare className="h-12 w-12 text-muted mx-auto mb-4" />
-                <p className="text-muted">No messages found</p>
-              </div>
-            ) : (
-              filteredMessages.map((message) => {
-                const customer = getCustomerForMessage(message.customerId);
-                return (
-                  <div key={message.id} className="flex items-start space-x-4 p-4 border border-border rounded-lg bg-off">
-                    <div
-                      className={`w-3 h-3 rounded-full mt-2 ${
-                        message.direction === 'outgoing' ? 'bg-primary' : 'bg-success'
-                      }`}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center flex-wrap gap-2 mb-1">
-                        <p className="font-medium">{customer?.name || 'Unknown'}</p>
-                        <Badge className={`${getMessageTypeColor(message.type)} border-0`}>
-                          {message.type}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs border-border text-muted">
-                          {message.direction === 'outgoing' ? 'Sent' : 'Received'}
-                        </Badge>
-                      </div>
-
-                      <p className="mb-2">{message.message}</p>
-
-                      <div className="flex items-center gap-4 text-sm text-muted">
-                        <span className="flex items-center">
-                          <Phone className="h-3 w-3 mr-1" />
-                          {customer?.phone}
-                        </span>
-                        <span className="flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {formatDistanceToNow(message.timestamp, { addSuffix: true })}
-                        </span>
-                      </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <MessageSquare className="h-12 w-12 text-muted mx-auto mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No conversation selected</h3>
+                      <p className="text-muted">Select a customer from the list to view their message history</p>
                     </div>
                   </div>
-                );
-              })
-            )}
+                )}
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
     </div>
   );
 }

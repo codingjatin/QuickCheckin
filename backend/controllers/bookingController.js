@@ -1,10 +1,41 @@
 const Booking = require('../models/Booking');
 const Restaurant = require('../models/Restaurant');
-const Session = require('../models/Session');
-const generateOTP = require('../utils/otpGenerator');
-const calculateWaitTime = require('../utils/waitTimeCalculator');
+const Table = require('../models/Table');
+const Message = require('../models/Message');
+const PartyDuration = require('../models/PartyDuration');
+const { calculateWaitTime, getWaitTimeRange } = require('../utils/waitTimeCalculator');
 const { sendSMS } = require('../utils/telnyxService');
 const { formatPhoneNumber } = require('../utils/helpers');
+
+// Helper to log SMS to Message model
+const logMessage = async (restaurantId, bookingId, customerPhone, customerName, direction, messageType, content, telnyxMessageId = null) => {
+  try {
+    const message = new Message({
+      restaurantId,
+      bookingId,
+      customerPhone,
+      customerName,
+      direction,
+      messageType,
+      content,
+      telnyxMessageId,
+      status: direction === 'outbound' ? 'sent' : 'received'
+    });
+    await message.save();
+    return message;
+  } catch (error) {
+    console.error('Error logging message:', error);
+  }
+};
+
+// Helper to replace template variables
+const formatSmsTemplate = (template, variables) => {
+  let result = template;
+  for (const [key, value] of Object.entries(variables)) {
+    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+  }
+  return result;
+};
 
 // Create a new booking
 const createBooking = async (req, res) => {
@@ -17,8 +48,9 @@ const createBooking = async (req, res) => {
       return res.status(404).json({ message: 'Restaurant not found or inactive.' });
     }
     
-    // Calculate wait time
-    const waitTime = await calculateWaitTime(restaurantId, partySize);
+    // Calculate wait time using smart calculator
+    const waitResult = await calculateWaitTime(restaurantId, partySize);
+    const waitTime = waitResult.waitTime;
     const estimatedSeatingTime = new Date(Date.now() + waitTime * 60 * 1000);
     
     // Create booking
@@ -33,11 +65,35 @@ const createBooking = async (req, res) => {
     
     await booking.save();
     
-    // Send confirmation SMS to customer
+    // Format and send confirmation SMS
     const formattedPhone = formatPhoneNumber(customerPhone);
-    const message = `Hi ${customerName}, your table for ${partySize} is confirmed at ${restaurant.name}. Your estimated wait time is ${waitTime} minutes.`;
+    const message = formatSmsTemplate(restaurant.smsTemplates?.confirmation || 
+      'Hi {name}, your table for {partySize} is confirmed at {restaurant}. Estimated wait: {waitTime} minutes.', {
+      name: customerName,
+      partySize: partySize.toString(),
+      restaurant: restaurant.name,
+      waitTime: waitTime.toString()
+    });
     
-    await sendSMS(formattedPhone, message);
+    const smsResult = await sendSMS(formattedPhone, message);
+    
+    // Log the SMS
+    await logMessage(
+      restaurantId,
+      booking._id,
+      customerPhone,
+      customerName,
+      'outbound',
+      'confirmation',
+      message,
+      smsResult?.messageId
+    );
+    
+    // Emit SSE event for new booking
+    const sseEmitter = req.app.get('sseEmitter');
+    if (sseEmitter) {
+      sseEmitter.emit('booking', { restaurantId, type: 'new_booking', booking });
+    }
     
     res.status(201).json({
       message: 'Booking created successfully',
@@ -60,6 +116,7 @@ const createBooking = async (req, res) => {
 const notifyCustomer = async (req, res) => {
   try {
     const { bookingId } = req.params;
+    const { tableId } = req.body;
     
     const booking = await Booking.findById(bookingId).populate('restaurantId');
     if (!booking) {
@@ -69,20 +126,53 @@ const notifyCustomer = async (req, res) => {
     if (booking.status !== 'waiting') {
       return res.status(400).json({ message: 'Customer has already been notified.' });
     }
+
+    const restaurant = booking.restaurantId;
+    
+    // Assign table if provided
+    if (tableId) {
+      const table = await Table.findById(tableId);
+      if (table && table.status === 'available') {
+        table.status = 'reserved';
+        table.currentBookingId = booking._id;
+        await table.save();
+        booking.tableId = tableId;
+      }
+    }
     
     // Update booking status
     booking.status = 'notified';
     booking.notificationSentAt = new Date();
     await booking.save();
     
-    // Send notification SMS to customer
+    // Send notification SMS using template
     const formattedPhone = formatPhoneNumber(booking.customerPhone);
-    const message = `Your table is ready at ${booking.restaurantId.name}. Please arrive within 15 minutes. Reply with Y (Yes) or N (No).`;
+    const message = formatSmsTemplate(restaurant.smsTemplates?.tableReady || 
+      'Hi {name}! Your table for {partySize} at {restaurant} is ready. Please arrive within {gracePeriod} minutes.', {
+      name: booking.customerName,
+      partySize: booking.partySize.toString(),
+      restaurant: restaurant.name,
+      gracePeriod: (restaurant.gracePeriodMinutes || 15).toString()
+    });
     
-    const smsSent = await sendSMS(formattedPhone, message);
+    const smsResult = await sendSMS(formattedPhone, message);
     
-    if (!smsSent) {
-      return res.status(500).json({ message: 'Failed to send notification. Please try again.' });
+    // Log the SMS
+    await logMessage(
+      restaurant._id,
+      booking._id,
+      booking.customerPhone,
+      booking.customerName,
+      'outbound',
+      'tableReady',
+      message,
+      smsResult?.messageId
+    );
+    
+    // Emit SSE event
+    const sseEmitter = req.app.get('sseEmitter');
+    if (sseEmitter) {
+      sseEmitter.emit('booking', { restaurantId: restaurant._id, type: 'status_change', booking });
     }
     
     res.json({ message: 'Customer notified successfully' });
@@ -92,10 +182,194 @@ const notifyCustomer = async (req, res) => {
   }
 };
 
-// Handle customer response
+// Mark customer as seated
+const markSeated = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { tableId } = req.body;
+    
+    const booking = await Booking.findById(bookingId).populate('restaurantId');
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found.' });
+    }
+    
+    if (!['notified', 'confirmed', 'waiting'].includes(booking.status)) {
+      return res.status(400).json({ message: 'Invalid booking status for seating.' });
+    }
+    
+    // Get party duration for expected end time
+    let partyDuration = await PartyDuration.findOne({ partySize: booking.partySize });
+    if (!partyDuration) {
+      partyDuration = { avgDuration: 90 };
+    }
+    
+    const now = new Date();
+    const expectedEndTime = new Date(now.getTime() + partyDuration.avgDuration * 60 * 1000);
+    
+    // Update table if provided
+    const tableIdToUse = tableId || booking.tableId;
+    if (tableIdToUse) {
+      const table = await Table.findById(tableIdToUse);
+      if (table) {
+        table.status = 'occupied';
+        table.currentBookingId = booking._id;
+        table.seatedAt = now;
+        await table.save();
+        booking.tableId = tableIdToUse;
+      }
+    }
+    
+    // Update booking
+    booking.status = 'seated';
+    booking.seatedAt = now;
+    booking.expectedEndTime = expectedEndTime;
+    await booking.save();
+    
+    // Emit SSE event
+    const sseEmitter = req.app.get('sseEmitter');
+    if (sseEmitter) {
+      sseEmitter.emit('booking', { 
+        restaurantId: booking.restaurantId._id, 
+        type: 'status_change', 
+        booking 
+      });
+    }
+    
+    res.json({ 
+      message: 'Customer seated successfully',
+      expectedEndTime 
+    });
+  } catch (error) {
+    console.error('Mark seated error:', error);
+    res.status(500).json({ message: 'Server error marking customer seated.' });
+  }
+};
+
+// Cancel booking
+const cancelBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    
+    const booking = await Booking.findById(bookingId).populate('restaurantId');
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found.' });
+    }
+    
+    const restaurant = booking.restaurantId;
+    
+    // Free up the table if assigned
+    if (booking.tableId) {
+      const table = await Table.findById(booking.tableId);
+      if (table) {
+        table.status = 'available';
+        table.currentBookingId = null;
+        table.seatedAt = null;
+        await table.save();
+      }
+    }
+    
+    // Update booking status
+    booking.status = 'cancelled';
+    await booking.save();
+    
+    // Send cancellation SMS
+    const formattedPhone = formatPhoneNumber(booking.customerPhone);
+    const message = formatSmsTemplate(restaurant.smsTemplates?.cancelled || 
+      'Hi {name}, your reservation at {restaurant} has been cancelled. We hope to see you another time!', {
+      name: booking.customerName,
+      restaurant: restaurant.name
+    });
+    
+    const smsResult = await sendSMS(formattedPhone, message);
+    
+    // Log the SMS
+    await logMessage(
+      restaurant._id,
+      booking._id,
+      booking.customerPhone,
+      booking.customerName,
+      'outbound',
+      'cancelled',
+      message,
+      smsResult?.messageId
+    );
+    
+    // Emit SSE event
+    const sseEmitter = req.app.get('sseEmitter');
+    if (sseEmitter) {
+      sseEmitter.emit('booking', { 
+        restaurantId: restaurant._id, 
+        type: 'status_change', 
+        booking 
+      });
+    }
+    
+    res.json({ message: 'Booking cancelled successfully' });
+  } catch (error) {
+    console.error('Cancel booking error:', error);
+    res.status(500).json({ message: 'Server error cancelling booking.' });
+  }
+};
+
+// Complete booking (customer finished dining)
+const completeBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found.' });
+    }
+    
+    if (booking.status !== 'seated') {
+      return res.status(400).json({ message: 'Booking must be seated to complete.' });
+    }
+    
+    // Free up the table
+    if (booking.tableId) {
+      const table = await Table.findById(booking.tableId);
+      if (table) {
+        table.status = 'cleaning';
+        table.currentBookingId = null;
+        table.seatedAt = null;
+        await table.save();
+        
+        // After 5 minutes, mark as available (simulate cleaning)
+        setTimeout(async () => {
+          const t = await Table.findById(booking.tableId);
+          if (t && t.status === 'cleaning') {
+            t.status = 'available';
+            await t.save();
+          }
+        }, 5 * 60 * 1000);
+      }
+    }
+    
+    // Update booking
+    booking.status = 'completed';
+    booking.completedAt = new Date();
+    await booking.save();
+    
+    // Emit SSE event
+    const sseEmitter = req.app.get('sseEmitter');
+    if (sseEmitter) {
+      sseEmitter.emit('booking', { 
+        restaurantId: booking.restaurantId, 
+        type: 'status_change', 
+        booking 
+      });
+    }
+    
+    res.json({ message: 'Booking completed successfully' });
+  } catch (error) {
+    console.error('Complete booking error:', error);
+    res.status(500).json({ message: 'Server error completing booking.' });
+  }
+};
+
+// Handle customer response (from Telnyx webhook)
 const handleCustomerResponse = async (req, res) => {
   try {
-    // Telnyx webhook payload structure
     const { data } = req.body;
     
     if (!data || !data.payload) {
@@ -110,57 +384,85 @@ const handleCustomerResponse = async (req, res) => {
       return res.status(400).json({ message: 'Phone number and message body are required.' });
     }
     
-    // Find the most recent booking from this phone number
+    // Find the most recent notified booking from this phone
     const booking = await Booking.findOne({
-      customerPhone: from.replace('+', ''), // Adjust based on how you store phones
+      customerPhone: { $regex: from.replace('+', ''), $options: 'i' },
       status: 'notified'
     }).sort({ notificationSentAt: -1 }).populate('restaurantId');
     
     if (!booking) {
-      // Try with + prefix if stored that way
-       const bookingWithPlus = await Booking.findOne({
-        customerPhone: from,
-        status: 'notified'
-      }).sort({ notificationSentAt: -1 }).populate('restaurantId');
-
-      if (!bookingWithPlus) {
-          return res.status(404).json({ message: 'No active booking found for this phone number.' });
-      }
+      return res.status(404).json({ message: 'No active booking found.' });
     }
+
+    const restaurant = booking.restaurantId;
+    
+    // Log the incoming message
+    await logMessage(
+      restaurant._id,
+      booking._id,
+      from,
+      booking.customerName,
+      'inbound',
+      'response',
+      body
+    );
     
     const response = body.trim().toUpperCase();
     
-    if (response === 'Y') {
-      // Customer is coming
+    if (response === 'Y' || response === 'YES') {
       booking.status = 'confirmed';
       booking.confirmationReceivedAt = new Date();
       await booking.save();
       
-      // Send confirmation message
-      const message = `Thank you for confirming! We'll hold your table for 15 minutes. See you soon at ${booking.restaurantId.name}!`;
+      const message = `Thank you for confirming! We'll hold your table for ${restaurant.gracePeriodMinutes || 15} minutes. See you soon!`;
       await sendSMS(from, message);
+      await logMessage(restaurant._id, booking._id, from, booking.customerName, 'outbound', 'response', message);
       
-    } else if (response === 'N') {
-      // Customer is not coming
+    } else if (response === 'N' || response === 'NO') {
+      // Free up table
+      if (booking.tableId) {
+        const table = await Table.findById(booking.tableId);
+        if (table) {
+          table.status = 'available';
+          table.currentBookingId = null;
+          await table.save();
+        }
+      }
+      
       booking.status = 'cancelled';
       await booking.save();
       
-      // Send cancellation message
-      const message = `Your booking at ${booking.restaurantId.name} has been cancelled. We hope to see you another time!`;
+      const message = `Your booking at ${restaurant.name} has been cancelled. We hope to see you another time!`;
       await sendSMS(from, message);
+      await logMessage(restaurant._id, booking._id, from, booking.customerName, 'outbound', 'cancelled', message);
       
     } else {
-      // Invalid response
-      const message = `Invalid response. Please reply with Y (Yes) or N (No) to confirm your booking.`;
+      const message = `Invalid response. Please reply Y (Yes) or N (No) to confirm your booking.`;
       await sendSMS(from, message);
+      await logMessage(restaurant._id, booking._id, from, booking.customerName, 'outbound', 'response', message);
       
       return res.json({ message: 'Invalid response received' });
+    }
+    
+    // Emit SSE event
+    const sseEmitter = req.app.get('sseEmitter');
+    if (sseEmitter) {
+      sseEmitter.emit('booking', { 
+        restaurantId: restaurant._id, 
+        type: 'status_change', 
+        booking 
+      });
+      sseEmitter.emit('message', { 
+        restaurantId: restaurant._id, 
+        type: 'new_message',
+        customerPhone: from 
+      });
     }
     
     res.json({ message: 'Customer response processed successfully' });
   } catch (error) {
     console.error('Handle customer response error:', error);
-    res.status(500).json({ message: 'Server error processing customer response.' });
+    res.status(500).json({ message: 'Server error processing response.' });
   }
 };
 
@@ -183,6 +485,8 @@ const getBookingStatus = async (req, res) => {
         waitTime: booking.waitTime,
         estimatedSeatingTime: booking.estimatedSeatingTime,
         checkInTime: booking.checkInTime,
+        seatedAt: booking.seatedAt,
+        expectedEndTime: booking.expectedEndTime,
         restaurant: booking.restaurantId
       }
     });
@@ -192,9 +496,107 @@ const getBookingStatus = async (req, res) => {
   }
 };
 
+// Get all bookings for a restaurant
+const getBookings = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+    const { status, date } = req.query;
+    
+    const query = { restaurantId };
+    
+    // Filter by status
+    if (status) {
+      const statuses = status.split(',');
+      query.status = { $in: statuses };
+    }
+    
+    // Filter by date (today by default)
+    const startOfDay = date ? new Date(date) : new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    query.createdAt = { $gte: startOfDay, $lte: endOfDay };
+    
+    const bookings = await Booking.find(query)
+      .populate('tableId', 'tableNumber capacity')
+      .sort({ createdAt: -1 });
+    
+    res.json({ bookings });
+  } catch (error) {
+    console.error('Get bookings error:', error);
+    res.status(500).json({ message: 'Server error fetching bookings.' });
+  }
+};
+
+// Get dashboard stats
+const getDashboardStats = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    // Get counts
+    const [totalWaiting, todaysSeated, totalBookings] = await Promise.all([
+      Booking.countDocuments({ 
+        restaurantId, 
+        status: { $in: ['waiting', 'notified', 'confirmed'] } 
+      }),
+      Booking.countDocuments({ 
+        restaurantId, 
+        status: { $in: ['seated', 'completed'] },
+        createdAt: { $gte: today, $lte: endOfDay }
+      }),
+      Booking.countDocuments({ 
+        restaurantId,
+        createdAt: { $gte: today, $lte: endOfDay }
+      })
+    ]);
+    
+    // Get available tables
+    const availableTables = await Table.countDocuments({
+      restaurantId,
+      status: 'available',
+      isActive: true
+    });
+    
+    // Calculate average wait time from recent bookings
+    const recentBookings = await Booking.find({
+      restaurantId,
+      status: { $in: ['seated', 'completed'] },
+      createdAt: { $gte: today }
+    }).limit(20);
+    
+    let avgWaitTime = 0;
+    if (recentBookings.length > 0) {
+      const totalWait = recentBookings.reduce((sum, b) => sum + (b.waitTime || 0), 0);
+      avgWaitTime = Math.round(totalWait / recentBookings.length);
+    }
+    
+    res.json({
+      totalWaiting,
+      avgWaitTime,
+      availableTables,
+      todaysSeated,
+      totalBookings
+    });
+  } catch (error) {
+    console.error('Get dashboard stats error:', error);
+    res.status(500).json({ message: 'Server error fetching stats.' });
+  }
+};
+
 module.exports = {
   createBooking,
   notifyCustomer,
+  markSeated,
+  cancelBooking,
+  completeBooking,
   handleCustomerResponse,
-  getBookingStatus
+  getBookingStatus,
+  getBookings,
+  getDashboardStats
 };

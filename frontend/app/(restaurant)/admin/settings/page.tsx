@@ -1,65 +1,131 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Settings, ListRestart as Restaurant, MessageSquare, Clock, Save, Plus, Trash2 } from 'lucide-react';
+import { Settings, ListRestart as Restaurant, MessageSquare, Clock, Save, Plus, Trash2, Loader2, Lock } from 'lucide-react';
+import { useAuthStore } from '@/lib/auth-store';
+import { apiClient, RestaurantSettings, Table } from '@/lib/api-client';
+import { toast } from 'sonner';
+
+interface TableConfig {
+  id?: string;
+  _id?: string;
+  tableNumber: string;
+  capacity: number;
+}
 
 export default function SettingsPage() {
-  const [restaurantSettings, setRestaurantSettings] = useState({
-    name: 'Bella Vista',
-    phone: '(555) 123-4567',
-    address: '123 Main Street, San Francisco, CA 94102',
-    gracePeriodMinutes: 15,
-    reminderDelayMinutes: 7,
-    autoReminders: true,
-    emailNotifications: true,
-  });
+  const { restaurantData } = useAuthStore();
+  const restaurantId = restaurantData?.id;
 
-  const [smsTemplates, setSmsTemplates] = useState({
-    tableReady:
-      'Hi {name}! Your table for {partySize} at {restaurant} is ready. Please arrive within 15 minutes.',
-    reminder:
-      "Please reply quickly with Y (Yes) or N (No) so we can continue further.",
-    cancelled:
-      'Hi {name}, your reservation at {restaurant} has been cancelled due to no response.',
-  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [settings, setSettings] = useState<RestaurantSettings | null>(null);
+  const [tableConfig, setTableConfig] = useState<TableConfig[]>([]);
 
-  const [tableConfig, setTableConfig] = useState([
-    { id: '1', number: 1, capacity: 2 },
-    { id: '2', number: 2, capacity: 4 },
-    { id: '3', number: 3, capacity: 4 },
-    { id: '4', number: 4, capacity: 6 },
-    { id: '5', number: 5, capacity: 2 },
-    { id: '6', number: 6, capacity: 8 },
-  ]);
+  // Fetch settings from backend
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!restaurantId) return;
+      
+      try {
+        const result = await apiClient.getSettings(restaurantId);
+        if (result.data) {
+          setSettings(result.data.settings);
+          setTableConfig(result.data.tables.map(t => ({
+            id: t._id,
+            _id: t._id,
+            tableNumber: t.tableNumber,
+            capacity: t.capacity
+          })));
+        }
+      } catch (error) {
+        toast.error('Failed to load settings');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleSave = () => {
-    // In a real app, this would save to the backend
-    alert('Settings saved successfully!');
+    fetchSettings();
+  }, [restaurantId]);
+
+  const handleSave = async () => {
+    if (!restaurantId || !settings) return;
+    
+    setSaving(true);
+    try {
+      // Save settings
+      const settingsResult = await apiClient.updateSettings(restaurantId, {
+        gracePeriodMinutes: settings.gracePeriodMinutes,
+        reminderDelayMinutes: settings.reminderDelayMinutes,
+        allowedPartySizes: settings.allowedPartySizes,
+        smsTemplates: settings.smsTemplates
+      });
+
+      if (settingsResult.error) {
+        toast.error(settingsResult.error.message);
+        return;
+      }
+
+      // Save tables
+      const tablesResult = await apiClient.updateTables(restaurantId, tableConfig.map(t => ({
+        id: t.id || t._id,
+        tableNumber: t.tableNumber,
+        capacity: t.capacity
+      })));
+
+      if (tablesResult.error) {
+        toast.error(tablesResult.error.message);
+        return;
+      }
+
+      toast.success('Settings saved successfully!');
+    } catch (error) {
+      toast.error('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const addTable = () => {
-    const newTable = {
-      id: Date.now().toString(),
-      number: Math.max(...tableConfig.map((t) => t.number), 0) + 1,
+    const nextNumber = tableConfig.length > 0 
+      ? Math.max(...tableConfig.map(t => parseInt(t.tableNumber.replace('T', '')) || 0)) + 1 
+      : 1;
+    const newTable: TableConfig = {
+      tableNumber: `T${nextNumber}`,
       capacity: 4,
     };
     setTableConfig([...tableConfig, newTable]);
   };
 
-  const removeTable = (id: string) => {
-    setTableConfig(tableConfig.filter((t) => t.id !== id));
+  const removeTable = (index: number) => {
+    setTableConfig(tableConfig.filter((_, i) => i !== index));
   };
 
-  const updateTable = (id: string, field: string, value: number) => {
-    setTableConfig(tableConfig.map((t) => (t.id === id ? { ...t, [field]: value } : t)));
+  const updateTable = (index: number, field: keyof TableConfig, value: string | number) => {
+    setTableConfig(tableConfig.map((t, i) => i === index ? { ...t, [field]: value } : t));
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted">Failed to load settings</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 text-ink">
@@ -71,21 +137,30 @@ export default function SettingsPage() {
             Manage your restaurant&apos;s configuration and preferences
           </p>
         </div>
-        <Button onClick={handleSave} className="bg-primary hover:bg-primary-600 text-white">
-          <Save className="h-4 w-4 mr-2" />
+        <Button 
+          onClick={handleSave} 
+          className="bg-primary hover:bg-primary-600 text-white"
+          disabled={saving}
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4 mr-2" />
+          )}
           Save Changes
         </Button>
       </div>
 
-      {/* Restaurant Profile */}
+      {/* Restaurant Profile - Read Only */}
       <Card className="bg-panel border border-border shadow-soft">
         <CardHeader>
           <CardTitle className="flex items-center">
             <Restaurant className="h-5 w-5 mr-2 text-primary" />
             Restaurant Profile
+            <Lock className="h-4 w-4 ml-2 text-muted" />
           </CardTitle>
           <CardDescription className="text-muted">
-            Basic information about your restaurant
+            Contact Super Admin to update these details
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -94,14 +169,9 @@ export default function SettingsPage() {
               <Label htmlFor="name" className="text-ink">Restaurant Name</Label>
               <Input
                 id="name"
-                value={restaurantSettings.name}
-                onChange={(e) =>
-                  setRestaurantSettings({
-                    ...restaurantSettings,
-                    name: e.target.value,
-                  })
-                }
-                className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
+                value={settings.name}
+                disabled
+                className="mt-2 border-border bg-off cursor-not-allowed"
               />
             </div>
 
@@ -109,14 +179,9 @@ export default function SettingsPage() {
               <Label htmlFor="phone" className="text-ink">Phone Number</Label>
               <Input
                 id="phone"
-                value={restaurantSettings.phone}
-                onChange={(e) =>
-                  setRestaurantSettings({
-                    ...restaurantSettings,
-                    phone: e.target.value,
-                  })
-                }
-                className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
+                value={settings.phone}
+                disabled
+                className="mt-2 border-border bg-off cursor-not-allowed"
               />
             </div>
           </div>
@@ -125,14 +190,9 @@ export default function SettingsPage() {
             <Label htmlFor="address" className="text-ink">Address</Label>
             <Input
               id="address"
-              value={restaurantSettings.address}
-              onChange={(e) =>
-                setRestaurantSettings({
-                  ...restaurantSettings,
-                  address: e.target.value,
-                })
-              }
-              className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
+              value={settings.address || settings.city}
+              disabled
+              className="mt-2 border-border bg-off cursor-not-allowed"
             />
           </div>
         </CardContent>
@@ -146,7 +206,7 @@ export default function SettingsPage() {
             Waitlist Configuration
           </CardTitle>
           <CardDescription className="text-muted">
-            Configure timing and automation settings
+            Configure timing settings for your waitlist
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -156,11 +216,13 @@ export default function SettingsPage() {
               <Input
                 id="gracePeriod"
                 type="number"
-                value={restaurantSettings.gracePeriodMinutes}
+                min={5}
+                max={60}
+                value={settings.gracePeriodMinutes}
                 onChange={(e) =>
-                  setRestaurantSettings({
-                    ...restaurantSettings,
-                    gracePeriodMinutes: parseInt(e.target.value || '0'),
+                  setSettings({
+                    ...settings,
+                    gracePeriodMinutes: parseInt(e.target.value || '15'),
                   })
                 }
                 className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
@@ -175,11 +237,13 @@ export default function SettingsPage() {
               <Input
                 id="reminderDelay"
                 type="number"
-                value={restaurantSettings.reminderDelayMinutes}
+                min={3}
+                max={30}
+                value={settings.reminderDelayMinutes}
                 onChange={(e) =>
-                  setRestaurantSettings({
-                    ...restaurantSettings,
-                    reminderDelayMinutes: parseInt(e.target.value || '0'),
+                  setSettings({
+                    ...settings,
+                    reminderDelayMinutes: parseInt(e.target.value || '7'),
                   })
                 }
                 className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
@@ -187,44 +251,6 @@ export default function SettingsPage() {
               <p className="text-sm text-muted mt-1">
                 How long to wait before sending reminder if no response
               </p>
-            </div>
-          </div>
-
-          <Separator className="bg-border" />
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-ink">Automatic Reminders</Label>
-                <p className="text-sm text-muted">
-                  Send follow-up messages if customers don&apos;t respond
-                </p>
-              </div>
-              <Switch
-                checked={restaurantSettings.autoReminders}
-                onCheckedChange={(checked) =>
-                  setRestaurantSettings({
-                    ...restaurantSettings,
-                    autoReminders: checked,
-                  })
-                }
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-ink">Email Notifications</Label>
-                <p className="text-sm text-muted">Get email alerts for important events</p>
-              </div>
-              <Switch
-                checked={restaurantSettings.emailNotifications}
-                onCheckedChange={(checked) =>
-                  setRestaurantSettings({
-                    ...restaurantSettings,
-                    emailNotifications: checked,
-                  })
-                }
-              />
             </div>
           </div>
         </CardContent>
@@ -238,19 +264,41 @@ export default function SettingsPage() {
             SMS Templates
           </CardTitle>
           <CardDescription className="text-muted">
-            Customize your automated messages. Use {'{name}'}, {'{partySize}'}, {'{restaurant}'} as variables
+            Customize your automated messages. Use {'{name}'}, {'{partySize}'}, {'{restaurant}'}, {'{gracePeriod}'}, {'{waitTime}'} as variables
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
+            <Label htmlFor="confirmation" className="text-ink">Booking Confirmation</Label>
+            <Textarea
+              id="confirmation"
+              value={settings.smsTemplates?.confirmation || ''}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  smsTemplates: {
+                    ...settings.smsTemplates,
+                    confirmation: e.target.value,
+                  },
+                })
+              }
+              rows={3}
+              className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
+            />
+          </div>
+
+          <div>
             <Label htmlFor="tableReady" className="text-ink">Table Ready Notification</Label>
             <Textarea
               id="tableReady"
-              value={smsTemplates.tableReady}
+              value={settings.smsTemplates?.tableReady || ''}
               onChange={(e) =>
-                setSmsTemplates({
-                  ...smsTemplates,
-                  tableReady: e.target.value,
+                setSettings({
+                  ...settings,
+                  smsTemplates: {
+                    ...settings.smsTemplates,
+                    tableReady: e.target.value,
+                  },
                 })
               }
               rows={3}
@@ -262,11 +310,14 @@ export default function SettingsPage() {
             <Label htmlFor="reminder" className="text-ink">Reminder Message</Label>
             <Textarea
               id="reminder"
-              value={smsTemplates.reminder}
+              value={settings.smsTemplates?.reminder || ''}
               onChange={(e) =>
-                setSmsTemplates({
-                  ...smsTemplates,
-                  reminder: e.target.value,
+                setSettings({
+                  ...settings,
+                  smsTemplates: {
+                    ...settings.smsTemplates,
+                    reminder: e.target.value,
+                  },
                 })
               }
               rows={3}
@@ -278,11 +329,14 @@ export default function SettingsPage() {
             <Label htmlFor="cancelled" className="text-ink">Cancellation Message</Label>
             <Textarea
               id="cancelled"
-              value={smsTemplates.cancelled}
+              value={settings.smsTemplates?.cancelled || ''}
               onChange={(e) =>
-                setSmsTemplates({
-                  ...smsTemplates,
-                  cancelled: e.target.value,
+                setSettings({
+                  ...settings,
+                  smsTemplates: {
+                    ...settings.smsTemplates,
+                    cancelled: e.target.value,
+                  },
                 })
               }
               rows={3}
@@ -306,50 +360,54 @@ export default function SettingsPage() {
             </Button>
           </CardTitle>
           <CardDescription className="text-muted">
-            Manage your restaurant&apos;s seating layout
+            Manage your restaurant&apos;s individual tables
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {tableConfig.map((table) => (
-              <div
-                key={table.id}
-                className="flex items-center gap-4 p-4 border border-border rounded-lg bg-off"
-              >
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-ink">Table Number</Label>
-                    <Input
-                      type="number"
-                      value={table.number}
-                      onChange={(e) =>
-                        updateTable(table.id, 'number', parseInt(e.target.value || '0'))
-                      }
-                      className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-ink">Capacity</Label>
-                    <Input
-                      type="number"
-                      value={table.capacity}
-                      onChange={(e) =>
-                        updateTable(table.id, 'capacity', parseInt(e.target.value || '0'))
-                      }
-                      className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
-                    />
-                  </div>
-                </div>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => removeTable(table.id)}
-                  disabled={tableConfig.length <= 1}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+            {tableConfig.length === 0 ? (
+              <div className="text-center py-8 text-muted">
+                No tables configured. Click "Add Table" to get started.
               </div>
-            ))}
+            ) : (
+              tableConfig.map((table, index) => (
+                <div
+                  key={table.id || table._id || index}
+                  className="flex items-center gap-4 p-4 border border-border rounded-lg bg-off"
+                >
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-ink">Table Number</Label>
+                      <Input
+                        value={table.tableNumber}
+                        onChange={(e) => updateTable(index, 'tableNumber', e.target.value)}
+                        placeholder="T1, T2, etc."
+                        className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-ink">Capacity</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={20}
+                        value={table.capacity}
+                        onChange={(e) => updateTable(index, 'capacity', parseInt(e.target.value || '1'))}
+                        className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => removeTable(index)}
+                    disabled={tableConfig.length <= 1}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

@@ -11,6 +11,11 @@ const restaurantSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  address: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   email: {
     type: String,
     required: true,
@@ -40,6 +45,43 @@ const restaurantSchema = new mongoose.Schema({
   avgWaitTime: {
     type: Number,
     default: 0
+  },
+  // Waitlist Configuration
+  gracePeriodMinutes: {
+    type: Number,
+    default: 15,
+    min: 5,
+    max: 60
+  },
+  reminderDelayMinutes: {
+    type: Number,
+    default: 7,
+    min: 3,
+    max: 30
+  },
+  // Allowed party sizes for this restaurant
+  allowedPartySizes: {
+    type: [Number],
+    default: [1, 2, 3, 4, 5, 6, 7, 8]
+  },
+  // SMS Templates
+  smsTemplates: {
+    tableReady: {
+      type: String,
+      default: 'Hi {name}! Your table for {partySize} at {restaurant} is ready. Please arrive within {gracePeriod} minutes. Reply Y to confirm or N to cancel.'
+    },
+    reminder: {
+      type: String,
+      default: 'Reminder: Your table at {restaurant} is still waiting! Please reply Y (Yes) or N (No) to confirm.'
+    },
+    cancelled: {
+      type: String,
+      default: 'Hi {name}, your reservation at {restaurant} has been cancelled. We hope to see you another time!'
+    },
+    confirmation: {
+      type: String,
+      default: 'Hi {name}, your table for {partySize} is confirmed at {restaurant}. Estimated wait: {waitTime} minutes.'
+    }
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

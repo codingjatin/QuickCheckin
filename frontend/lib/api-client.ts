@@ -5,6 +5,71 @@ export interface ApiError {
   status?: number;
 }
 
+export interface Booking {
+  id: string;
+  _id?: string;
+  customerName: string;
+  customerPhone: string;
+  partySize: number;
+  status: 'waiting' | 'notified' | 'confirmed' | 'seated' | 'completed' | 'cancelled' | 'noshow';
+  waitTime: number;
+  estimatedSeatingTime: string;
+  checkInTime: string;
+  seatedAt?: string;
+  tableId?: string;
+  createdAt: string;
+}
+
+export interface Table {
+  _id: string;
+  tableNumber: string;
+  capacity: number;
+  status: 'available' | 'occupied' | 'reserved' | 'cleaning';
+  isActive: boolean;
+}
+
+export interface DashboardStats {
+  totalWaiting: number;
+  avgWaitTime: number;
+  availableTables: number;
+  todaysSeated: number;
+  totalBookings: number;
+}
+
+export interface RestaurantSettings {
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  logo: string;
+  gracePeriodMinutes: number;
+  reminderDelayMinutes: number;
+  allowedPartySizes: number[];
+  smsTemplates: {
+    tableReady: string;
+    reminder: string;
+    cancelled: string;
+    confirmation: string;
+  };
+}
+
+export interface Message {
+  _id: string;
+  customerPhone: string;
+  customerName: string;
+  direction: 'inbound' | 'outbound';
+  messageType: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface Conversation {
+  customerPhone: string;
+  customerName: string;
+  messages: Message[];
+  lastMessage: Message;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -17,7 +82,6 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<{ data?: T; error?: ApiError }> {
     try {
-      // Get token from localStorage
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       
       const headers: Record<string, string> = {
@@ -25,7 +89,6 @@ class ApiClient {
         ...((options.headers as Record<string, string>) || {}),
       };
 
-      // Add Authorization header if token exists
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
@@ -38,11 +101,9 @@ class ApiClient {
       const data = await response.json();
 
       if (!response.ok) {
-        // If 401, token is invalid - clear it
         if (response.status === 401 && typeof window !== 'undefined') {
           localStorage.removeItem('auth_token');
         }
-
         return {
           error: {
             message: data.message || 'An error occurred',
@@ -61,6 +122,7 @@ class ApiClient {
     }
   }
 
+  // Auth endpoints
   async requestOTP(phone: string, role: 'admin' | 'guest') {
     return this.request<{ message: string }>('/api/restaurant/request-login-otp', {
       method: 'POST',
@@ -106,6 +168,7 @@ class ApiClient {
     });
   }
 
+  // Booking endpoints
   async createBooking(
     restaurantId: string,
     customerName: string,
@@ -127,6 +190,73 @@ class ApiClient {
       body: JSON.stringify({ customerName, customerPhone, partySize }),
     });
   }
+
+  async getBookings(restaurantId: string, status?: string) {
+    const params = status ? `?status=${status}` : '';
+    return this.request<{ bookings: Booking[] }>(`/api/${restaurantId}/bookings${params}`);
+  }
+
+  async getDashboardStats(restaurantId: string) {
+    return this.request<DashboardStats>(`/api/${restaurantId}/dashboard-stats`);
+  }
+
+  // Booking actions
+  async notifyCustomer(bookingId: string, tableId?: string) {
+    return this.request<{ message: string }>(`/api/booking/${bookingId}/notify`, {
+      method: 'POST',
+      body: JSON.stringify({ tableId }),
+    });
+  }
+
+  async markSeated(bookingId: string, tableId?: string) {
+    return this.request<{ message: string; expectedEndTime: string }>(`/api/booking/${bookingId}/seated`, {
+      method: 'POST',
+      body: JSON.stringify({ tableId }),
+    });
+  }
+
+  async cancelBooking(bookingId: string) {
+    return this.request<{ message: string }>(`/api/booking/${bookingId}/cancel`, {
+      method: 'POST',
+    });
+  }
+
+  async completeBooking(bookingId: string) {
+    return this.request<{ message: string }>(`/api/booking/${bookingId}/complete`, {
+      method: 'POST',
+    });
+  }
+
+  // Settings endpoints
+  async getSettings(restaurantId: string) {
+    return this.request<{ settings: RestaurantSettings; tables: Table[] }>(`/api/restaurant/${restaurantId}/settings`);
+  }
+
+  async updateSettings(restaurantId: string, settings: Partial<RestaurantSettings>) {
+    return this.request<{ message: string; settings: RestaurantSettings }>(`/api/restaurant/${restaurantId}/settings`, {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    });
+  }
+
+  async updateTables(restaurantId: string, tables: Array<{ id?: string; tableNumber: string; capacity: number }>) {
+    return this.request<{ message: string; tables: Table[] }>(`/api/restaurant/${restaurantId}/tables`, {
+      method: 'PUT',
+      body: JSON.stringify({ tables }),
+    });
+  }
+
+  // Messages endpoint
+  async getMessages(restaurantId: string) {
+    return this.request<{ conversations: Conversation[] }>(`/api/restaurant/${restaurantId}/messages`);
+  }
+
+  // SSE URL helper
+  getSSEUrl(restaurantId: string): string {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : '';
+    return `${this.baseUrl}/api/${restaurantId}/events?token=${token}`;
+  }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
+

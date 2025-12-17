@@ -3,12 +3,15 @@ const router = express.Router();
 const {
   requestLoginOTP,
   verifyLoginOTP,
+  getSettings,
+  updateSettings,
   getDashboardData,
   updateTables,
-  updateLogo
+  updateLogo,
+  getMessages
 } = require('../controllers/restaurantController');
-const { authenticateRestaurantAdmin, authenticateUser } = require('../middleware/auth');
-const upload = require('../config/aws'); // Multer-S3 configuration
+const { authenticateUser } = require('../middleware/auth');
+const upload = require('../config/aws');
 
 // Public routes
 router.post('/request-login-otp', requestLoginOTP);
@@ -31,9 +34,12 @@ router.get('/me', authenticateUser, (req, res) => {
   });
 });
 
-// Protected routes
-router.get('/:restaurantId/dashboard', authenticateRestaurantAdmin, getDashboardData);
-router.put('/:restaurantId/tables', authenticateRestaurantAdmin, updateTables);
-router.post('/:restaurantId/logo', authenticateRestaurantAdmin, upload.single('logo'), updateLogo);
+// Protected routes (require JWT)
+router.get('/:restaurantId/settings', authenticateUser, getSettings);
+router.put('/:restaurantId/settings', authenticateUser, updateSettings);
+router.get('/:restaurantId/dashboard', authenticateUser, getDashboardData);
+router.put('/:restaurantId/tables', authenticateUser, updateTables);
+router.post('/:restaurantId/logo', authenticateUser, upload.single('logo'), updateLogo);
+router.get('/:restaurantId/messages', authenticateUser, getMessages);
 
 module.exports = router;

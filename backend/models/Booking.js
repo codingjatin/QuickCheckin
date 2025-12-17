@@ -23,7 +23,7 @@ const bookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['waiting', 'notified', 'confirmed', 'seated', 'cancelled', 'noshow'],
+    enum: ['waiting', 'notified', 'confirmed', 'seated', 'completed', 'cancelled', 'noshow'],
     default: 'waiting'
   },
   waitTime: {
@@ -33,15 +33,31 @@ const bookingSchema = new mongoose.Schema({
   estimatedSeatingTime: {
     type: Date
   },
+  // Table assignment
+  tableId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Table',
+    default: null
+  },
+  // Timing tracking
+  checkInTime: {
+    type: Date,
+    default: Date.now
+  },
   notificationSentAt: {
     type: Date
   },
   confirmationReceivedAt: {
     type: Date
   },
-  checkInTime: {
-    type: Date,
-    default: Date.now
+  seatedAt: {
+    type: Date
+  },
+  expectedEndTime: {
+    type: Date
+  },
+  completedAt: {
+    type: Date
   }
 }, {
   timestamps: true
@@ -52,8 +68,9 @@ bookingSchema.index({ restaurantId: 1, status: 1 });
 bookingSchema.index({ restaurantId: 1, createdAt: -1 });
 bookingSchema.index({ customerPhone: 1 });
 bookingSchema.index({ estimatedSeatingTime: 1 });
+bookingSchema.index({ tableId: 1, status: 1 });
 
-// TTL index to automatically remove old bookings after 24 hours
-bookingSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 });
+// TTL index to automatically remove old bookings after 7 days
+bookingSchema.index({ createdAt: 1 }, { expireAfterSeconds: 604800 });
 
 module.exports = mongoose.model('Booking', bookingSchema);
