@@ -9,7 +9,7 @@ applications:
             - npm ci
         build:
           commands:
-            - echo "Building with API URL: $NEXT_PUBLIC_API_URL"
+            - "echo Building with API URL = $NEXT_PUBLIC_API_URL"
             - npm run build
       artifacts:
         baseDirectory: out
