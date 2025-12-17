@@ -254,7 +254,7 @@ class ApiClient {
   // SSE URL helper
   getSSEUrl(restaurantId: string): string {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : '';
-    return `${this.baseUrl}/api/${restaurantId}/events?token=${token}`;
+    return `${this.baseUrl}/api/sse/${restaurantId}/events?token=${token}`;
   }
 }
 

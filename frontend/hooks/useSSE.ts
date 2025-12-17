@@ -25,11 +25,18 @@ export function useSSE(options: UseSSEOptions) {
   const eventSourceRef = useRef<EventSource | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize audio for notification sound
+  // Initialize audio for notification sound (optional - may not exist)
   useEffect(() => {
     if (typeof window !== 'undefined' && playSound) {
-      audioRef.current = new Audio('/sounds/notification.mp3');
-      audioRef.current.volume = 0.7;
+      try {
+        audioRef.current = new Audio('/sounds/bell_notification.wav');
+        audioRef.current.volume = 0.7;
+        // Preload to check if file exists
+        audioRef.current.load();
+      } catch (err) {
+        console.log('Notification sound not available');
+        audioRef.current = null;
+      }
     }
   }, [playSound]);
 
