@@ -1,10 +1,12 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useWaitlistStore } from '@/lib/store';
-import { Table as TableType, Customer } from '@/lib/types';
+import { useAuthStore } from '@/lib/auth-store';
+import { apiClient, Table } from '@/lib/api-client';
+import { toast } from 'sonner';
 import {
   Table as TableIcon,
   Users,
@@ -12,17 +14,53 @@ import {
   CheckCircle,
   AlertCircle,
   Utensils,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 
 export default function TablesPage() {
-  const { tables, customers, updateTable, releaseTable, markSeated } = useWaitlistStore();
+  const { restaurantData } = useAuthStore();
+  const restaurantId = restaurantData?.id;
 
-  const getTableStatusColor = (status: TableType['status']) => {
+  const [tables, setTables] = useState<Table[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Fetch tables from backend
+  const fetchTables = useCallback(async () => {
+    if (!restaurantId) return;
+    
+    try {
+      const result = await apiClient.getSettings(restaurantId);
+      if (result.data?.tables) {
+        setTables(result.data.tables);
+      }
+    } catch (error) {
+      console.error('Error fetching tables:', error);
+      toast.error('Failed to load tables');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [restaurantId]);
+
+  useEffect(() => {
+    fetchTables();
+    // Poll every 30 seconds
+    const interval = setInterval(fetchTables, 30000);
+    return () => clearInterval(interval);
+  }, [fetchTables]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchTables();
+  };
+
+  const getTableStatusColor = (status: string) => {
     switch (status) {
       case 'available':
         return 'bg-success/10 text-success border border-success/30';
-      case 'holding':
+      case 'reserved':
         return 'bg-info/10 text-info border border-info/30';
       case 'occupied':
         return 'bg-secondary/10 text-secondary-600 border border-secondary-600/30';
@@ -33,11 +71,11 @@ export default function TablesPage() {
     }
   };
 
-  const getStatusIcon = (status: TableType['status']) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case 'available':
         return <CheckCircle className="h-4 w-4" />;
-      case 'holding':
+      case 'reserved':
         return <Clock className="h-4 w-4" />;
       case 'occupied':
         return <Users className="h-4 w-4" />;
@@ -48,26 +86,38 @@ export default function TablesPage() {
     }
   };
 
-  const getCustomerForTable = (tableId: string): Customer | undefined => {
-    const table = tables.find((t) => t.id === tableId);
-    if (!table?.customerId) return undefined;
-    return customers.find((c) => c.id === table.customerId);
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-  const handleReleaseTable = (tableId: string) => {
-    releaseTable(tableId);
-  };
-
-  const handleMarkCleaned = (tableId: string) => {
-    updateTable(tableId, { status: 'available' });
+  const stats = {
+    available: tables.filter(t => t.status === 'available').length,
+    reserved: tables.filter(t => t.status === 'reserved').length,
+    occupied: tables.filter(t => t.status === 'occupied').length,
+    cleaning: tables.filter(t => t.status === 'cleaning').length,
   };
 
   return (
     <div className="space-y-8 text-ink">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-display font-bold mb-2">Table Management</h1>
-        <p className="text-muted">Monitor and manage your restaurant&apos;s seating capacity</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-display font-bold mb-2">Table Management</h1>
+          <p className="text-muted">Monitor and manage your restaurant&apos;s seating capacity</p>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="border-border"
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
       </div>
 
       {/* Stats Overview */}
@@ -77,9 +127,7 @@ export default function TablesPage() {
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-success" />
               <div>
-                <p className="text-2xl font-bold">
-                  {tables.filter((t) => t.status === 'available').length}
-                </p>
+                <p className="text-2xl font-bold">{stats.available}</p>
                 <p className="text-xs text-muted">Available</p>
               </div>
             </div>
@@ -91,10 +139,8 @@ export default function TablesPage() {
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-info" />
               <div>
-                <p className="text-2xl font-bold">
-                  {tables.filter((t) => t.status === 'holding').length}
-                </p>
-                <p className="text-xs text-muted">Holding</p>
+                <p className="text-2xl font-bold">{stats.reserved}</p>
+                <p className="text-xs text-muted">Reserved</p>
               </div>
             </div>
           </CardContent>
@@ -105,9 +151,7 @@ export default function TablesPage() {
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-secondary-600" />
               <div>
-                <p className="text-2xl font-bold">
-                  {tables.filter((t) => t.status === 'occupied').length}
-                </p>
+                <p className="text-2xl font-bold">{stats.occupied}</p>
                 <p className="text-xs text-muted">Occupied</p>
               </div>
             </div>
@@ -119,9 +163,7 @@ export default function TablesPage() {
             <div className="flex items-center gap-2">
               <Utensils className="h-5 w-5 text-ink/70" />
               <div>
-                <p className="text-2xl font-bold">
-                  {tables.filter((t) => t.status === 'cleaning').length}
-                </p>
+                <p className="text-2xl font-bold">{stats.cleaning}</p>
                 <p className="text-xs text-muted">Cleaning</p>
               </div>
             </div>
@@ -130,17 +172,29 @@ export default function TablesPage() {
       </div>
 
       {/* Tables Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {tables.map((table) => {
-          const customer = getCustomerForTable(table.id);
-
-          return (
-            <Card key={table.id} className="overflow-hidden bg-panel border border-border shadow-soft">
+      {tables.length === 0 ? (
+        <Card className="bg-panel border border-border shadow-soft">
+          <CardContent className="py-12 text-center">
+            <TableIcon className="h-12 w-12 text-muted mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No tables configured</h3>
+            <p className="text-muted mb-4">Go to Settings → Table Configuration to add tables</p>
+            <Button 
+              onClick={() => window.location.href = '/admin/settings'}
+              className="bg-primary hover:bg-primary-600 text-white"
+            >
+              Configure Tables
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {tables.filter(t => t.isActive).map((table) => (
+            <Card key={table._id} className="overflow-hidden bg-panel border border-border shadow-soft">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <TableIcon className="h-5 w-5 text-ink/70" />
-                    <CardTitle className="text-lg">Table {table.number}</CardTitle>
+                    <CardTitle className="text-lg">Table {table.tableNumber}</CardTitle>
                   </div>
                   <Badge className={`${getTableStatusColor(table.status)} rounded-md`}>
                     <div className="flex items-center gap-1">
@@ -155,18 +209,6 @@ export default function TablesPage() {
               </CardHeader>
 
               <CardContent className="pt-0">
-                {customer && (
-                  <div className="mb-4 p-3 bg-off rounded-lg ring-1 ring-border">
-                    <p className="font-medium text-sm">{customer.name}</p>
-                    <p className="text-xs text-muted">Party of {customer.partySize}</p>
-                    {table.holdStartTime && (
-                      <p className="text-xs text-info mt-1">
-                        Holding for {formatDistanceToNow(table.holdStartTime, { addSuffix: true })}
-                      </p>
-                    )}
-                  </div>
-                )}
-
                 <div className="space-y-2">
                   {table.status === 'available' && (
                     <Button size="sm" variant="outline" className="w-full border-border text-ink hover:bg-off" disabled>
@@ -174,53 +216,32 @@ export default function TablesPage() {
                     </Button>
                   )}
 
-                  {table.status === 'holding' && customer && (
-                    <div className="space-y-2">
-                      <Button
-                        size="sm"
-                        onClick={() => markSeated(customer.id)}
-                        className="w-full bg-success hover:bg-success/90 text-white"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Mark Seated
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleReleaseTable(table.id)}
-                        className="w-full border-border text-ink hover:bg-off"
-                      >
-                        Release Table
-                      </Button>
-                    </div>
+                  {table.status === 'reserved' && (
+                    <Button size="sm" variant="outline" className="w-full border-info text-info hover:bg-info/10">
+                      <Clock className="h-4 w-4 mr-1" />
+                      Reserved
+                    </Button>
                   )}
 
                   {table.status === 'occupied' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateTable(table.id, { status: 'cleaning' })}
-                      className="w-full border-border text-ink hover:bg-off"
-                    >
-                      Mark for Cleaning
+                    <Button size="sm" variant="outline" className="w-full border-secondary-600 text-secondary-600">
+                      <Users className="h-4 w-4 mr-1" />
+                      In Use
                     </Button>
                   )}
 
                   {table.status === 'cleaning' && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleMarkCleaned(table.id)}
-                      className="w-full bg-primary hover:bg-primary-600 text-white"
-                    >
-                      Mark Clean
+                    <Button size="sm" variant="outline" className="w-full border-border text-ink">
+                      <Utensils className="h-4 w-4 mr-1" />
+                      Being Cleaned
                     </Button>
                   )}
                 </div>
               </CardContent>
             </Card>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

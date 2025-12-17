@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Phone, ArrowRight, Home, LogOut, Loader2, Users } from 'lucide-react';
+import { CheckCircle, Phone, ArrowRight, Home, LogOut, Loader2, Users, Wifi, Battery, Signal } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { AuthWrapper } from '@/components/auth/auth-wrapper';
 import { useTranslation } from '@/lib/i18n';
@@ -35,7 +36,7 @@ function KioskContent() {
   
   const restaurantId = restaurantData?.id || '';
 
-  // Fetch allowed party sizes from settings
+  // Fetch allowed party sizes from table capacities
   useEffect(() => {
     const fetchSettings = async () => {
       if (!restaurantId) {
@@ -45,8 +46,16 @@ function KioskContent() {
       
       try {
         const result = await apiClient.getSettings(restaurantId);
-        if (result.data?.settings?.allowedPartySizes) {
-          setAllowedPartySizes(result.data.settings.allowedPartySizes);
+        if (result.data?.tables && result.data.tables.length > 0) {
+          // Extract unique capacities from tables and sort them
+          const capacities = result.data.tables
+            .filter(t => t.isActive)
+            .map(t => t.capacity);
+          const uniqueCapacities = [...new Set(capacities)].sort((a, b) => a - b);
+          
+          if (uniqueCapacities.length > 0) {
+            setAllowedPartySizes(uniqueCapacities);
+          }
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -139,34 +148,38 @@ function KioskContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-off to-sage/10 p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Link
-              href="/"
-              className="inline-flex items-center text-ink hover:text-ink/80"
-            >
-              <Home className="h-5 w-5 mr-2" />
-              {t('home')}
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-off to-sage/10">
+      {/* Navbar */}
+      <nav className="bg-panel border-b border-border shadow-soft sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center space-x-2">
+              <Image
+                src="/QuickCheck.svg"
+                alt="QuickCheck logo"
+                width={32}
+                height={32}
+              />
+              <span className="text-xl font-display font-bold text-ink">QuickCheck</span>
             </Link>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
+              <span className="text-sm text-muted hidden sm:block">{phoneNumber}</span>
               <LanguageSwitcher />
-              <Button variant="outline" onClick={handleLogout} className="border-ink/15 hover:bg-off">
-                <LogOut className="h-4 w-4 mr-2" />
-                {t('logout')}
+              <Button variant="outline" size="sm" onClick={handleLogout} className="border-ink/15 hover:bg-off">
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t('logout')}</span>
               </Button>
             </div>
           </div>
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <CheckCircle className="h-10 w-10 text-primary" />
-            <h1 className="text-4xl font-display font-extrabold text-ink">QuickCheck</h1>
-          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-5xl mx-auto p-4 pt-8">
+        {/* Welcome Text */}
+        <div className="text-center mb-8">
           <p className="text-xl text-muted">
             {t('welcomeJoinWaitlist')}
           </p>
-          <p className="text-sm text-muted">{t('loggedInAs')} {phoneNumber}</p>
         </div>
 
         {/* Main Content */}
@@ -452,40 +465,86 @@ function KioskContent() {
             </Card>
           </div>
 
-          {/* SMS Preview Sidebar */}
+          {/* SMS Preview - Phone Mockup */}
           <div className="lg:col-span-1">
-            <Card className="bg-panel border border-border shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center text-ink">
-                  <Phone className="h-5 w-5 mr-2" />
-                  {t('smsPreview')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-primary/10 rounded-lg p-4 border-l-4 border-primary">
-                    <p className="font-medium text-ink mb-1">{t('tableReadyNotification')}</p>
-                    <p className="text-sm text-muted">
-                      "Hi {name || 'Customer'}! Your table for {partySize || 'X'} at Bella Vista is ready. Please arrive within 15 {t('minutes')}."
-                    </p>
-                  </div>
-
-                  <div className="bg-sage/30 rounded-lg p-4 border-l-4 border-sage">
-                    <p className="font-medium text-ink mb-1">{t('customerResponse')}</p>
-                    <p className="text-sm text-muted">
-                      "Y" (Yes, we're coming)
-                    </p>
-                  </div>
-
-                  <div className="bg-off rounded-lg p-4 border-l-4 border-ink/40 ring-1 ring-border">
-                    <p className="font-medium text-ink mb-1">{t('reminderIfNoResponse')}</p>
-                    <p className="text-sm text-muted">
-                      "Please reply quickly with Y (Yes) or N (No) so we can continue further."
-                    </p>
+            <div className="sticky top-24">
+              {/* Phone Frame */}
+              <div className="mx-auto max-w-[280px] sm:max-w-[320px]">
+                <div className="bg-ink rounded-[2.5rem] p-2 shadow-2xl">
+                  {/* Phone Screen */}
+                  <div className="bg-white rounded-[2rem] overflow-hidden">
+                    {/* Status Bar */}
+                    <div className="bg-ink/5 px-6 py-2 flex items-center justify-between text-xs text-ink/70">
+                      <span className="font-medium">9:41</span>
+                      <div className="flex items-center gap-1">
+                        <Signal className="h-3 w-3" />
+                        <Wifi className="h-3 w-3" />
+                        <Battery className="h-3 w-3" />
+                      </div>
+                    </div>
+                    
+                    {/* Messages Header */}
+                    <div className="bg-ink/5 px-4 py-3 border-b border-ink/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Phone className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-ink text-sm">Restaurant</p>
+                          <p className="text-xs text-muted">SMS</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Messages */}
+                    <div className="p-4 space-y-3 min-h-[300px] bg-gradient-to-b from-white to-ink/5">
+                      {/* Incoming Message 1 */}
+                      <div className="flex justify-start">
+                        <div className="bg-ink/10 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[85%]">
+                          <p className="text-sm text-ink">
+                            Hi {name || 'Customer'}! Your table for {partySize || 'X'} is ready. Please arrive within 15 min. Reply Y to confirm.
+                          </p>
+                          <p className="text-[10px] text-muted mt-1">Now</p>
+                        </div>
+                      </div>
+                      
+                      {/* Outgoing Message */}
+                      <div className="flex justify-end">
+                        <div className="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[85%]">
+                          <p className="text-sm">Y</p>
+                          <p className="text-[10px] text-white/70 mt-1">Read</p>
+                        </div>
+                      </div>
+                      
+                      {/* Incoming Message 2 */}
+                      <div className="flex justify-start">
+                        <div className="bg-ink/10 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[85%]">
+                          <p className="text-sm text-ink">
+                            Great! We'll hold your table. See you soon! 🎉
+                          </p>
+                          <p className="text-[10px] text-muted mt-1">Now</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Input Area */}
+                    <div className="px-4 py-3 border-t border-ink/10 bg-white">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-ink/5 rounded-full px-4 py-2">
+                          <p className="text-sm text-muted">iMessage</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                          <ArrowRight className="h-4 w-4 text-white" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                
+                {/* Phone Label */}
+                <p className="text-center text-sm text-muted mt-4">{t('smsPreview')}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
