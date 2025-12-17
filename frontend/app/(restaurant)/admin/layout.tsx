@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from "next/image";
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -75,7 +76,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
               <Link href="/" className="flex items-center gap-2">
-                <CheckCircle className="h-8 w-8 text-primary" />
+                <Image src="/QuickCheck.svg" alt="QuickCheck logo" width={32} height={32} />
                 <span className="text-2xl font-display font-bold">QuickCheck</span>
               </Link>
               <div className="hidden sm:block text-sm text-muted">

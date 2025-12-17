@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
@@ -17,6 +18,11 @@ export default function AuthPage() {
       router.push(userRole === "guest" ? "/kiosk" : "/admin");
     }
   }, [isAuthenticated, userRole, router]);
+
+  // Explicitly type the parameter 'url' as 'string'
+  const handleRedirect = (url: string): void => {
+    router.push(url); // Redirect to the given URL
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-off p-4 relative overflow-hidden">
@@ -36,7 +42,7 @@ export default function AuthPage() {
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-primary/10 rounded-xl">
-                <ShieldCheck className="w-8 h-8 text-primary" />
+                <Image src="/QuickCheck.svg" alt="QuickCheck logo" width={32} height={32} />
               </div>
               <h1 className="text-2xl font-display font-bold text-ink tracking-tight">
                 QuickCheck
@@ -58,8 +64,21 @@ export default function AuthPage() {
           </div>
 
           <div className="mt-8 pt-6 border-t border-border/50 flex justify-between text-xs text-muted">
-             <span>Have any account? <span className="underline cursor-pointer hover:text-primary">Sign in</span></span>
-             <span className="underline cursor-pointer hover:text-primary">Terms & Conditions</span>
+            <span>
+              Don't have any account? 
+              <span
+                className="underline cursor-pointer hover:text-primary"
+                onClick={() => handleRedirect('/contact')}
+              >
+                Book a demo
+              </span>
+            </span>
+            <span
+              className="underline cursor-pointer hover:text-primary"
+              onClick={() => handleRedirect('/contact')}
+            >
+              Terms & Conditions
+            </span>
           </div>
         </div>
 
@@ -71,7 +90,7 @@ export default function AuthPage() {
             className="absolute inset-0 w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent flex flex-col justify-end p-12 text-white">
-             {/* Optional overlay content can go here if needed, keeping it clean for now as per image inspiration */}
+            {/* Optional overlay content can go here if needed, keeping it clean for now as per image inspiration */}
           </div>
         </div>
       </motion.div>
