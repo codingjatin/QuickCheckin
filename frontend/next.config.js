@@ -5,6 +5,9 @@ const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
   reactStrictMode: true,
   poweredByHeader: false,
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://backend.quickcheckin.ca',
+  },
 };
 
 module.exports = nextConfig;
