@@ -339,25 +339,38 @@ const getMessages = async (req, res) => {
   }
 };
 
-// Update restaurant logo
-const updateLogo = async (req, res) => {
+// Update table status (for cleaning/available flow)
+const updateTableStatus = async (req, res) => {
   try {
-    const { restaurantId } = req.params;
+    const { tableId } = req.params;
+    const { status } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ message: 'Logo image is required.' });
+    if (!['available', 'occupied', 'reserved', 'cleaning'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status.' });
     }
 
-    const logoUrl = req.file.location;
-    await Restaurant.findByIdAndUpdate(restaurantId, { logo: logoUrl });
+    const table = await Table.findById(tableId);
+    if (!table) {
+      return res.status(404).json({ message: 'Table not found.' });
+    }
+
+    table.status = status;
+    
+    // Clear booking reference if marking available or cleaning
+    if (status === 'available' || status === 'cleaning') {
+      table.currentBookingId = null;
+      table.seatedAt = null;
+    }
+
+    await table.save();
 
     res.json({
-      message: 'Logo updated successfully',
-      logoUrl
+      message: `Table marked as ${status}`,
+      table
     });
   } catch (error) {
-    console.error('Update logo error:', error);
-    res.status(500).json({ message: 'Server error updating logo.' });
+    console.error('Update table status error:', error);
+    res.status(500).json({ message: 'Server error updating table status.' });
   }
 };
 
@@ -368,6 +381,7 @@ module.exports = {
   updateSettings,
   getDashboardData,
   updateTables,
+  updateTableStatus,
   updateLogo,
   getMessages
 };

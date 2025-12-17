@@ -16,6 +16,7 @@ import {
   Utensils,
   Loader2,
   RefreshCw,
+  Sparkles,
 } from 'lucide-react';
 
 export default function TablesPage() {
@@ -25,6 +26,7 @@ export default function TablesPage() {
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [updatingTableId, setUpdatingTableId] = useState<string | null>(null);
 
   // Fetch tables from backend
   const fetchTables = useCallback(async () => {
@@ -46,14 +48,34 @@ export default function TablesPage() {
 
   useEffect(() => {
     fetchTables();
-    // Poll every 30 seconds
-    const interval = setInterval(fetchTables, 30000);
+    // Poll every 15 seconds for real-time updates
+    const interval = setInterval(fetchTables, 15000);
     return () => clearInterval(interval);
   }, [fetchTables]);
 
   const handleRefresh = () => {
     setRefreshing(true);
     fetchTables();
+  };
+
+  const handleUpdateStatus = async (tableId: string, status: 'available' | 'cleaning' | 'occupied') => {
+    setUpdatingTableId(tableId);
+    try {
+      const result = await apiClient.updateTableStatus(tableId, status);
+      if (result.data) {
+        toast.success(result.data.message);
+        // Update local state
+        setTables(prev => prev.map(t => 
+          t._id === tableId ? { ...t, status } : t
+        ));
+      } else if (result.error) {
+        toast.error(result.error.message);
+      }
+    } catch (error) {
+      toast.error('Failed to update table status');
+    } finally {
+      setUpdatingTableId(null);
+    }
   };
 
   const getTableStatusColor = (status: string) => {
@@ -63,9 +85,9 @@ export default function TablesPage() {
       case 'reserved':
         return 'bg-info/10 text-info border border-info/30';
       case 'occupied':
-        return 'bg-secondary/10 text-secondary-600 border border-secondary-600/30';
+        return 'bg-orange-500/10 text-orange-600 border border-orange-500/30';
       case 'cleaning':
-        return 'bg-ink/10 text-ink border border-ink/20';
+        return 'bg-purple-500/10 text-purple-600 border border-purple-500/30';
       default:
         return 'bg-ink/10 text-ink border border-ink/20';
     }
@@ -80,7 +102,7 @@ export default function TablesPage() {
       case 'occupied':
         return <Users className="h-4 w-4" />;
       case 'cleaning':
-        return <Utensils className="h-4 w-4" />;
+        return <Sparkles className="h-4 w-4" />;
       default:
         return <AlertCircle className="h-4 w-4" />;
     }
@@ -137,19 +159,7 @@ export default function TablesPage() {
         <Card className="bg-panel border border-border shadow-soft">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-info" />
-              <div>
-                <p className="text-2xl font-bold">{stats.reserved}</p>
-                <p className="text-xs text-muted">Reserved</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-panel border border-border shadow-soft">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-secondary-600" />
+              <Users className="h-5 w-5 text-orange-600" />
               <div>
                 <p className="text-2xl font-bold">{stats.occupied}</p>
                 <p className="text-xs text-muted">Occupied</p>
@@ -161,10 +171,22 @@ export default function TablesPage() {
         <Card className="bg-panel border border-border shadow-soft">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
-              <Utensils className="h-5 w-5 text-ink/70" />
+              <Sparkles className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-2xl font-bold">{stats.cleaning}</p>
                 <p className="text-xs text-muted">Cleaning</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-panel border border-border shadow-soft">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-info" />
+              <div>
+                <p className="text-2xl font-bold">{stats.reserved}</p>
+                <p className="text-xs text-muted">Reserved</p>
               </div>
             </div>
           </CardContent>
@@ -210,30 +232,58 @@ export default function TablesPage() {
 
               <CardContent className="pt-0">
                 <div className="space-y-2">
+                  {/* Available - Ready for guests */}
                   {table.status === 'available' && (
-                    <Button size="sm" variant="outline" className="w-full border-border text-ink hover:bg-off" disabled>
-                      Ready for Guests
-                    </Button>
+                    <div className="bg-success/10 rounded-lg p-3 text-center">
+                      <CheckCircle className="h-6 w-6 text-success mx-auto mb-1" />
+                      <p className="text-sm font-medium text-success">Ready for Guests</p>
+                    </div>
                   )}
 
-                  {table.status === 'reserved' && (
-                    <Button size="sm" variant="outline" className="w-full border-info text-info hover:bg-info/10">
-                      <Clock className="h-4 w-4 mr-1" />
-                      Reserved
-                    </Button>
-                  )}
-
+                  {/* Occupied - Show Mark for Cleaning button */}
                   {table.status === 'occupied' && (
-                    <Button size="sm" variant="outline" className="w-full border-secondary-600 text-secondary-600">
-                      <Users className="h-4 w-4 mr-1" />
-                      In Use
+                    <Button
+                      size="sm"
+                      onClick={() => handleUpdateStatus(table._id, 'cleaning')}
+                      disabled={updatingTableId === table._id}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {updatingTableId === table._id ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 mr-2" />
+                      )}
+                      Mark for Cleaning
                     </Button>
                   )}
 
+                  {/* Cleaning - Show Mark Available button */}
                   {table.status === 'cleaning' && (
-                    <Button size="sm" variant="outline" className="w-full border-border text-ink">
-                      <Utensils className="h-4 w-4 mr-1" />
-                      Being Cleaned
+                    <Button
+                      size="sm"
+                      onClick={() => handleUpdateStatus(table._id, 'available')}
+                      disabled={updatingTableId === table._id}
+                      className="w-full bg-success hover:bg-success/90 text-white"
+                    >
+                      {updatingTableId === table._id ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                      )}
+                      Mark Available
+                    </Button>
+                  )}
+
+                  {/* Reserved */}
+                  {table.status === 'reserved' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full border-info text-info hover:bg-info/10"
+                      disabled
+                    >
+                      <Clock className="h-4 w-4 mr-2" />
+                      Reserved
                     </Button>
                   )}
                 </div>

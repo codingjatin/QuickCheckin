@@ -7,6 +7,7 @@ const {
   updateSettings,
   getDashboardData,
   updateTables,
+  updateTableStatus,
   updateLogo,
   getMessages
 } = require('../controllers/restaurantController');
@@ -39,6 +40,7 @@ router.get('/:restaurantId/settings', authenticateUser, getSettings);
 router.put('/:restaurantId/settings', authenticateUser, updateSettings);
 router.get('/:restaurantId/dashboard', authenticateUser, getDashboardData);
 router.put('/:restaurantId/tables', authenticateUser, updateTables);
+router.patch('/table/:tableId/status', authenticateUser, updateTableStatus);
 router.post('/:restaurantId/logo', authenticateUser, upload.single('logo'), updateLogo);
 router.get('/:restaurantId/messages', authenticateUser, getMessages);
 

@@ -246,6 +246,13 @@ class ApiClient {
     });
   }
 
+  async updateTableStatus(tableId: string, status: 'available' | 'occupied' | 'reserved' | 'cleaning') {
+    return this.request<{ message: string; table: Table }>(`/api/restaurant/table/${tableId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
+
   // Messages endpoint
   async getMessages(restaurantId: string) {
     return this.request<{ conversations: Conversation[] }>(`/api/restaurant/${restaurantId}/messages`);
