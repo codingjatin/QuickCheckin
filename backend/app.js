@@ -35,6 +35,8 @@ app.use(
 // --- CORS ---
 const allowedOrigins = [
   'https://quickcheckin.vercel.app',
+  'https://www.quickcheckin.ca',
+  'https://quickcheckin.ca',
   'http://localhost:3000', // for local development
   // Add other origins as needed
 ];
