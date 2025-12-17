@@ -84,7 +84,7 @@ export const translations = {
     didntReceiveCode: 'Didn\'t receive the code? Resend',
     
     // Kiosk
-    welcomeJoinWaitlist: 'Welcome! Join the waitlist for Bella Vista',
+    welcomeJoinWaitlist: 'Welcome! Join the waitlist for',
     loggedInAs: 'Logged in as:',
     howManyPeople: 'How many people?',
     selectPartySize: 'Select your party size to get started',
@@ -209,7 +209,7 @@ export const translations = {
     didntReceiveCode: 'Vous n\'avez pas reçu le code ? Renvoyer',
     
     // Kiosk
-    welcomeJoinWaitlist: 'Bienvenue ! Rejoignez la liste d\'attente pour Bella Vista',
+    welcomeJoinWaitlist: 'Bienvenue ! Rejoignez la liste d\'attente pour',
     loggedInAs: 'Connecté en tant que :',
     howManyPeople: 'Combien de personnes ?',
     selectPartySize: 'Sélectionnez la taille de votre groupe pour commencer',

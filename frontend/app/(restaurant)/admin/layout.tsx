@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
-  const { logout, phoneNumber, isAuthenticated, userRole, isLoading } = useAuthStore();
+  const { logout, phoneNumber, isAuthenticated, userRole, isLoading, restaurantData } = useAuthStore();
 
   // Redirect to /auth if not authenticated or not admin
   useEffect(() => {
@@ -80,7 +80,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span className="text-2xl font-display font-bold">QuickCheck</span>
               </Link>
               <div className="hidden sm:block text-sm text-muted">
-                Restaurant Admin • Bella Vista
+                Restaurant Admin • {restaurantData?.name || 'Restaurant Panel'}
               </div>
               <div className="hidden sm:block text-xs text-muted">
                 {phoneNumber}

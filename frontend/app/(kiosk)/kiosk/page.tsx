@@ -178,7 +178,7 @@ function KioskContent() {
         {/* Welcome Text */}
         <div className="text-center mb-8">
           <p className="text-xl text-muted">
-            {t('welcomeJoinWaitlist')}
+            {t('welcomeJoinWaitlist')} <span className="font-semibold text-primary">{restaurantData?.name}</span>
           </p>
         </div>
 

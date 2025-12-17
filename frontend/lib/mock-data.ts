@@ -43,7 +43,7 @@ export const mockCustomers: Customer[] = [
 
 export const mockRestaurant: Restaurant = {
   id: 'restaurant-1',
-  name: 'Bella Vista',
+  name: 'Italian Bistro',
   city: 'San Francisco',
   status: 'active',
   createdAt: new Date('2024-01-15'),
@@ -72,7 +72,7 @@ export const mockSMSMessages: SMSMessage[] = [
     customerId: '2',
     restaurantId: 'restaurant-1',
     direction: 'outgoing',
-    message: 'Hi Mike! Your table for 4 at Bella Vista is ready. Please arrive within 15 minutes.',
+    message: 'Hi Mike! Your table for 4 at Italian Bistro is ready. Please arrive within 15 minutes.',
     timestamp: new Date(Date.now() - 5 * 60 * 1000),
     type: 'notification',
   },

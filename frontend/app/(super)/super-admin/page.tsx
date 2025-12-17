@@ -122,7 +122,7 @@ export default function SuperAdminOverview() {
             <div className="space-y-4">
               {[
                 {
-                  restaurant: 'Bella Vista',
+                  restaurant: 'Italian Bistro',
                   action: 'Customer seated',
                   customer: 'Sarah Johnson',
                   time: '2 min ago',
@@ -143,7 +143,7 @@ export default function SuperAdminOverview() {
                   tone: 'warning',
                 },
                 {
-                  restaurant: 'Bella Vista',
+                  restaurant: 'Italian Bistro',
                   action: 'Table cleaned',
                   customer: 'Table 4',
                   time: '15 min ago',
