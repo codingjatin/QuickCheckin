@@ -374,6 +374,28 @@ const updateTableStatus = async (req, res) => {
   }
 };
 
+// Update restaurant logo
+const updateLogo = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'Logo image is required.' });
+    }
+
+    const logoUrl = req.file.location;
+    await Restaurant.findByIdAndUpdate(restaurantId, { logo: logoUrl });
+
+    res.json({
+      message: 'Logo updated successfully',
+      logoUrl
+    });
+  } catch (error) {
+    console.error('Update logo error:', error);
+    res.status(500).json({ message: 'Server error updating logo.' });
+  }
+};
+
 module.exports = {
   requestLoginOTP,
   verifyLoginOTP,
