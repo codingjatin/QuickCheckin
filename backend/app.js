@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/database');
 const sseEmitter = require('./utils/sseEmitter');
@@ -36,6 +37,7 @@ app.use(
 const allowedOrigins = [
   'https://quickcheckin.vercel.app',
   'https://www.quickcheckin.ca',
+  'https://www.quickcheckin.ca/',
   'https://quickcheckin.ca',
   'http://localhost:3000', // for local development
   // Add other origins as needed
@@ -50,9 +52,12 @@ const corsOptions = {
   methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
-  maxAge: 600,
+  maxAge: 86400, // cache for 24 hours
 };
 app.use(cors(corsOptions));
+
+// --- Compression ---
+app.use(compression());
 
 // --- Rate limiting (env-driven) ---
 const WINDOW_MS = Number(process.env.RATE_WINDOW_MS || 15 * 60 * 1000);
