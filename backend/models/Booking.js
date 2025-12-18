@@ -70,7 +70,7 @@ bookingSchema.index({ customerPhone: 1 });
 bookingSchema.index({ estimatedSeatingTime: 1 });
 bookingSchema.index({ tableId: 1, status: 1 });
 
-// TTL index to automatically remove old bookings after 7 days
-bookingSchema.index({ createdAt: 1 }, { expireAfterSeconds: 604800 });
+// TTL index to automatically remove old bookings after 48 hours
+bookingSchema.index({ createdAt: 1 }, { expireAfterSeconds: 172800 });
 
 module.exports = mongoose.model('Booking', bookingSchema);

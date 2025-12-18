@@ -56,4 +56,7 @@ messageSchema.index({ bookingId: 1 });
 messageSchema.index({ customerPhone: 1, createdAt: -1 });
 messageSchema.index({ restaurantId: 1, customerPhone: 1 });
 
+// TTL index to automatically remove old messages after 48 hours
+messageSchema.index({ createdAt: 1 }, { expireAfterSeconds: 172800 });
+
 module.exports = mongoose.model('Message', messageSchema);
