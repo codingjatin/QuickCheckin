@@ -364,6 +364,16 @@ const updateTableStatus = async (req, res) => {
 
     await table.save();
 
+    // Emit SSE event
+    const sseEmitter = req.app.get('sseEmitter');
+    if (sseEmitter) {
+      sseEmitter.emit('table', { 
+        restaurantId: table.restaurantId, 
+        type: 'status_change', 
+        table 
+      });
+    }
+
     res.json({
       message: `Table marked as ${status}`,
       table
