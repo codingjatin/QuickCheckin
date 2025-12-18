@@ -188,6 +188,11 @@ const markSeated = async (req, res) => {
     const { bookingId } = req.params;
     const { tableId } = req.body;
     
+    // Table is now required
+    if (!tableId) {
+      return res.status(400).json({ message: 'Table selection is required to seat a customer.' });
+    }
+    
     const booking = await Booking.findById(bookingId).populate('restaurantId');
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found.' });
@@ -195,6 +200,28 @@ const markSeated = async (req, res) => {
     
     if (!['notified', 'confirmed', 'waiting'].includes(booking.status)) {
       return res.status(400).json({ message: 'Invalid booking status for seating.' });
+    }
+    
+    // Validate table availability
+    const table = await Table.findById(tableId);
+    if (!table) {
+      return res.status(404).json({ message: 'Table not found.' });
+    }
+    
+    if (table.status !== 'available') {
+      const statusMessage = table.status === 'occupied' 
+        ? 'This table is currently occupied. Please mark it for cleaning first when the customer leaves.'
+        : table.status === 'cleaning'
+        ? 'This table is being cleaned. Please wait until it becomes available.'
+        : 'This table is reserved for another customer.';
+      return res.status(400).json({ message: statusMessage });
+    }
+    
+    // Check capacity
+    if (table.capacity < booking.partySize) {
+      return res.status(400).json({ 
+        message: `Table ${table.tableNumber} only seats ${table.capacity}, but party size is ${booking.partySize}.` 
+      });
     }
     
     // Get party duration for expected end time
@@ -206,38 +233,44 @@ const markSeated = async (req, res) => {
     const now = new Date();
     const expectedEndTime = new Date(now.getTime() + partyDuration.avgDuration * 60 * 1000);
     
-    // Update table if provided
-    const tableIdToUse = tableId || booking.tableId;
-    if (tableIdToUse) {
-      const table = await Table.findById(tableIdToUse);
-      if (table) {
-        table.status = 'occupied';
-        table.currentBookingId = booking._id;
-        table.seatedAt = now;
-        await table.save();
-        booking.tableId = tableIdToUse;
-      }
-    }
+    // Update table status to occupied
+    table.status = 'occupied';
+    table.currentBookingId = booking._id;
+    table.seatedAt = now;
+    await table.save();
     
     // Update booking
+    booking.tableId = tableId;
     booking.status = 'seated';
     booking.seatedAt = now;
     booking.expectedEndTime = expectedEndTime;
     await booking.save();
     
-    // Emit SSE event
+    // Emit SSE events for both booking and table updates
     const sseEmitter = req.app.get('sseEmitter');
     if (sseEmitter) {
+      // Notify about booking status change
       sseEmitter.emit('booking', { 
         restaurantId: booking.restaurantId._id, 
         type: 'status_change', 
         booking 
       });
+      // Notify about table status change
+      sseEmitter.emit('table', { 
+        restaurantId: table.restaurantId, 
+        type: 'status_change', 
+        table 
+      });
     }
     
     res.json({ 
-      message: 'Customer seated successfully',
-      expectedEndTime 
+      message: `Customer seated at Table ${table.tableNumber}`,
+      expectedEndTime,
+      table: {
+        _id: table._id,
+        tableNumber: table.tableNumber,
+        status: table.status
+      }
     });
   } catch (error) {
     console.error('Mark seated error:', error);

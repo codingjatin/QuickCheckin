@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/lib/auth-store';
-import { apiClient, Booking, DashboardStats } from '@/lib/api-client';
+import { apiClient, Booking, DashboardStats, Table } from '@/lib/api-client';
 import { useSSE } from '@/hooks/useSSE';
 import { useTranslation } from '@/lib/i18n';
-import { Clock, Users, MessageCircle, CheckCircle, X, Phone, Loader2, Wifi, WifiOff } from 'lucide-react';
+import { Clock, Users, MessageCircle, CheckCircle, X, Phone, Loader2, Wifi, WifiOff, Table as TableIcon } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -20,8 +20,14 @@ export default function AdminDashboard() {
   
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  
+  // Table selection modal state
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedTableId, setSelectedTableId] = useState<string>('');
+  const [showTableModal, setShowTableModal] = useState(false);
 
   const restaurantId = restaurantData?.id;
 
@@ -30,9 +36,10 @@ export default function AdminDashboard() {
     if (!restaurantId) return;
     
     try {
-      const [statsRes, bookingsRes] = await Promise.all([
+      const [statsRes, bookingsRes, settingsRes] = await Promise.all([
         apiClient.getDashboardStats(restaurantId),
-        apiClient.getBookings(restaurantId, 'waiting,notified,confirmed,seated')
+        apiClient.getBookings(restaurantId, 'waiting,notified,confirmed,seated'),
+        apiClient.getSettings(restaurantId)
       ]);
 
       if (statsRes.data) {
@@ -40,6 +47,9 @@ export default function AdminDashboard() {
       }
       if (bookingsRes.data) {
         setBookings(bookingsRes.data.bookings);
+      }
+      if (settingsRes.data?.tables) {
+        setTables(settingsRes.data.tables);
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -108,15 +118,41 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleMarkSeated = async (booking: Booking) => {
-    const bookingId = booking._id || booking.id;
+  // Open table selection modal
+  const openTableSelector = (booking: Booking) => {
+    setSelectedBooking(booking);
+    setSelectedTableId('');
+    setShowTableModal(true);
+  };
+
+  // Get available tables that can accommodate the party size
+  const getAvailableTables = (partySize: number) => {
+    return tables.filter(t => 
+      t.status === 'available' && 
+      t.isActive && 
+      t.capacity >= partySize
+    );
+  };
+
+  // Handle mark seated with selected table
+  const handleMarkSeated = async () => {
+    if (!selectedBooking || !selectedTableId) {
+      toast.error('Please select a table');
+      return;
+    }
+    
+    const bookingId = selectedBooking._id || selectedBooking.id;
     setActionLoading(bookingId);
+    
     try {
-      const result = await apiClient.markSeated(bookingId);
+      const result = await apiClient.markSeated(bookingId, selectedTableId);
       if (result.error) {
         toast.error(result.error.message);
       } else {
         toast.success('Customer seated!');
+        setShowTableModal(false);
+        setSelectedBooking(null);
+        setSelectedTableId('');
         fetchData();
       }
     } catch (error) {
@@ -193,6 +229,76 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8 text-ink">
+      {/* Table Selection Modal */}
+      {showTableModal && selectedBooking && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-panel border border-border rounded-lg shadow-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-xl font-bold mb-2">Select Table</h3>
+            <p className="text-muted mb-4">
+              Assign a table for <span className="font-medium text-ink">{selectedBooking.customerName}</span> (Party of {selectedBooking.partySize})
+            </p>
+            
+            {(() => {
+              const availableTables = getAvailableTables(selectedBooking.partySize);
+              
+              if (availableTables.length === 0) {
+                return (
+                  <div className="text-center py-6">
+                    <TableIcon className="h-12 w-12 text-muted mx-auto mb-3" />
+                    <p className="text-muted">No available tables for party of {selectedBooking.partySize}</p>
+                    <p className="text-sm text-muted mt-1">Please wait for a table to become available</p>
+                  </div>
+                );
+              }
+              
+              return (
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Available Tables (Capacity ≥ {selectedBooking.partySize})</label>
+                  <select
+                    value={selectedTableId}
+                    onChange={(e) => setSelectedTableId(e.target.value)}
+                    className="w-full h-12 px-4 rounded-lg border border-border bg-panel text-ink focus:ring-2 focus:ring-primary focus:border-primary"
+                  >
+                    <option value="">-- Select a table --</option>
+                    {availableTables.map(table => (
+                      <option key={table._id} value={table._id}>
+                        Table {table.tableNumber} (Seats {table.capacity})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })()}
+            
+            <div className="flex gap-3 mt-6">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => {
+                  setShowTableModal(false);
+                  setSelectedBooking(null);
+                  setSelectedTableId('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1 bg-success hover:bg-success/90 text-white"
+                onClick={handleMarkSeated}
+                disabled={!selectedTableId || actionLoading === (selectedBooking._id || selectedBooking.id)}
+              >
+                {actionLoading === (selectedBooking._id || selectedBooking.id) ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                )}
+                Confirm Seating
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Connection Status */}
       <div className="flex items-center gap-2 text-sm">
         {isConnected ? (
@@ -345,7 +451,7 @@ export default function AdminDashboard() {
                       {['notified', 'confirmed'].includes(booking.status) && (
                         <Button
                           size="sm"
-                          onClick={() => handleMarkSeated(booking)}
+                          onClick={() => openTableSelector(booking)}
                           className="bg-success hover:bg-success/90 text-white"
                           disabled={isActionLoading}
                         >
