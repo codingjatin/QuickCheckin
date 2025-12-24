@@ -105,8 +105,8 @@ export function FooterSection() {
                 </Link>
               </li>
               <li>
-                <Link href="tel:+12893320707" className="hover:text-ink">
-                  +1 (289) 332-0707
+                <Link href="tel:+16472216677" className="hover:text-ink">
+                  +1 647-221-6677
                 </Link>
               </li>
             </ul>

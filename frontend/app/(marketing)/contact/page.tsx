@@ -24,8 +24,8 @@ import Image from 'next/image';
 import { useI18nStore } from '@/lib/i18n';
 
 const EMAIL = 'info@quickcheckin.ca';
-const PHONE_DISPLAY = '+1 (289) 332-0707';
-const PHONE_TEL = '+12893320707';
+const PHONE_DISPLAY = '+1 647-221-6677';
+const PHONE_TEL = '+16472216677';
 const MESSAGE_MIN = 20;
 const MESSAGE_MAX = 1200;
 
@@ -340,7 +340,7 @@ export default function ContactPage() {
       await navigator.clipboard.writeText(text);
       setCopied((prev) => ({ ...prev, [key]: true }));
       setTimeout(() => setCopied((prev) => ({ ...prev, [key]: false })), 1500);
-    } catch {}
+    } catch { }
   };
 
   if (isSubmitted) {
@@ -617,7 +617,7 @@ export default function ContactPage() {
                         value={formData.phone}
                         onChange={handleInputChange}
                         className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
-                        placeholder={lang === 'fr' ? '06 12 34 56 78' : '(289) 332-0707'}
+                        placeholder={lang === 'fr' ? '06 12 34 56 78' : '647-221-6677'}
                         autoComplete="tel"
                         aria-invalid={!!errors.phone}
                         aria-describedby={errors.phone ? 'phone-error' : undefined}
