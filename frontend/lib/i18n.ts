@@ -73,7 +73,7 @@ export const translations = {
     adminRestaurantDashboard: 'Admin - Restaurant Dashboard',
     continue: 'Continue',
     verifyYourNumber: 'Verify Your Number',
-    weveSentCode: 'We\'ve sent a 4-digit code to',
+    weveSentCode: 'We\'ve sent a 6-digit code to',
     enterOtpCode: 'Enter OTP Code',
     demoMode: 'Demo Mode',
     yourOtpIs: 'Your OTP is:',
@@ -146,7 +146,7 @@ export const translations = {
     admin: 'admin',
     verifying: 'Verifying...',
     invalidOtp: 'Invalid OTP. Please try again.',
-    pleaseEnterCompleteOtp: 'Please enter the complete 4-digit OTP',
+    pleaseEnterCompleteOtp: 'Please enter the complete 6-digit OTP',
   },
   fr: {
     // Navigation
@@ -198,7 +198,7 @@ export const translations = {
     adminRestaurantDashboard: 'Admin - Tableau de Bord Restaurant',
     continue: 'Continuer',
     verifyYourNumber: 'Vérifiez Votre Numéro',
-    weveSentCode: 'Nous avons envoyé un code à 4 chiffres à',
+    weveSentCode: 'Nous avons envoyé un code à 6 chiffres à',
     enterOtpCode: 'Entrez le Code OTP',
     demoMode: 'Mode Démo',
     yourOtpIs: 'Votre OTP est :',
@@ -271,7 +271,7 @@ export const translations = {
     admin: 'admin',
     verifying: 'Vérification...',
     invalidOtp: 'OTP invalide. Veuillez réessayer.',
-    pleaseEnterCompleteOtp: 'Veuillez entrer le code OTP complet à 4 chiffres',
+    pleaseEnterCompleteOtp: 'Veuillez entrer le code OTP complet à 6 chiffres',
   },
 };
 

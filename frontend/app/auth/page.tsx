@@ -48,14 +48,14 @@ export default function AuthPage() {
                 QuickCheck
               </h1>
             </div>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
+            {/* <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
               {currentStep === "otp" ? "Verify Code" : "Create an account"}
             </h2>
             <p className="text-muted text-lg">
               {currentStep === "otp"
                 ? "Enter the code sent to your mobile"
                 : "Sign up and get 30 day free trial"}
-            </p>
+            </p> */}
           </div>
 
           <div className="w-full max-w-sm">
@@ -72,12 +72,6 @@ export default function AuthPage() {
               >
                 Book a demo
               </span>
-            </span>
-            <span
-              className="underline cursor-pointer hover:text-primary"
-              onClick={() => handleRedirect('/contact')}
-            >
-              Terms & Conditions
             </span>
           </div>
         </div>
