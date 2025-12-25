@@ -49,7 +49,7 @@ const STRINGS = {
     copy: 'Copy',
     copied: 'Copied',
     call: 'Call',
-    hours: 'Mon–Fri, 9:00–18:00 EST',
+    hours: 'Mon–Fri, 9:00 AM – 5:00 PM EST',
     headerFormTitle: 'Send us a Message',
     headerFormDesc: "Fill out the form below and we'll get back to you as soon as possible.",
     fullName: 'Full Name',
@@ -98,7 +98,7 @@ const STRINGS = {
       },
       {
         q: 'Do you offer a free trial?',
-        a: 'Yes! We offer a 14-day free trial with full access to all features. No credit card required.',
+        a: 'Yes! We offer a 1-month free trial with full access to all features. No credit card required.',
       },
       {
         q: 'What kind of support do you provide?',
@@ -131,7 +131,7 @@ const STRINGS = {
     copy: 'Copier',
     copied: 'Copié',
     call: 'Appeler',
-    hours: 'Lun–Ven, 9:00–18:00 EST',
+    hours: 'Lun–Ven, 9:00 AM – 5:00 PM EST',
     headerFormTitle: 'Envoyez-nous un message',
     headerFormDesc:
       'Remplissez le formulaire ci-dessous et nous vous répondrons au plus vite.',
@@ -182,7 +182,7 @@ const STRINGS = {
       },
       {
         q: 'Proposez-vous un essai gratuit ?',
-        a: 'Oui ! 14 jours avec accès complet à toutes les fonctionnalités. Sans carte bancaire.',
+        a: 'Oui ! 1 mois avec accès complet à toutes les fonctionnalités. Sans carte bancaire.',
       },
       {
         q: 'Quel support proposez-vous ?',

@@ -535,7 +535,7 @@ const content: Record<Language, MarketingContent> = {
               'Advanced reporting APIs',
               '24/7 priority support',
             ],
-            cta: { label: 'Contact sales', href: '/contact' },
+            cta: { label: '', href: '' },
           },
         ],
         usageNotes: [
@@ -551,11 +551,11 @@ const content: Record<Language, MarketingContent> = {
           { feature: 'Support', starter: 'Chat & email', pro: 'Phone + success reviews', enterprise: 'Dedicated team' },
         ],
         faq: [
-          { question: 'How long is the free trial?', answer: 'Starter plans include a 14-day trial with full access to kiosk, messaging, and analytics features.' },
-          { question: 'What payment methods do you accept?', answer: 'Credit card or ACH for monthly plans. Annual contracts support invoicing and procurement workflows.' },
+          { question: 'How long is the free trial?', answer: 'All plans include a 1-month free trial with full access to kiosk, messaging, and analytics features.' },
+          { question: 'What payment methods do you accept?', answer: 'We accept debit and credit cards for monthly plans. Annual contracts support invoicing and procurement workflows.' },
           { question: 'Can we cancel anytime?', answer: "Yes. Monthly plans can be cancelled anytime. Annual plans require 30 days' notice before renewal." },
-          { question: 'Do you charge per SMS?', answer: 'Each plan includes free SMS credits for typical monthly usage. If your usage goes beyond the limit, you’ll get an alert before any extra charge.' },
-          { question: 'Is onboarding included?', answer: 'Starter includes guided setup. Pro and Enterprise add dedicated onboarding sessions and staff training materials.' },
+          { question: 'Do you charge per SMS?', answer: 'No. SMS messaging is fully included in your plan with no additional charges.' },
+          { question: 'Is onboarding included?', answer: 'Yes, onboarding is included with all plans to help you get started smoothly.' },
         ],
       },
     },
@@ -571,25 +571,6 @@ const content: Record<Language, MarketingContent> = {
             { label: 'Features', href: '/features' },
             { label: 'Pricing', href: '/pricing' },
             { label: 'Security & compliance', href: '#' },
-            { label: 'Contact', href: '/contact' },
-          ],
-        },
-        {
-          title: 'Resources',
-          links: [
-            { label: 'Case studies', href: '#' },
-            { label: 'Resource library', href: '#' },
-            { label: 'FAQ', href: '#' },
-            { label: 'Status page', href: '#' },
-          ],
-        },
-        {
-          title: 'Company',
-          links: [
-            { label: 'About', href: '#' },
-            { label: 'Careers', href: '#' },
-            { label: 'Contact sales', href: '/contact' },
-            { label: 'Privacy & terms', href: '#' },
           ],
         },
       ],
@@ -784,7 +765,7 @@ const content: Record<Language, MarketingContent> = {
         hero: {
           eyebrow: 'Panorama des fonctionnalités',
           title: "Tout ce qu'il faut pour un service fluide et connecté",
-        description:
+          description:
             "QuickCheck réunit check-in client, messagerie bidirectionnelle, intelligence d'attribution et analytics dans une plateforme dédiée à la restauration.",
           actions: [
             { label: 'Comparer les offres', href: '/pricing' },
@@ -910,11 +891,11 @@ const content: Record<Language, MarketingContent> = {
           { feature: 'Support', starter: 'Chat & email', pro: 'Téléphone + revues succès', enterprise: 'Équipe dédiée' },
         ],
         faq: [
-          { question: "Quelle est la durée de l'essai gratuit ?", answer: "L'offre Starter inclut 14 jours d'essai avec accès complet au kiosque, à la messagerie et aux analyses." },
-          { question: 'Quels moyens de paiement acceptez-vous ?', answer: 'Cartes bancaires ou prélèvement ACH mensuel. Les contrats annuels acceptent la facturation.' },
+          { question: "Quelle est la durée de l'essai gratuit ?", answer: "Toutes les formules incluent 1 mois d'essai gratuit avec accès complet au kiosque, à la messagerie et aux analyses." },
+          { question: 'Quels moyens de paiement acceptez-vous ?', answer: 'Nous acceptons les cartes de débit et de crédit pour les formules mensuelles. Les contrats annuels acceptent la facturation.' },
           { question: 'Peut-on résilier à tout moment ?', answer: 'Oui pour les formules mensuelles. Les contrats annuels nécessitent 30 jours de préavis.' },
-          { question: 'Facturez-vous chaque SMS ?', answer: 'Chaque offre comprend des crédits mutualisés. Les dépassements sont facturés au tarif régional.' },
-          { question: "L'onboarding est-il inclus ?", answer: 'Starter inclut un accompagnement guidé. Pro et Enterprise ajoutent sessions dédiées et supports.' },
+          { question: 'Facturez-vous chaque SMS ?', answer: 'Non. La messagerie SMS est entièrement incluse dans votre plan sans frais supplémentaires.' },
+          { question: "L'onboarding est-il inclus ?", answer: "Oui, l'accompagnement à la mise en place est inclus avec toutes les formules pour vous aider à démarrer." },
         ],
       },
     },
@@ -930,24 +911,6 @@ const content: Record<Language, MarketingContent> = {
             { label: 'Fonctionnalités', href: '/features' },
             { label: 'Tarifs', href: '/pricing' },
             { label: 'Sécurité & conformité', href: '#' },
-          ],
-        },
-        {
-          title: 'Ressources',
-          links: [
-            { label: 'Études de cas', href: '#' },
-            { label: 'Bibliothèque', href: '#' },
-            { label: 'FAQ', href: '#' },
-            { label: 'Page statut', href: '#' },
-          ],
-        },
-        {
-          title: 'Entreprise',
-          links: [
-            { label: 'À propos', href: '#' },
-            { label: 'Carrières', href: '#' },
-            { label: 'Contacter les ventes', href: '/contact' },
-            { label: 'Confidentialité & conditions', href: '#' },
           ],
         },
       ],

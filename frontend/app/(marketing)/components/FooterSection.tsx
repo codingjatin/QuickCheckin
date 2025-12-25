@@ -44,7 +44,7 @@ export function FooterSection() {
   return (
     <footer className="border-t border-border bg-panel pt-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-10 border-b border-border pb-12 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
+        <div className="grid gap-10 border-b border-border pb-12 md:grid-cols-[1.5fr_1fr_1.2fr]">
           {/* --- Left: Logo and description --- */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-3">
@@ -118,7 +118,7 @@ export function FooterSection() {
               </h4>
               <div className="flex items-center gap-4 text-muted">
                 <Link
-                  href="https://www.instagram.com/kohligarageinc"
+                  href="https://www.instagram.com/quickcheckin.ca/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-primary transition-colors"
@@ -126,7 +126,7 @@ export function FooterSection() {
                 >
                   <Instagram size={20} />
                 </Link>
-                <Link
+                {/* <Link
                   href="https://www.facebook.com/kohligarageinc"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -134,9 +134,9 @@ export function FooterSection() {
                   aria-label="Facebook"
                 >
                   <Facebook size={20} />
-                </Link>
+                </Link> */}
                 <Link
-                  href="https://www.linkedin.com/company/kohligarageinc"
+                  href="https://www.linkedin.com/showcase/quickcheckin/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-primary transition-colors"
