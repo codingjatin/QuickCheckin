@@ -8,6 +8,7 @@ const connectDB = require('./config/database');
 const sseEmitter = require('./utils/sseEmitter');
 require('dotenv').config();
 
+const superAdminRoutes = require('./routes/superAdmin');
 const restaurantRoutes = require('./routes/restaurant');
 const bookingRoutes = require('./routes/booking');
 const sseRoutes = require('./routes/sse');
@@ -81,6 +82,7 @@ app.use((req, res, next) => {
 });
 
 // --- Routes ---
+app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/restaurant', restaurantRoutes);
 app.use('/api', bookingRoutes);
 app.use('/api/sse', sseRoutes);

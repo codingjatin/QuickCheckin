@@ -1,5 +1,29 @@
 const jwt = require('jsonwebtoken');
+const SuperAdmin = require('../models/SuperAdmin');
 const Restaurant = require('../models/Restaurant');
+
+// Verify Super Admin JWT token
+const authenticateSuperAdmin = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ message: 'Access denied. No token provided.' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const superAdmin = await SuperAdmin.findById(decoded.id);
+    
+    if (!superAdmin) {
+      return res.status(401).json({ message: 'Token is not valid.' });
+    }
+    
+    req.superAdmin = superAdmin;
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Token is not valid.' });
+  }
+};
 
 // Verify User (Restaurant Admin/Guest) JWT token
 const authenticateUser = async (req, res, next) => {
@@ -65,6 +89,7 @@ const authenticateRestaurantAdmin = async (req, res, next) => {
 };
 
 module.exports = {
+  authenticateSuperAdmin,
   authenticateUser,
   authenticateRestaurantAdmin
 };
