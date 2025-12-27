@@ -407,12 +407,12 @@ function KioskContent() {
                       </div>
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 pt-4">
                       <Button
                         variant="outline"
                         size="lg"
                         onClick={() => setStep('details')}
-                        className="flex-1 h-14 text-lg border-ink/15 text-ink hover:bg-off"
+                        className="flex-1 h-14 text-lg border-border text-ink hover:bg-off font-medium"
                       >
                         {t('editDetails')}
                       </Button>
@@ -420,12 +420,12 @@ function KioskContent() {
                         size="lg"
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="flex-1 h-14 text-lg bg-sage hover:bg-sage/90 text-ink"
+                        className="flex-1 h-14 text-lg bg-primary hover:bg-primary-600 text-white font-medium"
                       >
                         {isSubmitting ? (
                           <>
                             <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                            Creating booking...
+                            Creating...
                           </>
                         ) : (
                           t('joinWaitlist')

@@ -12,32 +12,42 @@ const {
   getDashboardStats
 } = require('../controllers/bookingController');
 const { validateBookingData } = require('../middleware/validation');
+const { authenticateUser } = require('../middleware/auth');
+const { verifyTelnyxSignature } = require('../middleware/telnyxWebhook');
 
-// Create booking (from kiosk)
+// ============================================
+// PUBLIC ROUTES (No auth required)
+// ============================================
+
+// Create booking (from kiosk - public facing)
 router.post('/:restaurantId/bookings', validateBookingData, createBooking);
 
-// Get all bookings for a restaurant
-router.get('/:restaurantId/bookings', getBookings);
-
-// Get dashboard stats
-router.get('/:restaurantId/dashboard-stats', getDashboardStats);
-
-// Get single booking status
+// Get single booking status (customer can check their own booking)
 router.get('/booking/:bookingId', getBookingStatus);
 
-// Notify customer (table ready)
-router.post('/booking/:bookingId/notify', notifyCustomer);
+// Telnyx webhook for customer SMS responses (validated by signature)
+router.post('/sms/inbound', verifyTelnyxSignature, handleCustomerResponse);
 
-// Mark customer as seated
-router.post('/booking/:bookingId/seated', markSeated);
+// ============================================
+// PROTECTED ROUTES (Require authentication)
+// ============================================
 
-// Cancel booking
-router.post('/booking/:bookingId/cancel', cancelBooking);
+// Get all bookings for a restaurant (admin only)
+router.get('/:restaurantId/bookings', authenticateUser, getBookings);
 
-// Complete booking (guest finished dining)
-router.post('/booking/:bookingId/complete', completeBooking);
+// Get dashboard stats (admin only)
+router.get('/:restaurantId/dashboard-stats', authenticateUser, getDashboardStats);
 
-// Telnyx webhook for customer SMS responses
-router.post('/sms/inbound', handleCustomerResponse);
+// Notify customer (table ready) - admin only
+router.post('/booking/:bookingId/notify', authenticateUser, notifyCustomer);
+
+// Mark customer as seated - admin only
+router.post('/booking/:bookingId/seated', authenticateUser, markSeated);
+
+// Cancel booking - admin only
+router.post('/booking/:bookingId/cancel', authenticateUser, cancelBooking);
+
+// Complete booking (guest finished dining) - admin only
+router.post('/booking/:bookingId/complete', authenticateUser, completeBooking);
 
 module.exports = router;
