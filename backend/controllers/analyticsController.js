@@ -124,7 +124,7 @@ const getSubscriptionStats = async (req, res) => {
  */
 const getRecentPayments = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit as string) || 50;
+    const limit = parseInt(req.query.limit) || 50;
 
     const payments = await SubscriptionHistory.find({
       action: { $in: ['payment_succeeded', 'payment_failed'] }
@@ -175,7 +175,7 @@ const getRevenueBreakdown = async (req, res) => {
     };
 
     // By State
-    const byState: Record<string, number> = {};
+    const byState = {};
 
     payments.forEach(p => {
       const amount = (p.amount || 0) / 100;
@@ -220,7 +220,7 @@ const getRevenueBreakdown = async (req, res) => {
  */
 const exportAnalytics = async (req, res) => {
   try {
-    const type = req.query.type as string;
+    const type = req.query.type;
 
     if (type === 'payments') {
       const payments = await SubscriptionHistory.find({
@@ -232,7 +232,7 @@ const exportAnalytics = async (req, res) => {
       const csv = [
         'Date,Restaurant,Email,Country,Action,Amount,Currency,Invoice ID',
         ...payments.map(p => {
-          const restaurant = p.restaurantId as any;
+          const restaurant = p.restaurantId;
           return [
             new Date(p.createdAt).toISOString(),
             restaurant?.name || '',
