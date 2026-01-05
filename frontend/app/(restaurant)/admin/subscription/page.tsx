@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useAuthStore } from '@/lib/auth-store';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -115,8 +116,8 @@ function PaymentMethodUpdate({ restaurantId, onSuccess }: { restaurantId: string
 }
 
 export default function SubscriptionPage() {
-  const params = useParams();
-  const restaurantId = params.id as string;
+  const { restaurantData } = useAuthStore();
+  const restaurantId = restaurantData?._id || '';
 
   const [data, setData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -125,6 +126,11 @@ export default function SubscriptionPage() {
   const [showSeatCapacityEdit, setShowSeatCapacityEdit] = useState(false);
 
   const fetchSubscription = async () => {
+    if (!restaurantId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/restaurant/${restaurantId}/subscription`,
@@ -139,6 +145,8 @@ export default function SubscriptionPage() {
         const result = await response.json();
         setData(result);
         setSeatCapacity(result.subscription.seatCapacity);
+      } else {
+        console.error('Subscription fetch error:', response.status);
       }
     } catch (error) {
       console.error('Failed to fetch subscription:', error);
@@ -273,9 +281,17 @@ export default function SubscriptionPage() {
   if (!data) {
     return (
       <div className="p-8">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-yellow-800 mb-2">No Subscription Data</h2>
-          <p className="text-yellow-700">Unable to load subscription information.</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-blue-800 mb-2">Loading Subscription Information...</h2>
+          <p className="text-blue-700">
+            We're retrieving your subscription details. If this persists, please refresh the page or contact support.
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Refresh Page
+          </button>
         </div>
       </div>
     );
