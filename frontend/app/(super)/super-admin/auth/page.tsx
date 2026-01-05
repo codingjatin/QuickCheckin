@@ -22,7 +22,7 @@ type LoginSuccess = {
 type ApiMessage = { message?: string };
 
 const API_BASE =
-  (process.env.NEXT_PUBLIC_API_ENDPOINT_PREFTECH || '').replace(/\/$/, '') || '';
+  (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '') || '';
 
 export default function SuperAdminAuth() {
   const router = useRouter();

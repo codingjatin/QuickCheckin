@@ -32,7 +32,7 @@ import { formatDistanceToNow } from 'date-fns';
 
 // ----------------- API + Types -----------------
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_ENDPOINT_PREFTECH || '').replace(/\/$/, '');
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 type GetRestaurantsResponse = {
   count: number;
