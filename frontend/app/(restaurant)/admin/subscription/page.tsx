@@ -117,7 +117,8 @@ function PaymentMethodUpdate({ restaurantId, onSuccess }: { restaurantId: string
 
 export default function SubscriptionPage() {
   const { restaurantData } = useAuthStore();
-  const restaurantId = restaurantData?._id || '';
+  // Handle both 'id' and '_id' field names
+  const restaurantId = restaurantData?.id || restaurantData?._id || '';
 
   const [data, setData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
