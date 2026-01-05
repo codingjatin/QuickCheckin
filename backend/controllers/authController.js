@@ -69,9 +69,21 @@ const verifyLoginOTP = async (req, res) => {
       return res.status(400).json({ message: 'Restaurant ID, phone number, and OTP are required.' });
     }
 
+    // Debug logging
+    console.log('[OTP Verify] Looking for session with:', { restaurantId, phone, otp });
+    
     // Verify OTP
     const session = await Session.findOne({ restaurantId, phone, otp });
+    
+    console.log('[OTP Verify] Session found:', session ? 'YES' : 'NO');
+    
     if (!session) {
+      // Check if there's ANY session for this restaurant/phone (for debugging)
+      const anySessions = await Session.find({ restaurantId, phone });
+      console.log('[OTP Verify] Sessions for this restaurant/phone:', anySessions.length);
+      if (anySessions.length > 0) {
+        console.log('[OTP Verify] Session OTPs:', anySessions.map(s => s.otp));
+      }
       return res.status(400).json({ message: 'Invalid OTP.' });
     }
 
