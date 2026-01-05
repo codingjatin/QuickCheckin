@@ -14,6 +14,7 @@ const bookingRoutes = require('./routes/booking');
 const sseRoutes = require('./routes/sse');
 const subscriptionRoutes = require('./routes/subscription');
 const webhookRoutes = require('./routes/webhooks');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 
@@ -87,6 +88,7 @@ app.use((req, res, next) => {
 });
 
 // --- Routes ---
+app.use('/api/auth', authRoutes);
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/restaurant', restaurantRoutes, subscriptionRoutes);
 app.use('/api', bookingRoutes);
