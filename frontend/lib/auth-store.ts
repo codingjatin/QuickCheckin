@@ -22,7 +22,8 @@ interface AuthState {
   hydrate: () => Promise<void>;
 }
 
-const TOKEN_KEY = 'auth_token';
+const TOKEN_KEY = 'sessionToken'; // Must match what verify-otp page uses
+
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
