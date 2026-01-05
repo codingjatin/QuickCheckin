@@ -93,6 +93,7 @@ const verifyLoginOTP = async (req, res) => {
     await Session.create({
       restaurantId,
       phone,
+      role: 'admin', // Add required role field
       otp: sessionToken, // Reusing OTP field for session token
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
     });
