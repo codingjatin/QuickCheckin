@@ -320,7 +320,8 @@ const signup = async (req, res) => {
       stripeSubscriptionId: subscription.id,
       subscriptionStartDate: new Date(),
       subscriptionEndDate: new Date(subscription.trial_end * 1000),
-      nextBillingDate: new Date(subscription.current_period_end * 1000),
+      // During trial, next billing date is when trial ends
+      nextBillingDate: new Date(subscription.trial_end * 1000),
       signupSource: 'self-service',
       isActive: true,
       createdBy: null
