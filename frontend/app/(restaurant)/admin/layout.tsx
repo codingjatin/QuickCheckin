@@ -43,13 +43,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
-  const { logout, phoneNumber, isAuthenticated, userRole, isLoading, restaurantData } = useAuthStore();
+  const { logout, phoneNumber, isAuthenticated, userRole, isLoading, restaurantData, hydrate } = useAuthStore();
+
+  // Hydrate auth state from localStorage on mount
+  useEffect(() => {
+    hydrate();
+  }, []);
 
   // Redirect to /auth if not authenticated or not admin
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated) {
-        router.replace('/auth');
+        // Check localStorage directly as fallback
+        const hasToken = typeof window !== 'undefined' && localStorage.getItem('sessionToken');
+        if (!hasToken) {
+          router.replace('/auth');
+        }
       } else if (userRole !== 'admin') {
         router.replace('/kiosk');
       }
