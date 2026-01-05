@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { Lock } from 'lucide-react';
 
 export default function VerifyOTPPage() {
   const router = useRouter();
@@ -68,62 +71,93 @@ export default function VerifyOTPPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-            <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Verify Your Phone</h1>
-          <p className="text-gray-600">
-            We sent a 6-digit code to<br />
-            <span className="font-medium text-gray-900">{phone}</span>
-          </p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-off p-4 relative overflow-hidden">
+      {/* Left Fade */}
+      <div className="absolute left-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-r from-off to-transparent z-10 pointer-events-none" />
+      {/* Right Fade */}
+      <div className="absolute right-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-l from-off to-transparent z-10 pointer-events-none" />
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Enter OTP
-            </label>
-            <input
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              maxLength={6}
-              required
-              className="w-full px-4 py-3 text-center text-2xl font-bold border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent tracking-widest"
-              placeholder="000000"
-              autoFocus
-            />
-            <p className="text-sm text-gray-500 mt-2 text-center">
-              Code expires in 10 minutes
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-[1200px] grid grid-cols-1 md:grid-cols-2 bg-panel rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden"
+      >
+        {/* Left Side - Form */}
+        <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary/10 rounded-xl">
+                <Image src="/QuickCheck.svg" alt="QuickCheck" width={32} height={32} />
+              </div>
+              <h1 className="text-2xl font-display font-bold text-ink tracking-tight">
+                QuickCheck
+              </h1>
+            </div>
+            
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-4">
+              <Lock className="w-8 h-8 text-primary" />
+            </div>
+            
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
+              Verify Your Phone
+            </h2>
+            <p className="text-muted text-lg">
+              We sent a 6-digit code to<br />
+              <span className="font-semibold text-ink">{phone}</span>
             </p>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading || otp.length !== 6}
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-          >
-            {loading ? 'Verifying...' : 'Verify & Continue'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="w-full max-w-sm">
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-ink mb-2">
+                Enter OTP *
+              </label>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                maxLength={6}
+                required
+                className="w-full px-4 py-3 text-center text-2xl font-bold border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink tracking-widest"
+                placeholder="000000"
+                autoFocus
+              />
+              <p className="text-sm text-muted mt-2 text-center">
+                Code expires in 10 minutes
+              </p>
+            </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
+            <button
+              type="submit"
+              disabled={loading || otp.length !== 6}
+              className="w-full bg-primary text-white py-3 px-6 rounded-xl font-semibold hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed transition"
+            >
+              {loading ? 'Verifying...' : 'Verify & Continue'}
+            </button>
+          </form>
+
+          <div className="mt-6 pt-6 border-t border-border/50 text-center text-sm text-muted">
             Didn't receive the code?{' '}
             <button 
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
               onClick={() => toast.info('Please wait 60 seconds before requesting a new code')}
             >
               Resend
             </button>
-          </p>
+          </div>
         </div>
-      </div>
+
+        {/* Right Side - Image */}
+        <div className="hidden md:block relative bg-sage/20">
+          <img
+            src="/Restaurant_Login_image.avif"
+            alt="Restaurant Team"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        </div>
+      </motion.div>
     </div>
   );
 }
