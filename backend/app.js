@@ -12,6 +12,8 @@ const superAdminRoutes = require('./routes/superAdmin');
 const restaurantRoutes = require('./routes/restaurant');
 const bookingRoutes = require('./routes/booking');
 const sseRoutes = require('./routes/sse');
+const subscriptionRoutes = require('./routes/subscription');
+const webhookRoutes = require('./routes/webhooks');
 
 const app = express();
 
@@ -82,8 +84,11 @@ app.use((req, res, next) => {
 });
 
 // --- Routes ---
+// Webhooks must come BEFORE express.json() middleware to receive raw body
+app.use('/api/webhooks', webhookRoutes);
+
 app.use('/api/super-admin', superAdminRoutes);
-app.use('/api/restaurant', restaurantRoutes);
+app.use('/api/restaurant', restaurantRoutes, subscriptionRoutes);
 app.use('/api', bookingRoutes);
 app.use('/api/sse', sseRoutes);
 
