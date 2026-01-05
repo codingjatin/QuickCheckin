@@ -68,9 +68,9 @@ export default function AuthPage() {
               Don't have any account? 
               <span
                 className="underline cursor-pointer hover:text-primary"
-                onClick={() => handleRedirect('/contact')}
+                onClick={() => handleRedirect('/signup')}
               >
-                Book a demo
+                Sign up
               </span>
             </span>
           </div>

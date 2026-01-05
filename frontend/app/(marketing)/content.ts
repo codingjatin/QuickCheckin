@@ -259,7 +259,7 @@ const content: Record<Language, MarketingContent> = {
         { label: 'Contact', href: '/contact' },
       ],
       login: { label: 'Log in', href: '/auth' },
-      primaryCta: { label: 'Book a demo', href: '/contact' },
+      primaryCta: { label: 'Start free trial', href: '/signup' },
     },
     landing: {
       hero: {
@@ -268,7 +268,7 @@ const content: Record<Language, MarketingContent> = {
         description:
           'Reduce walk-offs, auto-notify guests, and track seating in real time. QuickCheck replaces clipboards with automated flows built for the dinner rush.',
         primaryCta: { label: 'Start free trial', href: '/pricing' },
-        secondaryCta: { label: 'Book a demo', href: '/contact' },
+        secondaryCta: { label: 'View pricing', href: '/pricing' },
         stats: [
           { value: '60k+', label: 'Guests seated through QuickCheck each month' },
           { value: '7 min', label: 'Average table reclaim after the first alert' },
@@ -380,7 +380,7 @@ const content: Record<Language, MarketingContent> = {
             description: 'Multi-location management with advanced automations and integrations.',
             highlight: 'Most popular with growing groups.',
             featured: true,
-            cta: { label: 'Book a demo', href: '/contact' },
+            cta: { label: 'Start free trial', href: '/signup' },
           },
           {
             name: 'Enterprise',
@@ -505,7 +505,7 @@ const content: Record<Language, MarketingContent> = {
               'Real-time host dashboard',
               'Basic analytics & exports',
             ],
-            cta: { label: 'Start free trial', href: '/contact' },
+            cta: { label: 'Start free trial', href: '/signup' },
           },
           {
             name: 'Pro',
@@ -521,7 +521,7 @@ const content: Record<Language, MarketingContent> = {
               'Branding controls per venue',
             ],
             featured: true,
-            cta: { label: 'Book a demo', href: '/contact' },
+            cta: { label: 'Start free trial', href: '/signup' },
           },
           {
             name: 'Enterprise',
@@ -535,7 +535,7 @@ const content: Record<Language, MarketingContent> = {
               'Advanced reporting APIs',
               '24/7 priority support',
             ],
-            cta: { label: '', href: '' },
+            cta: { label: 'Book a demo', href: '/contact' },
           },
         ],
         usageNotes: [
