@@ -1,7 +1,14 @@
 const Restaurant = require('../models/Restaurant');
 const Session = require('../models/Session');
+const SubscriptionHistory = require('../models/SubscriptionHistory');
 const generateOTP = require('../utils/otpGenerator');
 const { sendSMS, formatPhoneNumber } = require('../utils/telnyxService');
+const {
+  getPriceForRestaurant,
+  createStripeCustomer,
+  createStripeSubscription,
+  stripe
+} = require('../utils/stripeService');
 
 // Request OTP for restaurant admin login
 const requestLoginOTP = async (req, res) => {
@@ -153,9 +160,229 @@ const logout = async (req, res) => {
   }
 };
 
+/**
+ * Verify if business number is available
+ * GET /api/auth/verify-business-number?number=XX-XXXXX&country=US
+ */
+const verifyBusinessNumber = async (req, res) => {
+  try {
+    const { number, country } = req.query;
+
+    if (!number || !country) {
+      return res.status(400).json({ message: 'Business number and country are required.' });
+    }
+
+    // Validate format
+    const cleanNumber = number.trim().replace(/[^0-9]/g, '');
+    
+    if (!['US', 'CA'].includes(country)) {
+      return res.status(400).json({ message: 'Country must be US or CA.' });
+    }
+
+    // Both US EIN and CA BN are 9 digits
+    if (cleanNumber.length !== 9) {
+      return res.status(400).json({ 
+        message: country === 'US' 
+          ? 'EIN must be 9 digits' 
+          : 'Business Number must be 9 digits' 
+      });
+    }
+
+    // Check uniqueness
+    const existing = await Restaurant.findOne({ businessNumber: number.trim() });
+    
+    if (existing) {
+      return res.status(409).json({ 
+        available: false,
+        message: 'This business is already registered. Please login instead.' 
+      });
+    }
+
+    res.json({ available: true });
+  } catch (error) {
+    console.error('Verify business number error:', error);
+    res.status(500).json({ message: 'Server error verifying business number.' });
+  }
+};
+
+/**
+ * Restaurant Self-Service Signup
+ * POST /api/auth/signup
+ */
+const signup = async (req, res) => {
+  try {
+    const {
+      restaurantName,
+      country,
+      state,
+      city,
+      businessNumber,
+      email,
+      phone,
+      seatCapacity,
+      paymentMethodId // Stripe payment method ID from frontend
+    } = req.body;
+
+    // Validation
+    if (!restaurantName || !country || !city || !businessNumber || !email || !phone || !seatCapacity || !paymentMethodId) {
+      return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    if (!['US', 'CA'].includes(country)) {
+      return res.status(400).json({ message: 'Country must be US or CA.' });
+    }
+
+    if (seatCapacity < 1) {
+      return res.status(400).json({ message: 'Seat capacity must be at least 1.' });
+    }
+
+    // Check business number uniqueness BEFORE Stripe
+    const existing = await Restaurant.findOne({ businessNumber: businessNumber.trim() });
+    if (existing) {
+      return res.status(409).json({message: 'This business is already registered.' });
+    }
+
+    // Check email uniqueness
+    const existingEmail = await Restaurant.findOne({ email: email.toLowerCase() });
+    if (existingEmail) {
+      return res.status(409).json({ message: 'This email is already registered.' });
+    }
+
+    // Get pricing based on seat capacity
+    const { priceId, plan, amount, currency } = getPriceForRestaurant(country, seatCapacity);
+
+    // Create Stripe Customer
+    const customerResult = await createStripeCustomer({
+      email: email.toLowerCase(),
+      name: restaurantName,
+      phone: formatPhoneNumber(phone),
+      metadata: {
+        businessNumber,
+        country,
+        state: state || '',
+        city,
+        seatCapacity: seatCapacity.toString()
+      }
+    });
+
+    if (!customerResult.success) {
+      return res.status(500).json({ message: 'Payment processing error. Please try again.' });
+    }
+
+    const { customer } = customerResult;
+
+    // Attach payment method to customer
+    try {
+      await stripe.paymentMethods.attach(paymentMethodId, {
+        customer: customer.id
+      });
+
+      await stripe.customers.update(customer.id, {
+        invoice_settings: {
+          default_payment_method: paymentMethodId
+        }
+      });
+    } catch (error) {
+      console.error('Payment method attach error:', error);
+      // Clean up: delete the customer
+      await stripe.customers.del(customer.id);
+      return res.status(400).json({ message: 'Invalid payment method. Please try again.' });
+    }
+
+    // Create Stripe Subscription with 30-day trial
+    const subscriptionResult = await createStripeSubscription({
+      customerId: customer.id,
+      priceId,
+      trialDays: 30
+    });
+
+    if (!subscriptionResult.success) {
+      // Clean up customer
+      await stripe.customers.del(customer.id);
+      return res.status(500).json({ message: 'Subscription creation failed. Please try again.' });
+    }
+
+    const { subscription } = subscriptionResult;
+
+    // Create Restaurant in database
+    const restaurant = new Restaurant({
+      name: restaurantName,
+      country,
+      state,
+      city,
+      businessNumber: businessNumber.trim(),
+      email: email.toLowerCase(),
+      phone,
+      seatCapacity,
+      subscriptionPlan: plan,
+      subscriptionStatus: 'trialing',
+      stripeCustomerId: customer.id,
+      stripeSubscriptionId: subscription.id,
+      subscriptionStartDate: new Date(),
+      subscriptionEndDate: new Date(subscription.trial_end * 1000),
+      nextBillingDate: new Date(subscription.current_period_end * 1000),
+      signupSource: 'self-service',
+      isActive: true,
+      createdBy: null
+    });
+
+    await restaurant.save();
+
+    // Log subscription history
+    await SubscriptionHistory.create({
+      restaurantId: restaurant._id,
+      action: 'trial_started',
+      toPlan: plan,
+      amount: amount * 100,
+      currency,
+      stripeSubscriptionId: subscription.id,
+      metadata: {
+        trialEndDate: subscription.trial_end,
+        seatCapacity
+      }
+    });
+
+    // Send welcome SMS
+    const welcomeMsg = `Welcome to QuickCheck! Your 30-day free trial has started. Reply HELP for support.`;
+    await sendSMS(formatPhoneNumber(phone), welcomeMsg);
+
+    // Generate OTP for login
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    const session = new Session({
+      restaurantId: restaurant._id,
+      phone,
+      role: 'admin',
+      otp,
+      expiresAt
+    });
+    await session.save();
+
+    // Send OTP
+    const otpMsg = `Your QuickCheck login OTP is: ${otp}. Valid for 10 minutes.`;
+    await sendSMS(formatPhoneNumber(phone), otpMsg);
+
+    res.status(201).json({
+      message: 'Signup successful! OTP sent to your phone.',
+      restaurantId: restaurant._id,
+      trialEndDate: subscription.trial_end,
+      plan,
+      amount,
+      currency
+    });
+
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ message: 'Server error during signup. Please try again.' });
+  }
+};
+
 module.exports = {
   requestLoginOTP,
   verifyLoginOTP,
   validateSession,
-  logout
+  logout,
+  verifyBusinessNumber,
+  signup
 };
