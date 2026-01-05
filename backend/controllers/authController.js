@@ -98,17 +98,16 @@ const verifyLoginOTP = async (req, res) => {
     // Delete used session
     await Session.findByIdAndDelete(session._id);
 
-    // Create a session token (in production, use JWT)
-    const sessionToken = require('crypto').randomBytes(32).toString('hex');
-
-    // Store session token with expiration
-    await Session.create({
-      restaurantId,
-      phone,
-      role: 'admin', // Add required role field
-      otp: sessionToken, // Reusing OTP field for session token
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-    });
+    // Create JWT session token (same as regular login)
+    const sessionToken = jwt.sign(
+      {
+        restaurantId,
+        phone,
+        role: 'admin'
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
+    );
 
     res.json({
       message: 'Login successful',
