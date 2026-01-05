@@ -27,6 +27,7 @@
     "mongoose": "^7.5.0",
     "multer": "^2.0.2",
     "multer-s3": "^3.0.1",
+    "stripe": "^20.1.0",
     "telnyx": "^4.2.1",
     "uuid": "^9.0.1",
     "validator": "^13.11.0"

@@ -42,6 +42,70 @@ const restaurantSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  // Geographic & Registration (for Stripe subscriptions)
+  country: {
+    type: String,
+    enum: ['US', 'CA', null],
+    default: null // Legacy restaurants won't have this
+  },
+  state: {
+    type: String,
+    default: null // State/Province - optional
+  },
+  // Subscription & Billing
+  stripeCustomerId: {
+    type: String,
+    unique: true,
+    sparse: true, // Allows null for legacy restaurants
+    default: null
+  },
+  stripeSubscriptionId: {
+    type: String,
+    unique: true,
+    sparse: true,
+    default: null
+  },
+  subscriptionStatus: {
+    type: String,
+    enum: ['trialing', 'active', 'past_due', 'canceled', 'unpaid', 'incomplete', 'legacy-free'],
+    default: 'legacy-free' // Default for existing restaurants
+  },
+  subscriptionPlan: {
+    type: String,
+    enum: ['small', 'large', 'legacy-free'],
+    default: 'legacy-free' // Default for existing restaurants
+  },
+  seatCapacity: {
+    type: Number,
+    min: 1,
+    default: null // Will be set during signup or migration
+  },
+  pendingPlanChange: {
+    type: String,
+    enum: ['small', 'large', null],
+    default: null // For scheduled downgrades
+  },
+  subscriptionStartDate: {
+    type: Date,
+    default: null
+  },
+  subscriptionEndDate: {
+    type: Date,
+    default: null // For trial end or cancellation
+  },
+  lastPaymentDate: {
+    type: Date,
+    default: null
+  },
+  nextBillingDate: {
+    type: Date,
+    default: null
+  },
+  signupSource: {
+    type: String,
+    enum: ['self-service', 'super-admin'],
+    default: 'super-admin' // Existing restaurants are admin-created
+  },
   avgWaitTime: {
     type: Number,
     default: 0
@@ -86,7 +150,8 @@ const restaurantSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'SuperAdmin',
-    required: true
+    required: false, // NOW OPTIONAL for self-service signups
+    default: null
   }
 }, {
   timestamps: true
