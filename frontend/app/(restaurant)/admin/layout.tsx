@@ -19,6 +19,7 @@ import {
   Home,
   CheckCircle,
   LogOut,
+  CreditCard,
 } from 'lucide-react';
 
 // Lazy load icons for better performance
@@ -34,6 +35,7 @@ const navigation = [
   { name: 'Waitlist', href: '/admin', icon: Users },
   { name: 'Tables', href: '/admin/tables', icon: Table },
   { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
+  { name: 'Subscription', href: '/admin/subscription', icon: CreditCard },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 

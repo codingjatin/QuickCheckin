@@ -13,13 +13,13 @@ import {
   Home,
   CheckCircle,
   LogOut,
+  TrendingUp,
 } from 'lucide-react';
 import Image from 'next/image';
 
 const navigation = [
-  // { name: 'Overview', href: '/super-admin', icon: BarChart3 },
   { name: 'Restaurants', href: '/super-admin/restaurants', icon: Building },
-  // { name: 'Users', href: '/super-admin/users', icon: Users },
+  { name: 'Analytics', href: '/super-admin/analytics', icon: TrendingUp },
   { name: 'System Settings', href: '/super-admin/settings', icon: Settings },
 ];
 
