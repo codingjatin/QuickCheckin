@@ -73,6 +73,9 @@ app.use(
   })
 );
 
+// --- CRITICAL: Webhooks BEFORE JSON parser (needs raw body) ---
+app.use('/api/webhooks', webhookRoutes);
+
 // --- Parsers ---
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -84,9 +87,6 @@ app.use((req, res, next) => {
 });
 
 // --- Routes ---
-// Webhooks must come BEFORE express.json() middleware to receive raw body
-app.use('/api/webhooks', webhookRoutes);
-
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/restaurant', restaurantRoutes, subscriptionRoutes);
 app.use('/api', bookingRoutes);
