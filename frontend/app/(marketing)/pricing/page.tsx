@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CTASection } from "../components/CTASection";
 import { PageHero } from "../components/PageHero";
 import { SectionHeading } from "../components/SectionHeading";
@@ -12,6 +12,58 @@ export default function PricingPage() {
   const { usageNotes, faq, hero } = pages.pricing;
   
   const [country, setCountry] = useState<'US' | 'CA' | 'OTHER'>('US');
+  const [detectingLocation, setDetectingLocation] = useState(true);
+  
+  // Auto-detect user's location
+  useEffect(() => {
+    const detectLocation = async () => {
+      try {
+        // Try to get geolocation permission
+        if ('geolocation' in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              // Reverse geocode to get country
+              try {
+                const response = await fetch(
+                  `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`
+                );
+                const data = await response.json();
+                const countryCode = data.address?.country_code?.toUpperCase();
+                
+                if (countryCode === 'US') {
+                  setCountry('US');
+                } else if (countryCode === 'CA') {
+                  setCountry('CA');
+                } else {
+                  setCountry('OTHER');
+                }
+              } catch (error) {
+                console.error('Geocoding error:', error);
+                setCountry('US'); // Default to USD
+              } finally {
+                setDetectingLocation(false);
+              }
+            },
+            (error) => {
+              // Permission denied or error - default to USD
+              console.log('Location permission denied or unavailable');
+              setCountry('US');
+              setDetectingLocation(false);
+            }
+          );
+        } else {
+          // Geolocation not supported
+          setCountry('US');
+          setDetectingLocation(false);
+        }
+      } catch (error) {
+        setCountry('US');
+        setDetectingLocation(false);
+      }
+    };
+
+    detectLocation();
+  }, []);
   
   const currency = country === 'CA' ? 'CAD' : 'USD';
   
@@ -81,28 +133,20 @@ export default function PricingPage() {
         actions={hero.actions}
       />
 
-      {/* Location Selector */}
-      <section className="py-8 bg-panel">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center gap-4">
-            <label className="text-sm font-medium text-muted">Select your location:</label>
-            <select
-              value={country}
-              onChange={(e) => setCountry(e.target.value as 'US' | 'CA' | 'OTHER')}
-              className="px-4 py-2 border border-border rounded-lg bg-off text-ink focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              <option value="US">United States (USD)</option>
-              <option value="CA">Canada (CAD)</option>
-              <option value="OTHER">Other Countries (USD)</option>
-            </select>
-          </div>
-          {country === 'OTHER' && (
-            <p className="mt-2 text-center text-sm text-muted">
-              Pricing shown in USD. International payment methods accepted.
+      {/* Auto-detected Location Notice */}
+      {!detectingLocation && (
+        <section className="py-4 bg-panel">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-sm text-muted">
+              💡 Showing prices in{' '}
+              <span className="font-semibold text-ink">
+                {country === 'CA' ? 'CAD (Canada)' : country === 'US' ? 'USD (United States)' : 'USD (International)'}
+              </span>
+              {country === 'OTHER' && ' - International customers welcome'}
             </p>
-          )}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       {/* Pricing Cards */}
       <section className="py-20">

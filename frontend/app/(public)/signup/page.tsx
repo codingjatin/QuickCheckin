@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api-client';
+import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
-// US States
 const US_STATES = [
   'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
   'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
@@ -20,7 +21,6 @@ const US_STATES = [
   'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'
 ];
 
-// Canadian Provinces
 const CA_PROVINCES = [
   'Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador',
   'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island',
@@ -32,6 +32,7 @@ function SignupForm() {
   const stripe = useStripe();
   const elements = useElements();
   
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     restaurantName: '',
     country: 'US',
@@ -47,12 +48,10 @@ function SignupForm() {
   const [verifyingBusinessNumber, setVerifyingBusinessNumber] = useState(false);
   const [businessNumberAvailable, setBusinessNumberAvailable] = useState<boolean | null>(null);
 
-  // Calculate plan and pricing based on seat capacity
   const plan = formData.seatCapacity >= 50 ? 'Large' : 'Small';
   const price = plan === 'Small' ? 299 : 499;
   const currency = formData.country === 'CA' ? 'CAD' : 'USD';
 
-  // Verify business number availability
   const verifyBusinessNumber = async (number: string, country: string) => {
     if (!number || number.replace(/[^0-9]/g, '').length !== 9) {
       setBusinessNumberAvailable(null);
@@ -76,7 +75,6 @@ function SignupForm() {
     }
   };
 
-  // Debounce business number verification
   useEffect(() => {
     const timer = setTimeout(() => {
       if (formData.businessNumber) {
@@ -86,6 +84,30 @@ function SignupForm() {
     return () => clearTimeout(timer);
   }, [formData.businessNumber, formData.country]);
 
+  const handleNext = () => {
+    // Validate current step
+    if (currentStep === 1) {
+      if (!formData.restaurantName || !formData.country || !formData.state || !formData.city) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+    } else if (currentStep === 2) {
+      if (!formData.businessNumber || !formData.email || !formData.phone || !formData.seatCapacity) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+      if (businessNumberAvailable === false) {
+        toast.error('This business number is already registered');
+        return;
+      }
+    }
+    setCurrentStep(prev => Math.min(3, prev + 1));
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(prev => Math.max(1, prev - 1));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -94,15 +116,9 @@ function SignupForm() {
       return;
     }
 
-    if (businessNumberAvailable === false) {
-      toast.error('This business number is already registered.');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      // Create payment method
       const cardElement = elements.getElement(CardElement);
       if (!cardElement) {
         throw new Error('Card element not found');
@@ -129,7 +145,6 @@ function SignupForm() {
         return;
       }
 
-      // Call signup API
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,8 +163,6 @@ function SignupForm() {
       }
 
       toast.success(data.message);
-      
-      // Redirect to OTP verification
       router.push(`/auth/verify-otp?restaurantId=${data.restaurantId}&phone=${encodeURIComponent(formData.phone)}`);
 
     } catch (error: any) {
@@ -169,233 +182,321 @@ function SignupForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-8 bg-white rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold text-center mb-2">Start Your Free Trial</h1>
-      <p className="text-center text-gray-600 mb-8">30 days free, no credit card charge until trial ends</p>
+    <div className="min-h-screen flex items-center justify-center bg-off p-4 relative overflow-hidden">
+      {/* Fade Overlays */}
+      <div className="absolute left-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-r from-off to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-l from-off to-transparent z-10 pointer-events-none" />
 
-      {/* Restaurant Name */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Restaurant Name *
-        </label>
-        <input
-          type="text"
-          name="restaurantName"
-          required
-          value={formData.restaurantName}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Enter restaurant name"
-        />
-      </div>
-
-      {/* Country */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Country *
-        </label>
-        <select
-          name="country"
-          required
-          value={formData.country}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="US">United States</option>
-          <option value="CA">Canada</option>
-        </select>
-      </div>
-
-      {/* State/Province */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {formData.country === 'US' ? 'State' : 'Province'} *
-        </label>
-        <select
-          name="state"
-          required
-          value={formData.state}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option value="">Select {formData.country === 'US' ? 'state' : 'province'}</option>
-          {(formData.country === 'US' ? US_STATES : CA_PROVINCES).map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-      </div>
-
-      {/* City */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          City *
-        </label>
-        <input
-          type="text"
-          name="city"
-          required
-          value={formData.city}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Enter city"
-        />
-      </div>
-
-      {/* Business Number */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {formData.country === 'US' ? 'EIN (Employer Identification Number)' : 'Business Number'} *
-        </label>
-        <div className="relative">
-          <input
-            type="text"
-            name="businessNumber"
-            required
-            value={formData.businessNumber}
-            onChange={handleChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-              businessNumberAvailable === false ? 'border-red-500' : 
-              businessNumberAvailable === true ? 'border-green-500' : 'border-gray-300'
-            }`}
-            placeholder={formData.country === 'US' ? '12-3456789' : '123456789RC0001'}
-          />
-          {verifyingBusinessNumber && (
-            <div className="absolute right-3 top-3">
-              <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-            </div>
-          )}
-          {businessNumberAvailable === true && (
-            <div className="absolute right-3 top-3 text-green-500">✓</div>
-          )}
-          {businessNumberAvailable === false && (
-            <div className="absolute right-3 top-3 text-red-500">✗</div>
-          )}
-        </div>
-        <p className="text-sm text-gray-500 mt-1">
-          {formData.country === 'US' ? '9 digits (format: XX-XXXXXXX)' : '9 digits'}
-        </p>
-      </div>
-
-      {/* Email */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Contact Email *
-        </label>
-        <input
-          type="email"
-          name="email"
-          required
-          value={formData.email}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="manager@restaurant.com"
-        />
-      </div>
-
-      {/* Phone */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Phone Number *
-        </label>
-        <input
-          type="tel"
-          name="phone"
-          required
-          value={formData.phone}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="+1 (555) 123-4567"
-        />
-        <p className="text-sm text-gray-500 mt-1">
-          You'll receive an OTP via SMS to verify your account
-        </p>
-      </div>
-
-      {/* Seat Capacity */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Total Seat Capacity *
-        </label>
-        <input
-          type="number"
-          name="seatCapacity"
-          required
-          min="1"
-          value={formData.seatCapacity}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="50"
-        />
-        <p className="text-sm text-gray-500 mt-1">
-          Total number of seats in your restaurant
-        </p>
-      </div>
-
-      {/* Pricing Display */}
-      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm text-gray-600">Your Plan</p>
-            <p className="text-2xl font-bold text-blue-600">{plan} Plan</p>
-            <p className="text-sm text-gray-500">Based on {formData.seatCapacity} seats</p>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold">${price}</p>
-            <p className="text-sm text-gray-600">{currency}/month</p>
-            <p className="text-xs text-green-600 font-medium">30 days FREE trial</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Payment Method */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Payment Method *
-        </label>
-        <div className="p-4 border border-gray-300 rounded-lg">
-          <CardElement
-            options={{
-              style: {
-                base: {
-                  fontSize: '16px',
-                  color: '#424770',
-                  '::placeholder': { color: '#aab7c4' }
-                },
-                invalid: { color: '#9e2146' }
-              }
-            }}
-          />
-        </div>
-        <p className="text-sm text-gray-500 mt-1">
-          Your card will not be charged during the 30-day trial period
-        </p>
-      </div>
-
-      {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={loading || !stripe || businessNumberAvailable === false}
-        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-[1200px] grid grid-cols-1 md:grid-cols-2 bg-panel rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden"
       >
-        {loading ? 'Creating Account...' : 'Start Free Trial'}
-      </button>
+        {/* Left Side - Form */}
+        <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary/10 rounded-xl">
+                <Image src="/QuickCheck.svg" alt="QuickCheck" width={32} height={32} />
+              </div>
+              <h1 className="text-2xl font-display font-bold text-ink tracking-tight">
+                QuickCheck
+              </h1>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
+              Start Your Free Trial
+            </h2>
+            <p className="text-muted text-lg">
+              30 days free • No credit card charge until trial ends
+            </p>
+          </div>
 
-      <p className="text-center text-sm text-gray-500 mt-4">
-        Already have an account?{' '}
-        <a href="/auth" className="text-blue-600 hover:underline">
-          Log in here
-        </a>
-      </p>
-    </form>
+          {/* Progress Steps */}
+          <div className="mb-8 flex items-center justify-between">
+            {[1, 2, 3].map((step) => (
+              <div key={step} className="flex items-center flex-1">
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+                  step < currentStep ? 'bg-primary border-primary text-white' :
+                  step === currentStep ? 'border-primary text-primary' :
+                  'border-border text-muted'
+                }`}>
+                  {step < currentStep ? <Check size={20} /> : step}
+                </div>
+                {step < 3 && (
+                  <div className={`h-0.5 flex-1 mx-2 ${
+                    step < currentStep ? 'bg-primary' : 'bg-border'
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Form Steps */}
+          <form onSubmit={handleSubmit} className="w-full max-w-sm">
+            <AnimatePresence mode="wait">
+              {/* Step 1: Restaurant Info */}
+              {currentStep === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">Restaurant Name *</label>
+                    <input
+                      type="text"
+                      name="restaurantName"
+                      required
+                      value={formData.restaurantName}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink"
+                      placeholder="My Restaurant"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">Country *</label>
+                    <select
+                      name="country"
+                      required
+                      value={formData.country}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink"
+                    >
+                      <option value="US">United States</option>
+                      <option value="CA">Canada</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">
+                      {formData.country === 'US' ? 'State' : 'Province'} *
+                    </label>
+                    <select
+                      name="state"
+                      required
+                      value={formData.state}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink"
+                    >
+                      <option value="">Select {formData.country === 'US' ? 'state' : 'province'}</option>
+                      {(formData.country === 'US' ? US_STATES : CA_PROVINCES).map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">City *</label>
+                    <input
+                      type="text"
+                      name="city"
+                      required
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink"
+                      placeholder="San Francisco"
+                    />
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Step 2: Business Details */}
+              {currentStep === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">
+                      {formData.country === 'US' ? 'EIN' : 'Business Number'} *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="businessNumber"
+                        required
+                        value={formData.businessNumber}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink ${
+                          businessNumberAvailable === false ? 'border-red-500' : 
+                          businessNumberAvailable === true ? 'border-green-500' : 'border-border'
+                        }`}
+                        placeholder={formData.country === 'US' ? '12-3456789' : '123456789RC0001'}
+                      />
+                      {verifyingBusinessNumber && (
+                        <div className="absolute right-3 top-3.5">
+                          <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full"></div>
+                        </div>
+                      )}
+                      {businessNumberAvailable === true && (
+                        <div className="absolute right-3 top-3.5 text-green-500"><Check size={20} /></div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted mt-1">9 digits</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">Email *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink"
+                      placeholder="manager@restaurant.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">Phone Number *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      required
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink"
+                      placeholder="+1 (555) 123-4567"
+                    />
+                    <p className="text-xs text-muted mt-1">You'll receive an OTP via SMS</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">Seat Capacity *</label>
+                    <input
+                      type="number"
+                      name="seatCapacity"
+                      required
+                      min="1"
+                      value={formData.seatCapacity}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink"
+                      placeholder="50"
+                    />
+                    <div className="mt-2 p-3 bg-primary/10 rounded-lg">
+                      <p className="text-sm font-semibold text-primary">{plan} Plan - ${price} {currency}/month</p>
+                      <p className="text-xs text-muted mt-1">Based on {formData.seatCapacity} seats</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Step 3: Payment */}
+              {currentStep === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-4"
+                >
+                  <div className="mb-4 p-4 bg-sage/10 rounded-xl border border-sage">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <p className="text-sm text-muted">Your Plan</p>
+                        <p className="text-xl font-bold text-ink">{plan} Plan</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-ink">${price}</p>
+                        <p className="text-sm text-muted">{currency}/month</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-green-600 font-medium">✓ 30 days FREE trial</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">
+                      Payment Method (Credit or Debit Card) *
+                    </label>
+                    <div className="p-4 border border-border rounded-xl bg-off">
+                      <CardElement
+                        options={{
+                          style: {
+                            base: {
+                              fontSize: '16px',
+                              color: '#1f2937',
+                              fontFamily: 'system-ui, sans-serif',
+                              '::placeholder': { color: '#9ca3af' }
+                            },
+                            invalid: { color: '#ef4444' }
+                          }
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted mt-2">
+                      Your card will not be charged during the 30-day trial
+                    </p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading || !stripe}
+                    className="w-full bg-primary text-white py-3 px-6 rounded-xl font-semibold hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed transition"
+                  >
+                    {loading ? 'Creating Account...' : 'Start Free Trial'}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Navigation Buttons */}
+            {currentStep < 3 && (
+              <div className="mt-6 flex gap-3">
+                {currentStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={handlePrevious}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 px-6 border border-border rounded-xl text-ink hover:bg-off transition"
+                  >
+                    <ChevronLeft size={20} />
+                    Previous
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-3 px-6 rounded-xl font-semibold hover:bg-primary/90 transition"
+                >
+                  Next
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            )}
+          </form>
+
+          <div className="mt-6 pt-6 border-t border-border/50 text-center text-xs text-muted">
+            Already have an account?{' '}
+            <a href="/auth" className="text-primary hover:underline">Log in here</a>
+          </div>
+        </div>
+
+        {/* Right Side - Image */}
+        <div className="hidden md:block relative bg-sage/20">
+          <img
+            src="/Restaurant_Login_image.avif"
+            alt="Restaurant Team"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        </div>
+      </motion.div>
+    </div>
   );
 }
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-      <Elements stripe={stripePromise}>
-        <SignupForm />
-      </Elements>
-    </div>
+    <Elements stripe={stripePromise}>
+      <SignupForm />
+    </Elements>
   );
 }
