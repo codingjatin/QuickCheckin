@@ -45,7 +45,7 @@ export default function AnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
-      const token = localStorage.getItem('superAdminToken');
+      const token = sessionStorage.getItem('qc_sa_token'); // Fixed: use correct key from login
       const headers = { Authorization: `Bearer ${token}` };
 
       const [revenueRes, subscriptionsRes, paymentsRes] = await Promise.all([
@@ -74,7 +74,7 @@ export default function AnalyticsPage() {
 
   const handleExport = async (type: 'payments' | 'subscriptions') => {
     try {
-      const token = localStorage.getItem('superAdminToken');
+      const token = sessionStorage.getItem('qc_sa_token');
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/super-admin/analytics/export?type=${type}`,
         { headers: { Authorization: `Bearer ${token}` } }
