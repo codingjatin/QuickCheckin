@@ -37,6 +37,34 @@ const formatSmsTemplate = (template, variables) => {
   return result;
 };
 
+// Helper to broadcast wait time updates via SSE
+const broadcastWaitTimeUpdate = async (req, restaurantId) => {
+  try {
+    const sseEmitter = req.app.get('sseEmitter');
+    if (!sseEmitter) return;
+    
+    // Get all table capacities
+    const tables = await Table.find({ 
+      restaurantId, 
+      isActive: true 
+    }).distinct('capacity');
+    
+    if (tables.length === 0) return;
+    
+    // Calculate wait times for each party size
+    const waitTimes = {};
+    for (const size of tables.sort((a, b) => a - b)) {
+      const result = await calculateWaitTime(restaurantId, size);
+      waitTimes[size] = result.waitTime;
+    }
+    
+    // Emit wait time update event
+    sseEmitter.emit('waitTime', { restaurantId, type: 'wait_time_update', waitTimes });
+  } catch (error) {
+    console.error('Error broadcasting wait times:', error);
+  }
+};
+
 // Create a new booking
 const createBooking = async (req, res) => {
   try {
@@ -98,6 +126,9 @@ const createBooking = async (req, res) => {
     if (sseEmitter) {
       sseEmitter.emit('booking', { restaurantId, type: 'new_booking', booking });
     }
+    
+    // Broadcast updated wait times
+    broadcastWaitTimeUpdate(req, restaurantId);
     
     res.status(201).json({
       message: 'Booking created successfully',
@@ -268,6 +299,9 @@ const markSeated = async (req, res) => {
       });
     }
     
+    // Broadcast updated wait times
+    broadcastWaitTimeUpdate(req, booking.restaurantId._id);
+    
     res.json({ 
       message: `Customer seated at Table ${table.tableNumber}`,
       expectedEndTime,
@@ -342,6 +376,9 @@ const cancelBooking = async (req, res) => {
       });
     }
     
+    // Broadcast updated wait times
+    broadcastWaitTimeUpdate(req, restaurant._id);
+    
     res.json({ message: 'Booking cancelled successfully' });
   } catch (error) {
     console.error('Cancel booking error:', error);
@@ -397,6 +434,9 @@ const completeBooking = async (req, res) => {
         booking 
       });
     }
+    
+    // Broadcast updated wait times
+    broadcastWaitTimeUpdate(req, booking.restaurantId);
     
     res.json({ message: 'Booking completed successfully' });
   } catch (error) {
@@ -627,6 +667,38 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+// Get wait times for all party sizes (for kiosk display)
+const getWaitTimes = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+    
+    // Get all table capacities to determine party sizes
+    const tables = await Table.find({ 
+      restaurantId, 
+      isActive: true 
+    }).distinct('capacity');
+    
+    if (tables.length === 0) {
+      return res.json({ waitTimes: {} });
+    }
+    
+    // Sort capacities
+    const partySizes = tables.sort((a, b) => a - b);
+    
+    // Calculate wait time for each party size
+    const waitTimes = {};
+    for (const size of partySizes) {
+      const result = await calculateWaitTime(restaurantId, size);
+      waitTimes[size] = result.waitTime;
+    }
+    
+    res.json({ waitTimes });
+  } catch (error) {
+    console.error('Get wait times error:', error);
+    res.status(500).json({ message: 'Server error fetching wait times.' });
+  }
+};
+
 module.exports = {
   createBooking,
   notifyCustomer,
@@ -636,5 +708,6 @@ module.exports = {
   handleCustomerResponse,
   getBookingStatus,
   getBookings,
-  getDashboardStats
+  getDashboardStats,
+  getWaitTimes
 };

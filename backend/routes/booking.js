@@ -9,7 +9,8 @@ const {
   handleCustomerResponse,
   getBookingStatus,
   getBookings,
-  getDashboardStats
+  getDashboardStats,
+  getWaitTimes
 } = require('../controllers/bookingController');
 const { validateBookingData } = require('../middleware/validation');
 const { authenticateUser } = require('../middleware/auth');
@@ -21,6 +22,9 @@ const { verifyTelnyxSignature } = require('../middleware/telnyxWebhook');
 
 // Create booking (from kiosk - public facing)
 router.post('/:restaurantId/bookings', validateBookingData, createBooking);
+
+// Get wait times for all party sizes (kiosk display)
+router.get('/:restaurantId/wait-times', getWaitTimes);
 
 // Get single booking status (customer can check their own booking)
 router.get('/booking/:bookingId', getBookingStatus);

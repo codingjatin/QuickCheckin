@@ -209,6 +209,10 @@ class ApiClient {
     return this.request<DashboardStats>(`/api/${restaurantId}/dashboard-stats`);
   }
 
+  async getWaitTimes(restaurantId: string) {
+    return this.request<{ waitTimes: Record<number, number> }>(`/api/${restaurantId}/wait-times`);
+  }
+
   // Booking actions
   async notifyCustomer(bookingId: string, tableId?: string) {
     return this.request<{ message: string }>(`/api/booking/${bookingId}/notify`, {

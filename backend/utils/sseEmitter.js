@@ -85,4 +85,8 @@ sseEmitter.on('table', ({ restaurantId, type, table }) => {
   sseEmitter.sendToRestaurant(restaurantId, type, { table });
 });
 
+sseEmitter.on('waitTime', ({ restaurantId, type, waitTimes }) => {
+  sseEmitter.sendToRestaurant(restaurantId, type, { waitTimes });
+});
+
 module.exports = sseEmitter;

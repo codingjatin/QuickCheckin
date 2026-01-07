@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Phone, ArrowRight, Home, LogOut, Loader2, Users, Wifi, Battery, Signal } from 'lucide-react';
+import { CheckCircle, Phone, ArrowRight, Home, LogOut, Loader2, Users, Wifi, Battery, Signal, Clock } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { AuthWrapper } from '@/components/auth/auth-wrapper';
 import { useTranslation } from '@/lib/i18n';
@@ -14,6 +14,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { useSSE } from '@/hooks/useSSE';
 
 type KioskStep = 'party-size' | 'details' | 'confirmation' | 'success' | 'custom-request' | 'custom-success';
 
@@ -31,12 +32,24 @@ function KioskContent() {
   const [waitTime, setWaitTime] = useState<number>(0);
   const [allowedPartySizes, setAllowedPartySizes] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8]);
   const [loadingSettings, setLoadingSettings] = useState(true);
+  const [waitTimes, setWaitTimes] = useState<Record<number, number>>({});
 
   const { logout, phoneNumber, restaurantData } = useAuthStore();
   
   const restaurantId = restaurantData?.id || '';
 
-  // Fetch allowed party sizes from table capacities
+  // Subscribe to SSE for real-time wait time updates
+  useSSE({
+    restaurantId,
+    onWaitTimeUpdate: useCallback((data: { waitTimes: Record<number, number> }) => {
+      if (data?.waitTimes) {
+        setWaitTimes(data.waitTimes);
+      }
+    }, []),
+    playSound: false // No sound on kiosk
+  });
+
+  // Fetch allowed party sizes and initial wait times
   useEffect(() => {
     const fetchSettings = async () => {
       if (!restaurantId) {
@@ -45,10 +58,14 @@ function KioskContent() {
       }
       
       try {
-        const result = await apiClient.getSettings(restaurantId);
-        if (result.data?.tables && result.data.tables.length > 0) {
+        const [settingsResult, waitTimesResult] = await Promise.all([
+          apiClient.getSettings(restaurantId),
+          apiClient.getWaitTimes(restaurantId)
+        ]);
+        
+        if (settingsResult.data?.tables && settingsResult.data.tables.length > 0) {
           // Extract unique capacities from tables and sort them
-          const capacities = result.data.tables
+          const capacities = settingsResult.data.tables
             .filter(t => t.isActive)
             .map(t => t.capacity);
           const uniqueCapacities = [...new Set(capacities)].sort((a, b) => a - b);
@@ -56,6 +73,10 @@ function KioskContent() {
           if (uniqueCapacities.length > 0) {
             setAllowedPartySizes(uniqueCapacities);
           }
+        }
+        
+        if (waitTimesResult.data?.waitTimes) {
+          setWaitTimes(waitTimesResult.data.waitTimes);
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -208,14 +229,20 @@ function KioskContent() {
                               key={size}
                               size="lg"
                               variant={partySize === size ? 'default' : 'outline'}
-                              className={`h-20 text-2xl font-bold ${
+                              className={`h-24 flex flex-col items-center justify-center gap-1 ${
                                 partySize === size
                                   ? 'bg-primary hover:bg-primary-600 text-white'
                                   : 'border-ink/15 text-ink hover:bg-off'
                               }`}
                               onClick={() => handlePartySizeSelect(size)}
                             >
-                              {size}
+                              <span className="text-2xl font-bold">{size}</span>
+                              <span className={`text-xs flex items-center gap-1 ${
+                                partySize === size ? 'text-white/80' : 'text-muted'
+                              }`}>
+                                <Clock className="h-3 w-3" />
+                                ~{waitTimes[size] || 5}m
+                              </span>
                             </Button>
                           ))}
                         </div>
