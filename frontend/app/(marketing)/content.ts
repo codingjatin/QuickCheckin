@@ -575,9 +575,8 @@ const content: Record<Language, MarketingContent> = {
         },
       ],
       legal: [
-        { label: 'Privacy Policy', href: '#' },
-        { label: 'Terms of Service', href: '#' },
-        { label: 'Security', href: '#' },
+        { label: 'Privacy Policy', href: '/privacy' },
+        { label: 'Terms of Service', href: '/terms' },
       ],
       copyright: '\u00A9 ' + CURRENT_YEAR + ' QuickCheck. All rights reserved.',
     },
@@ -915,9 +914,8 @@ const content: Record<Language, MarketingContent> = {
         },
       ],
       legal: [
-        { label: 'Politique de confidentialité', href: '#' },
-        { label: "Conditions d'utilisation", href: '#' },
-        { label: 'Sécurité', href: '#' },
+        { label: 'Politique de confidentialité', href: '/privacy' },
+        { label: "Conditions d'utilisation", href: '/terms' },
       ],
       copyright:
         '\u00A9 ' + CURRENT_YEAR + ' QuickCheck. Tous droits réservés.',
