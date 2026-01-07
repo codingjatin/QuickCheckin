@@ -41,7 +41,7 @@ const formatSmsTemplate = (template, variables) => {
 const createBooking = async (req, res) => {
   try {
     const { restaurantId } = req.params;
-    const { customerName, customerPhone, partySize } = req.body;
+    const { customerName, customerPhone, partySize, skipSms, isCustomParty } = req.body;
     
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant || !restaurant.isActive) {
@@ -60,34 +60,38 @@ const createBooking = async (req, res) => {
       customerPhone,
       partySize,
       waitTime,
-      estimatedSeatingTime
+      estimatedSeatingTime,
+      isCustomParty: isCustomParty || false
     });
     
     await booking.save();
     
-    // Format and send confirmation SMS
-    const formattedPhone = formatPhoneNumber(customerPhone);
-    const message = formatSmsTemplate(restaurant.smsTemplates?.confirmation || 
-      'Hi {name}, your table for {partySize} is confirmed at {restaurant}. Estimated wait: {waitTime} minutes.', {
-      name: customerName,
-      partySize: partySize.toString(),
-      restaurant: restaurant.name,
-      waitTime: waitTime.toString()
-    });
-    
-    const smsResult = await sendSMS(formattedPhone, message);
-    
-    // Log the SMS
-    await logMessage(
-      restaurantId,
-      booking._id,
-      customerPhone,
-      customerName,
-      'outbound',
-      'confirmation',
-      message,
-      smsResult?.messageId
-    );
+    // Only send SMS if skipSms is not true
+    if (!skipSms) {
+      // Format and send confirmation SMS
+      const formattedPhone = formatPhoneNumber(customerPhone);
+      const message = formatSmsTemplate(restaurant.smsTemplates?.confirmation || 
+        'Hi {name}, your table for {partySize} is confirmed at {restaurant}. Estimated wait: {waitTime} minutes.', {
+        name: customerName,
+        partySize: partySize.toString(),
+        restaurant: restaurant.name,
+        waitTime: waitTime.toString()
+      });
+      
+      const smsResult = await sendSMS(formattedPhone, message);
+      
+      // Log the SMS
+      await logMessage(
+        restaurantId,
+        booking._id,
+        customerPhone,
+        customerName,
+        'outbound',
+        'confirmation',
+        message,
+        smsResult?.messageId
+      );
+    }
     
     // Emit SSE event for new booking
     const sseEmitter = req.app.get('sseEmitter');
@@ -103,7 +107,8 @@ const createBooking = async (req, res) => {
         customerPhone,
         partySize,
         waitTime,
-        estimatedSeatingTime: booking.estimatedSeatingTime
+        estimatedSeatingTime: booking.estimatedSeatingTime,
+        isCustomParty: booking.isCustomParty || false
       }
     });
   } catch (error) {

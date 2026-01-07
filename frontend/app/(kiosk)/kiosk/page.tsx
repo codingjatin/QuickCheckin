@@ -15,7 +15,7 @@ import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
-type KioskStep = 'party-size' | 'details' | 'confirmation' | 'success' | 'custom-request';
+type KioskStep = 'party-size' | 'details' | 'confirmation' | 'success' | 'custom-request' | 'custom-success';
 
 function KioskContent() {
   const { t } = useTranslation();
@@ -244,12 +244,23 @@ function KioskContent() {
                     Large Party Request
                   </h2>
                   <p className="text-lg text-muted mb-6">
-                    For larger groups, our executive will contact you shortly to arrange the best seating.
+                    For groups larger than our standard tables, please enter your details below.
                   </p>
                   
-                  <div className="space-y-4 mb-8">
+                  <div className="space-y-4 mb-8 text-left">
                     <div>
-                      <label className="block text-lg font-medium mb-2 text-ink">Your Name</label>
+                      <label className="block text-lg font-medium mb-2 text-ink">Party Size *</label>
+                      <Input
+                        type="number"
+                        value={partySize || ''}
+                        onChange={(e) => setPartySize(parseInt(e.target.value) || 0)}
+                        placeholder="Enter number of guests"
+                        min="1"
+                        className="h-14 text-lg border-border focus-visible:ring-2 focus-visible:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-lg font-medium mb-2 text-ink">Your Name *</label>
                       <Input
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -258,7 +269,7 @@ function KioskContent() {
                       />
                     </div>
                     <div>
-                      <label className="block text-lg font-medium mb-2 text-ink">Phone Number</label>
+                      <label className="block text-lg font-medium mb-2 text-ink">Phone Number *</label>
                       <div className="flex gap-2">
                         <select
                           value={countryCode}
@@ -278,9 +289,9 @@ function KioskContent() {
                     </div>
                   </div>
 
-                  <div className="bg-off ring-1 ring-border rounded-xl p-4 mb-6">
-                    <p className="text-sm text-muted">
-                      📞 An executive will call you within 5 minutes to discuss your party size and seating preferences.
+                  <div className="bg-amber-50 ring-1 ring-amber-200 rounded-xl p-4 mb-6">
+                    <p className="text-sm text-amber-800">
+                      ⏳ Please wait for approximately 5 minutes. One of our representatives will come to assist you with seating. Please stay nearby.
                     </p>
                   </div>
 
@@ -288,24 +299,60 @@ function KioskContent() {
                     <Button
                       variant="outline"
                       size="lg"
-                      onClick={() => setStep('party-size')}
+                      onClick={() => {
+                        setPartySize(0);
+                        setStep('party-size');
+                      }}
                       className="flex-1 h-14 text-lg border-ink/15 text-ink hover:bg-off"
                     >
                       {t('back')}
                     </Button>
                     <Button
                       size="lg"
-                      onClick={() => {
-                        if (name && phone) {
-                          toast.success('Request submitted! Our executive will contact you shortly.');
-                          resetFlow();
-                        } else {
-                          toast.error('Please enter your name and phone number');
+                      disabled={isSubmitting}
+                      onClick={async () => {
+                        if (!name || !phone || !partySize) {
+                          toast.error('Please fill in all fields');
+                          return;
+                        }
+                        
+                        setIsSubmitting(true);
+                        try {
+                          const fullPhone = `${countryCode}${phone}`;
+                          const { data, error } = await apiClient.createBooking(
+                            restaurantId,
+                            name,
+                            fullPhone,
+                            partySize,
+                            { skipSms: true, isCustomParty: true }
+                          );
+
+                          if (error) {
+                            toast.error(error.message || 'Failed to submit request');
+                            return;
+                          }
+
+                          if (data) {
+                            setStep('custom-success');
+                            toast.success('Request submitted! A representative will come to assist you shortly.');
+                          }
+                        } catch (err) {
+                          toast.error('An error occurred while submitting your request');
+                          console.error('Custom booking error:', err);
+                        } finally {
+                          setIsSubmitting(false);
                         }
                       }}
                       className="flex-1 h-14 text-lg bg-primary hover:bg-primary-600 text-white"
                     >
-                      Request Call
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        'Join Waitlist'
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -451,6 +498,35 @@ function KioskContent() {
                     <h3 className="font-semibold mb-2 text-ink">{t('currentWaitTime')}</h3>
                     <p className="text-3xl font-bold text-primary">
                       {waitTime || 25}-{(waitTime || 25) + 5} {t('minutes')}
+                    </p>
+                  </div>
+                  <Button
+                    size="lg"
+                    onClick={resetFlow}
+                    className="h-14 text-lg bg-primary hover:bg-primary-600 text-white"
+                  >
+                    {t('addAnotherParty')}
+                  </Button>
+                </div>
+              )}
+
+              {step === 'custom-success' && (
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="h-10 w-10 text-primary" />
+                  </div>
+                  <h2 className="text-3xl font-display font-bold mb-4 text-ink">
+                    You're in Line!
+                  </h2>
+                  <p className="text-xl text-muted mb-6">
+                    Please wait a moment.
+                  </p>
+                  <div className="bg-amber-50 ring-1 ring-amber-200 rounded-xl p-6 mb-8">
+                    <p className="text-lg text-amber-800 font-medium">
+                      ⏳ One of our representatives will come to assist you shortly.
+                    </p>
+                    <p className="text-sm text-amber-700 mt-2">
+                      Please stay nearby. This usually takes about 5 minutes.
                     </p>
                   </div>
                   <Button

@@ -18,6 +18,7 @@ export interface Booking {
   seatedAt?: string;
   tableId?: string;
   createdAt: string;
+  isCustomParty?: boolean;
 }
 
 export interface Table {
@@ -82,7 +83,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<{ data?: T; error?: ApiError }> {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('sessionToken') : null;
       
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -173,7 +174,8 @@ class ApiClient {
     restaurantId: string,
     customerName: string,
     customerPhone: string,
-    partySize: number
+    partySize: number,
+    options?: { skipSms?: boolean; isCustomParty?: boolean }
   ) {
     return this.request<{
       message: string;
@@ -184,10 +186,17 @@ class ApiClient {
         partySize: number;
         waitTime: number;
         estimatedSeatingTime: string;
+        isCustomParty?: boolean;
       };
     }>(`/api/${restaurantId}/bookings`, {
       method: 'POST',
-      body: JSON.stringify({ customerName, customerPhone, partySize }),
+      body: JSON.stringify({ 
+        customerName, 
+        customerPhone, 
+        partySize,
+        skipSms: options?.skipSms,
+        isCustomParty: options?.isCustomParty
+      }),
     });
   }
 
@@ -260,7 +269,7 @@ class ApiClient {
 
   // SSE URL helper
   getSSEUrl(restaurantId: string): string {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : '';
+    const token = typeof window !== 'undefined' ? localStorage.getItem('sessionToken') : '';
     return `${this.baseUrl}/api/sse/${restaurantId}/events?token=${token}`;
   }
 }

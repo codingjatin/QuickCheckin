@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -35,7 +36,7 @@ function SignupForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     restaurantName: '',
-    country: 'US',
+    country: 'CA',
     state: '',
     city: '',
     businessNumber: '',
@@ -183,9 +184,6 @@ function SignupForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-off p-4 relative overflow-hidden">
-      {/* Fade Overlays */}
-      <div className="absolute left-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-r from-off to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-l from-off to-transparent z-10 pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -197,14 +195,14 @@ function SignupForm() {
         <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
+            <Link href="/" className="flex items-center gap-3 mb-6 hover:opacity-80 transition-opacity">
               <div className="p-2 bg-primary/10 rounded-xl">
                 <Image src="/QuickCheck.svg" alt="QuickCheck" width={32} height={32} />
               </div>
               <h1 className="text-2xl font-display font-bold text-ink tracking-tight">
                 QuickCheck
               </h1>
-            </div>
+            </Link>
             <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
               Start Your Free Trial
             </h2>
@@ -372,19 +370,62 @@ function SignupForm() {
 
                   <div>
                     <label className="block text-sm font-medium text-ink mb-2">Seat Capacity *</label>
-                    <input
-                      type="number"
-                      name="seatCapacity"
-                      required
-                      min="1"
-                      value={formData.seatCapacity}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink"
-                      placeholder="50"
-                    />
-                    <div className="mt-2 p-3 bg-primary/10 rounded-lg">
+                    <div className="space-y-3">
+                      <label 
+                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
+                          formData.seatCapacity < 50 
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="seatCapacity"
+                          value="30"
+                          checked={formData.seatCapacity < 50}
+                          onChange={() => setFormData(prev => ({ ...prev, seatCapacity: 30 }))}
+                          className="sr-only"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium text-ink">Less than 50 seats</p>
+                          <p className="text-sm text-muted">Small Plan - $299 {currency}/month</p>
+                        </div>
+                        {formData.seatCapacity < 50 && (
+                          <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                            <Check size={14} className="text-white" />
+                          </div>
+                        )}
+                      </label>
+                      
+                      <label 
+                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
+                          formData.seatCapacity >= 50 
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="seatCapacity"
+                          value="50"
+                          checked={formData.seatCapacity >= 50}
+                          onChange={() => setFormData(prev => ({ ...prev, seatCapacity: 50 }))}
+                          className="sr-only"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium text-ink">50 or more seats</p>
+                          <p className="text-sm text-muted">Large Plan - $499 {currency}/month</p>
+                        </div>
+                        {formData.seatCapacity >= 50 && (
+                          <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                            <Check size={14} className="text-white" />
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                    <div className="mt-3 p-3 bg-primary/10 rounded-lg">
                       <p className="text-sm font-semibold text-primary">{plan} Plan - ${price} {currency}/month</p>
-                      <p className="text-xs text-muted mt-1">Based on {formData.seatCapacity} seats</p>
+                      <p className="text-xs text-muted mt-1">30 days FREE trial included</p>
                     </div>
                   </div>
                 </motion.div>

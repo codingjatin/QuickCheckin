@@ -31,6 +31,10 @@ export default function AdminDashboard() {
 
   const restaurantId = restaurantData?.id;
 
+  // Custom party popup state
+  const [showCustomPartyPopup, setShowCustomPartyPopup] = useState(false);
+  const [customPartyBooking, setCustomPartyBooking] = useState<Booking | null>(null);
+
   // Fetch data from backend
   const fetchData = useCallback(async () => {
     if (!restaurantId) return;
@@ -60,9 +64,21 @@ export default function AdminDashboard() {
 
   // SSE handlers for real-time updates
   const handleNewBooking = useCallback((data: any) => {
-    toast.success('New booking received!', {
-      description: `${data.booking?.customerName} - Party of ${data.booking?.partySize}`
-    });
+    const booking = data.booking;
+    
+    // Check if it's a custom party booking
+    if (booking?.isCustomParty) {
+      setCustomPartyBooking(booking);
+      setShowCustomPartyPopup(true);
+      toast.warning('🚨 Custom Party Alert!', {
+        description: `${booking.customerName} - Party of ${booking.partySize} needs assistance`,
+        duration: 10000
+      });
+    } else {
+      toast.success('New booking received!', {
+        description: `${booking?.customerName} - Party of ${booking?.partySize}`
+      });
+    }
     fetchData(); // Refresh data
   }, [fetchData]);
 
@@ -229,6 +245,56 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8 text-ink">
+      {/* Custom Party Popup Modal */}
+      {showCustomPartyPopup && customPartyBooking && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] animate-in fade-in duration-200">
+          <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 animate-in zoom-in-95 duration-200">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                <Users className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-amber-800 mb-2">
+                🚨 Custom Party Alert!
+              </h3>
+              <p className="text-amber-700 mb-6">
+                A large party needs personal assistance
+              </p>
+              
+              <div className="bg-white rounded-xl p-4 mb-6 text-left space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-amber-700 font-medium">Customer:</span>
+                  <span className="font-bold text-amber-900">{customPartyBooking.customerName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-amber-700 font-medium">Party Size:</span>
+                  <span className="font-bold text-amber-900">{customPartyBooking.partySize} people</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-amber-700 font-medium">Phone:</span>
+                  <span className="font-bold text-amber-900">{customPartyBooking.customerPhone}</span>
+                </div>
+              </div>
+              
+              <div className="bg-amber-100 rounded-lg p-3 mb-6">
+                <p className="text-sm text-amber-800">
+                  <strong>Action Required:</strong> Please send a staff member to assist this customer at the kiosk area.
+                </p>
+              </div>
+              
+              <Button 
+                className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-lg"
+                onClick={() => {
+                  setShowCustomPartyPopup(false);
+                  setCustomPartyBooking(null);
+                }}
+              >
+                Got it, I'll assist them
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Table Selection Modal */}
       {showTableModal && selectedBooking && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -407,7 +473,14 @@ export default function AdminDashboard() {
                         <span className="text-sm font-semibold text-primary">{index + 1}</span>
                       </div>
                       <div>
-                        <h3 className="font-medium">{booking.customerName}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium">{booking.customerName}</h3>
+                          {booking.isCustomParty && (
+                            <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs">
+                              Custom Party
+                            </Badge>
+                          )}
+                        </div>
                         <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
                           <span className="flex items-center">
                             <Users className="h-4 w-4 mr-1" />

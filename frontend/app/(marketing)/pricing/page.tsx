@@ -10,10 +10,10 @@ import { useMarketingContent } from "../content";
 export default function PricingPage() {
   const { pages } = useMarketingContent();
   const { usageNotes, faq, hero } = pages.pricing;
-  
+
   const [country, setCountry] = useState<'US' | 'CA' | 'OTHER'>('US');
   const [detectingLocation, setDetectingLocation] = useState(true);
-  
+
   // Auto-detect user's location
   useEffect(() => {
     const detectLocation = async () => {
@@ -29,7 +29,7 @@ export default function PricingPage() {
                 );
                 const data = await response.json();
                 const countryCode = data.address?.country_code?.toUpperCase();
-                
+
                 if (countryCode === 'US') {
                   setCountry('US');
                 } else if (countryCode === 'CA') {
@@ -64,9 +64,9 @@ export default function PricingPage() {
 
     detectLocation();
   }, []);
-  
+
   const currency = country === 'CA' ? 'CAD' : 'USD';
-  
+
   const plans = [
     {
       name: 'Small Plan',
@@ -127,14 +127,14 @@ export default function PricingPage() {
   return (
     <div className="bg-off text-ink">
       <PageHero
-        eyebrow={hero.eyebrow}
+        // eyebrow={hero.eyebrow}
         title={hero.title}
         description={hero.description}
-        actions={hero.actions}
+        // actions={hero.actions}
       />
 
       {/* Auto-detected Location Notice */}
-      {!detectingLocation && (
+      {/* {!detectingLocation && (
         <section className="py-4 bg-panel">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <p className="text-center text-sm text-muted">
@@ -146,17 +146,16 @@ export default function PricingPage() {
             </p>
           </div>
         </section>
-      )}
+      )} */}
 
       {/* Pricing Cards */}
-      <section className="py-20">
+      <section className="">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
           {plans.map((plan) => (
             <article
               key={plan.name}
-              className={`flex flex-col rounded-3xl border border-border bg-panel p-6 shadow-soft sm:p-8 ${
-                plan.featured ? "ring-2 ring-primary" : ""
-              }`}
+              className={`flex flex-col rounded-3xl border border-border bg-panel p-6 shadow-soft sm:p-8 ${plan.featured ? "ring-2 ring-primary" : ""
+                }`}
             >
               <div className="flex items-baseline justify-between">
                 <h2 className="text-xl font-semibold text-ink">{plan.name}</h2>

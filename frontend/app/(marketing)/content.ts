@@ -259,7 +259,7 @@ const content: Record<Language, MarketingContent> = {
         { label: 'Contact', href: '/contact' },
       ],
       login: { label: 'Log in', href: '/auth' },
-      primaryCta: { label: 'Start free trial', href: '/signup' },
+      primaryCta: { label: 'Start free trial', href: '/pricing' },
     },
     landing: {
       hero: {
@@ -380,7 +380,7 @@ const content: Record<Language, MarketingContent> = {
             description: 'Multi-location management with advanced automations and integrations.',
             highlight: 'Most popular with growing groups.',
             featured: true,
-            cta: { label: 'Start free trial', href: '/signup' },
+            cta: { label: 'Start free trial', href: '/pricing' },
           },
           {
             name: 'Enterprise',
@@ -487,7 +487,7 @@ const content: Record<Language, MarketingContent> = {
           description:
             'No per-user fees. Activate new locations in minutes and only pay for the seats you manage.',
           actions: [
-            { label: 'Start free trial', href: '/contact' },
+            { label: 'Start free trial', href: '/pricing' },
             { label: 'Talk to sales', href: '/contact' },
           ],
         },
@@ -505,7 +505,7 @@ const content: Record<Language, MarketingContent> = {
               'Real-time host dashboard',
               'Basic analytics & exports',
             ],
-            cta: { label: 'Start free trial', href: '/signup' },
+            cta: { label: 'Start free trial', href: '/pricing' },
           },
           {
             name: 'Pro',
@@ -521,7 +521,7 @@ const content: Record<Language, MarketingContent> = {
               'Branding controls per venue',
             ],
             featured: true,
-            cta: { label: 'Start free trial', href: '/signup' },
+            cta: { label: 'Start free trial', href: '/pricing' },
           },
           {
             name: 'Enterprise',

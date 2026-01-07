@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -26,10 +27,6 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-off p-4 relative overflow-hidden">
-      {/* Left Fade */}
-      <div className="absolute left-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-r from-off to-transparent z-10 pointer-events-none" />
-      {/* Right Fade */}
-      <div className="absolute right-0 top-0 bottom-0 w-32 md:w-48 bg-gradient-to-l from-off to-transparent z-10 pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -40,14 +37,14 @@ export default function AuthPage() {
         {/* Left Side - Form */}
         <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16">
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
+            <Link href="/" className="flex items-center gap-3 mb-4 hover:opacity-80 transition-opacity">
               <div className="p-2 bg-primary/10 rounded-xl">
                 <Image src="/QuickCheck.svg" alt="QuickCheck logo" width={32} height={32} />
               </div>
               <h1 className="text-2xl font-display font-bold text-ink tracking-tight">
                 QuickCheck
               </h1>
-            </div>
+            </Link>
             {/* <h2 className="text-3xl md:text-4xl font-display font-bold text-ink mb-3">
               {currentStep === "otp" ? "Verify Code" : "Create an account"}
             </h2>
