@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const Restaurant = require('../models/Restaurant');
 const Session = require('../models/Session');
 const SubscriptionHistory = require('../models/SubscriptionHistory');

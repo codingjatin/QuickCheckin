@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { Lock } from 'lucide-react';
+import { Lock, Loader2 } from 'lucide-react';
 
 export default function VerifyOTPPage() {
   const router = useRouter();
@@ -16,6 +16,8 @@ export default function VerifyOTPPage() {
 
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   useEffect(() => {
     if (!restaurantId || !phone) {
@@ -23,6 +25,43 @@ export default function VerifyOTPPage() {
       router.push('/signup');
     }
   }, [restaurantId, phone, router]);
+
+  // Cooldown timer
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const handleResendOTP = async () => {
+    if (resendCooldown > 0 || resendLoading) return;
+
+    setResendLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/request-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurantId, phone })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || 'Failed to resend OTP');
+        return;
+      }
+
+      toast.success('New OTP sent to your phone!');
+      setResendCooldown(60); // 60 second cooldown
+      setOtp(''); // Clear old OTP input
+    } catch (error) {
+      console.error('Resend OTP error:', error);
+      toast.error('Failed to resend OTP. Please try again.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,10 +179,19 @@ export default function VerifyOTPPage() {
           <div className="mt-6 pt-6 border-t border-border/50 text-center text-sm text-muted">
             Didn't receive the code?{' '}
             <button 
-              className="text-primary hover:underline font-medium"
-              onClick={() => toast.info('Please wait 60 seconds before requesting a new code')}
+              className="text-primary hover:underline font-medium disabled:text-muted disabled:no-underline"
+              onClick={handleResendOTP}
+              disabled={resendCooldown > 0 || resendLoading}
             >
-              Resend
+              {resendLoading ? (
+                <span className="inline-flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" /> Sending...
+                </span>
+              ) : resendCooldown > 0 ? (
+                `Resend in ${resendCooldown}s`
+              ) : (
+                'Resend OTP'
+              )}
             </button>
           </div>
         </div>
@@ -161,3 +209,4 @@ export default function VerifyOTPPage() {
     </div>
   );
 }
+
