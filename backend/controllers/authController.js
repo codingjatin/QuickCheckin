@@ -70,22 +70,39 @@ const verifyLoginOTP = async (req, res) => {
       return res.status(400).json({ message: 'Restaurant ID, phone number, and OTP are required.' });
     }
 
+    // Normalize phone number - try multiple formats
+    const phoneVariations = [
+      phone,
+      decodeURIComponent(phone),
+      phone.replace(/\s/g, ''),
+      phone.replace(/[^\d+]/g, ''),
+    ];
+    
     // Debug logging
-    console.log('[OTP Verify] Looking for session with:', { restaurantId, phone, otp });
+    console.log('[OTP Verify] Looking for session with:', { restaurantId, otp, phoneVariations });
     
-    // Verify OTP
-    const session = await Session.findOne({ restaurantId, phone, otp });
-    
-    console.log('[OTP Verify] Session found:', session ? 'YES' : 'NO');
+    // First, find session by restaurantId and otp (most reliable)
+    const session = await Session.findOne({ restaurantId, otp });
     
     if (!session) {
-      // Check if there's ANY session for this restaurant/phone (for debugging)
-      const anySessions = await Session.find({ restaurantId, phone });
-      console.log('[OTP Verify] Sessions for this restaurant/phone:', anySessions.length);
+      console.log('[OTP Verify] No session found for this restaurantId and otp');
+      // Check if any session exists for this restaurant
+      const anySessions = await Session.find({ restaurantId });
+      console.log('[OTP Verify] All sessions for this restaurant:', anySessions.length);
       if (anySessions.length > 0) {
+        console.log('[OTP Verify] Session phones:', anySessions.map(s => s.phone));
         console.log('[OTP Verify] Session OTPs:', anySessions.map(s => s.otp));
       }
       return res.status(400).json({ message: 'Invalid OTP.' });
+    }
+    
+    // Verify that the phone matches (with normalization)
+    const sessionPhoneNormalized = session.phone.replace(/[^\d+]/g, '');
+    const requestPhoneNormalized = phone.replace(/[^\d+]/g, '');
+    
+    if (sessionPhoneNormalized !== requestPhoneNormalized) {
+      console.log('[OTP Verify] Phone mismatch:', { sessionPhone: session.phone, requestPhone: phone });
+      return res.status(400).json({ message: 'Phone number does not match.' });
     }
 
     if (session.expiresAt < new Date()) {
