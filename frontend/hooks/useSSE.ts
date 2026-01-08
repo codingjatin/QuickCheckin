@@ -138,7 +138,7 @@ export function useSSE(options: UseSSEOptions) {
       eventSourceRef.current?.close();
       setIsConnected(false);
     };
-  }, [restaurantId, onNewBooking, onStatusChange, onNewMessage, playNotificationSound]);
+  }, [restaurantId, onNewBooking, onStatusChange, onNewMessage, onWaitTimeUpdate, playNotificationSound]);
 
   return { isConnected };
 }

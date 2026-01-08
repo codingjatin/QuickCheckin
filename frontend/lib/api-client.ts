@@ -103,7 +103,7 @@ class ApiClient {
 
       if (!response.ok) {
         if (response.status === 401 && typeof window !== 'undefined') {
-          localStorage.removeItem('auth_token');
+          localStorage.removeItem('sessionToken');
         }
         return {
           error: {

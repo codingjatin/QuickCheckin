@@ -58,6 +58,11 @@ const bookingSchema = new mongoose.Schema({
   },
   completedAt: {
     type: Date
+  },
+  // Custom party flag (for large parties that need staff assistance)
+  isCustomParty: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true
