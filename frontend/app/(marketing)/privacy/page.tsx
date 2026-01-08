@@ -18,80 +18,86 @@ export default function PrivacyPolicyPage() {
             <section className="mb-10">
               <h2 className="text-2xl font-semibold text-ink mb-4">1. Introduction</h2>
               <p className="text-ink/80 mb-4">
-                QuickCheck ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our restaurant waitlist management service.
+                QuickCheck ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, store, and protect your information when you use our restaurant waitlist management service.
               </p>
               <p className="text-ink/80">
-                By using QuickCheck, you agree to the collection and use of information in accordance with this policy.
+                By using QuickCheck, you agree to the practices described in this Privacy Policy.
               </p>
             </section>
 
             <section className="mb-10">
               <h2 className="text-2xl font-semibold text-ink mb-4">2. Information We Collect</h2>
               
-              <h3 className="text-xl font-medium text-ink mb-3">For Restaurant Owners/Administrators:</h3>
+              <h3 className="text-xl font-medium text-ink mb-3">A. Restaurant Owners / Administrators</h3>
               <ul className="list-disc pl-6 mb-4 text-ink/80 space-y-2">
-                <li><strong>Business Information:</strong> Restaurant name, address, city, email, phone number, business registration number</li>
-                <li><strong>Account Information:</strong> Phone number for authentication via SMS OTP</li>
-                <li><strong>Payment Information:</strong> Processed securely through Stripe (we do not store credit card details)</li>
-                <li><strong>Subscription Data:</strong> Plan type, billing history, subscription status</li>
+                <li><strong>Business Information:</strong> Restaurant name, address, city, business email, phone number, and business registration number</li>
+                <li><strong>Account Information:</strong> Phone number used for authentication via SMS one-time password (OTP)</li>
+                <li><strong>Payment Information:</strong> Payments are processed securely by Stripe. We do not store credit card details</li>
+                <li><strong>Subscription Data:</strong> Plan type, billing history, and subscription status</li>
               </ul>
 
-              <h3 className="text-xl font-medium text-ink mb-3">For Restaurant Customers (Waitlist):</h3>
+              <h3 className="text-xl font-medium text-ink mb-3">B. Restaurant Customers (Waitlist Guests)</h3>
               <ul className="list-disc pl-6 mb-4 text-ink/80 space-y-2">
                 <li><strong>Personal Information:</strong> Name and phone number</li>
-                <li><strong>Waitlist Data:</strong> Party size, check-in time, booking status</li>
-                <li><strong>SMS Communications:</strong> Messages sent to/from your phone regarding your waitlist status</li>
+                <li><strong>Waitlist Data:</strong> Party size, check-in time, and waitlist status</li>
+                <li><strong>SMS Communications:</strong> Messages sent to and from your phone related to waitlist updates</li>
               </ul>
             </section>
 
             <section className="mb-10">
               <h2 className="text-2xl font-semibold text-ink mb-4">3. How We Use Your Information</h2>
-              <p className="text-ink/80 mb-4">We use the collected information for the following purposes:</p>
+              <p className="text-ink/80 mb-4">We use your information to:</p>
               <ul className="list-disc pl-6 mb-4 text-ink/80 space-y-2">
-                <li>To provide and maintain our waitlist management service</li>
-                <li>To send SMS notifications about table availability and waitlist status</li>
-                <li>To process payments and manage subscriptions</li>
-                <li>To authenticate restaurant administrators via SMS OTP</li>
-                <li>To improve our service and customer experience</li>
-                <li>To communicate important service updates</li>
+                <li>Provide and operate the QuickCheck service</li>
+                <li>Send SMS notifications related to waitlist and table availability</li>
+                <li>Authenticate restaurant administrators using SMS OTP</li>
+                <li>Process payments and manage subscriptions</li>
+                <li>Improve our services and user experience</li>
+                <li>Communicate important service-related updates</li>
               </ul>
             </section>
 
             <section className="mb-10">
               <h2 className="text-2xl font-semibold text-ink mb-4">4. Data Retention</h2>
               <p className="text-ink/80 mb-4">
-                <strong>Customer Waitlist Data:</strong> Booking records and SMS message logs are automatically deleted after <strong>48 hours</strong>. We do not retain customer personal information beyond this period.
+                <strong>Customer Waitlist Data:</strong> Guest waitlist records and SMS logs are automatically deleted within <strong>48 hours</strong>.
+              </p>
+              <p className="text-ink/80 mb-4">
+                <strong>Restaurant Account Data:</strong> Retained while the account is active. After account deletion, data is removed within 30 days, unless legally required otherwise.
               </p>
               <p className="text-ink/80">
-                <strong>Restaurant Business Data:</strong> Account information is retained for as long as the account is active. Upon account deletion, data is removed within 30 days.
+                We do not retain customer personal data beyond the stated retention period.
               </p>
             </section>
 
             <section className="mb-10">
               <h2 className="text-2xl font-semibold text-ink mb-4">5. Third-Party Services</h2>
-              <p className="text-ink/80 mb-4">We use the following third-party services:</p>
+              <p className="text-ink/80 mb-4">We use trusted third-party providers to operate our service:</p>
               <ul className="list-disc pl-6 mb-4 text-ink/80 space-y-2">
-                <li><strong>Telnyx:</strong> For SMS messaging. Their privacy policy: <a href="https://telnyx.com/privacy-policy" className="text-primary hover:underline">telnyx.com/privacy-policy</a></li>
-                <li><strong>Stripe:</strong> For payment processing. Their privacy policy: <a href="https://stripe.com/privacy" className="text-primary hover:underline">stripe.com/privacy</a></li>
-                <li><strong>MongoDB Atlas:</strong> For secure cloud data storage</li>
+                <li><strong>Telnyx</strong> – SMS messaging</li>
+                <li><strong>Stripe</strong> – Payment processing</li>
+                <li><strong>MongoDB Atlas</strong> – Secure cloud database hosting</li>
               </ul>
               <p className="text-ink/80">
-                These services are PCI-DSS and SOC 2 compliant, ensuring your data is handled securely.
+                These providers follow industry-standard security practices, including PCI-DSS and SOC 2 compliance where applicable.
               </p>
             </section>
 
             <section className="mb-10">
               <h2 className="text-2xl font-semibold text-ink mb-4">6. Data Security</h2>
               <p className="text-ink/80 mb-4">
-                We implement industry-standard security measures including:
+                We take reasonable technical and organizational measures to protect your data, including:
               </p>
               <ul className="list-disc pl-6 mb-4 text-ink/80 space-y-2">
-                <li>HTTPS encryption for all data in transit</li>
+                <li>HTTPS encryption for data in transit</li>
                 <li>Encrypted database storage</li>
                 <li>JWT-based authentication with token expiration</li>
                 <li>OTP-based phone verification</li>
                 <li>No storage of credit card information on our servers</li>
               </ul>
+              <p className="text-ink/80">
+                While we take reasonable steps to protect your data, no method of transmission or storage is 100% secure, and we cannot guarantee absolute security.
+              </p>
             </section>
 
             <section className="mb-10">
@@ -99,38 +105,45 @@ export default function PrivacyPolicyPage() {
               <p className="text-ink/80 mb-4">You have the right to:</p>
               <ul className="list-disc pl-6 mb-4 text-ink/80 space-y-2">
                 <li>Access your personal information</li>
-                <li>Correct inaccurate data</li>
+                <li>Request corrections to inaccurate data</li>
                 <li>Request deletion of your data</li>
-                <li>Opt out of marketing communications</li>
+                <li>Opt out of non-essential communications</li>
               </ul>
               <p className="text-ink/80">
-                To exercise these rights, contact us at <a href="mailto:privacy@quickcheckin.ca" className="text-primary hover:underline">privacy@quickcheckin.ca</a>
+                To exercise these rights, contact us at <a href="mailto:info@quickcheckin.ca" className="text-primary hover:underline">info@quickcheckin.ca</a>
               </p>
             </section>
 
             <section className="mb-10">
               <h2 className="text-2xl font-semibold text-ink mb-4">8. Children's Privacy</h2>
               <p className="text-ink/80">
-                Our service is not intended for individuals under the age of 18. We do not knowingly collect personal information from children.
+                QuickCheck is not intended for individuals under the age of 18. We do not knowingly collect personal information from children.
               </p>
             </section>
 
             <section className="mb-10">
               <h2 className="text-2xl font-semibold text-ink mb-4">9. Changes to This Policy</h2>
               <p className="text-ink/80">
-                We may update this Privacy Policy from time to time. We will notify you of significant changes by posting the new policy on this page and updating the "Last updated" date.
+                We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated "Last updated" date.
               </p>
             </section>
 
             <section className="mb-10">
               <h2 className="text-2xl font-semibold text-ink mb-4">10. Contact Us</h2>
               <p className="text-ink/80">
-                If you have questions about this Privacy Policy, please contact us at:
+                If you have any questions about this Privacy Policy, please contact us:
               </p>
               <p className="text-ink/80 mt-4">
                 <strong>QuickCheck Inc.</strong><br />
-                Email: <a href="mailto:privacy@quickcheckin.ca" className="text-primary hover:underline">privacy@quickcheckin.ca</a><br />
+                Email: <a href="mailto:info@quickcheckin.ca" className="text-primary hover:underline">info@quickcheckin.ca</a><br />
                 Website: <a href="https://quickcheckin.ca" className="text-primary hover:underline">quickcheckin.ca</a>
+              </p>
+            </section>
+
+            <section className="mb-10">
+              <h2 className="text-2xl font-semibold text-ink mb-4">Governing Law</h2>
+              <p className="text-ink/80">
+                This Privacy Policy is governed by the laws of Canada and the Province of Ontario.
               </p>
             </section>
           </div>
