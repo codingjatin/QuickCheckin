@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Lock, Loader2 } from 'lucide-react';
@@ -125,14 +126,14 @@ export default function VerifyOTPPage() {
         {/* Left Side - Form */}
         <div className="flex flex-col justify-center p-8 md:p-12 lg:p-16">
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
+            <Link href="/" className="flex items-center gap-3 mb-6 hover:opacity-80 transition-opacity">
               <div className="p-2 bg-primary/10 rounded-xl">
                 <Image src="/QuickCheck.svg" alt="QuickCheck" width={32} height={32} />
               </div>
               <h1 className="text-2xl font-display font-bold text-ink tracking-tight">
                 QuickCheck
               </h1>
-            </div>
+            </Link>
             
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-2xl mb-4">
               <Lock className="w-8 h-8 text-primary" />
