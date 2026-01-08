@@ -284,7 +284,7 @@ const content: Record<Language, MarketingContent> = {
           { title: 'Manual notes', description: 'Hosts juggle clipboards and sticky notes that never stay in sync.' },
           { title: 'Missed calls', description: 'Guests give up when no one can answer the phone during the dinner rush.' },
           { title: 'Blocked tables', description: 'Tables sit empty while staff chase no-shows and outdated wait times.' },
-          { title: 'Poor guest comms', description: 'Guests stay in the dark, walk off, or crowd the host stand for updates.' },
+          { title: 'No status updates', description: 'Guests stay in the dark, walk off, or crowd the host stand for updates.' },
         ],
         outcomes: [
           { stat: '30-60% fewer walk-offs', description: 'Automated SMS updates keep guests informed and eager to return.' },

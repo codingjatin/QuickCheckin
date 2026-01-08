@@ -19,7 +19,8 @@ export function OtpForm() {
     document.getElementById("otp-input")?.focus();
   }, []);
 
-  const handleVerify = async () => {
+  const handleVerify = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (otp.length !== 6) return setError(t("pleaseEnterCompleteOtp"));
     setError("");
     
@@ -52,50 +53,53 @@ export function OtpForm() {
         <p className="text-sm text-muted">{t("weveSentCode")} <br /><span className="font-medium text-ink">{phoneNumber}</span></p>
       </div>
 
-      <div>
-        <Label htmlFor="otp-input" className="text-sm font-medium text-ink">
-          {t("enterOtpCode")}
-        </Label>
-        <Input
-          id="otp-input"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-          maxLength={6}
-          inputMode="numeric"
-          className="mt-2 text-center text-2xl tracking-widest font-mono h-12 rounded-xl border-border focus-visible:ring-2 focus-visible:ring-primary"
-        />
-        {error && <p className="text-error text-sm mt-2">{error}</p>}
-      </div>
+      <form onSubmit={handleVerify}>
+        <div>
+          <Label htmlFor="otp-input" className="text-sm font-medium text-ink">
+            {t("enterOtpCode")}
+          </Label>
+          <Input
+            id="otp-input"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            maxLength={6}
+            inputMode="numeric"
+            className="mt-2 text-center text-2xl tracking-widest font-mono h-12 rounded-xl border-border focus-visible:ring-2 focus-visible:ring-primary"
+          />
+          {error && <p className="text-error text-sm mt-2">{error}</p>}
+        </div>
 
-      <div className="space-y-3">
-        <Button
-          onClick={handleVerify}
-          disabled={isLoading || otp.length !== 6}
-          className="w-full h-12 text-lg bg-primary text-white hover:bg-primary-600 rounded-xl shadow transition"
-        >
-          {isLoading ? (
-            <div className="flex items-center justify-center gap-2">
-              <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-              {t("verifying")}
-            </div>
-          ) : (
-            <>
-              <CheckCircle2 className="h-5 w-5 mr-2" />
-              {t("verifyAndContinue")}
-            </>
-          )}
-        </Button>
+        <div className="space-y-3 mt-6">
+          <Button
+            type="submit"
+            disabled={isLoading || otp.length !== 6}
+            className="w-full h-12 text-lg bg-primary text-white hover:bg-primary-600 rounded-xl shadow transition"
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                {t("verifying")}
+              </div>
+            ) : (
+              <>
+                <CheckCircle2 className="h-5 w-5 mr-2" />
+                {t("verifyAndContinue")}
+              </>
+            )}
+          </Button>
 
-        <Button
-          variant="outline"
-          onClick={logout}
-          disabled={isLoading}
-          className="w-full h-12 text-lg border-border text-ink hover:bg-off rounded-xl"
-        >
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          {t("backToLogin")}
-        </Button>
-      </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={logout}
+            disabled={isLoading}
+            className="w-full h-12 text-lg border-border text-ink hover:bg-off rounded-xl"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            {t("backToLogin")}
+          </Button>
+        </div>
+      </form>
 
       <div className="text-center text-sm text-muted">
         <p>
@@ -114,3 +118,4 @@ export function OtpForm() {
     </motion.div>
   );
 }
+
