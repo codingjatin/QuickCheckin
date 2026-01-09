@@ -199,7 +199,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Waitlist Settings */}
-      <Card className="bg-panel border border-border shadow-soft">
+      {/* <Card className="bg-panel border border-border shadow-soft">
         <CardHeader>
           <CardTitle className="flex items-center">
             <Clock className="h-5 w-5 mr-2 text-primary" />
@@ -254,10 +254,10 @@ export default function SettingsPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* SMS Templates */}
-      <Card className="bg-panel border border-border shadow-soft">
+      {/* <Card className="bg-panel border border-border shadow-soft">
         <CardHeader>
           <CardTitle className="flex items-center">
             <MessageSquare className="h-5 w-5 mr-2 text-primary" />
@@ -344,7 +344,7 @@ export default function SettingsPage() {
             />
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Table Configuration */}
       <Card className="bg-panel border border-border shadow-soft">

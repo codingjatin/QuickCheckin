@@ -63,7 +63,7 @@ export default function SystemSettingsPage() {
       </div>
 
       {/* Platform Configuration */}
-      <Card className="bg-panel border border-border shadow-soft">
+      {/* <Card className="bg-panel border border-border shadow-soft">
         <CardHeader>
           <CardTitle className="flex items-center">
             <Globe className="h-5 w-5 mr-2 text-primary" />
@@ -176,10 +176,10 @@ export default function SystemSettingsPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* SMS Configuration */}
-      <Card className="bg-panel border border-border shadow-soft">
+      {/* <Card className="bg-panel border border-border shadow-soft">
         <CardHeader>
           <CardTitle className="flex items-center">
             <MessageSquare className="h-5 w-5 mr-2 text-primary" />
@@ -247,10 +247,10 @@ export default function SystemSettingsPage() {
             />
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Security Configuration */}
-      <Card className="bg-panel border border-border shadow-soft">
+      {/* <Card className="bg-panel border border-border shadow-soft">
         <CardHeader>
           <CardTitle className="flex items-center">
             <Shield className="h-5 w-5 mr-2 text-primary" />
@@ -336,7 +336,7 @@ export default function SystemSettingsPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* System Status */}
       <Card className="bg-panel border border-border shadow-soft">
