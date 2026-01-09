@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/lib/auth-store';
 import { apiClient, Table } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { useTranslation } from '@/lib/i18n';
 import {
   Table as TableIcon,
   Users,
@@ -21,6 +22,7 @@ import {
 
 export default function TablesPage() {
   const { restaurantData } = useAuthStore();
+  const { t } = useTranslation();
   const restaurantId = restaurantData?.id;
 
   const [tables, setTables] = useState<Table[]>([]);
@@ -39,7 +41,7 @@ export default function TablesPage() {
       }
     } catch (error) {
       console.error('Error fetching tables:', error);
-      toast.error('Failed to load tables');
+      toast.error(t('failedToLoadTables'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -72,7 +74,7 @@ export default function TablesPage() {
         toast.error(result.error.message);
       }
     } catch (error) {
-      toast.error('Failed to update table status');
+      toast.error(t('failedToUpdateTableStatus'));
     } finally {
       setUpdatingTableId(null);
     }
@@ -128,8 +130,8 @@ export default function TablesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold mb-2">Table Management</h1>
-          <p className="text-muted">Monitor and manage your restaurant&apos;s seating capacity</p>
+          <h1 className="text-3xl font-display font-bold mb-2">{t('tableManagement')}</h1>
+          <p className="text-muted">{t('monitorSeatingCapacity')}</p>
         </div>
         <Button 
           variant="outline" 
@@ -138,7 +140,7 @@ export default function TablesPage() {
           className="border-border"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Refresh
+          {t('refresh')}
         </Button>
       </div>
 
@@ -150,7 +152,7 @@ export default function TablesPage() {
               <CheckCircle className="h-5 w-5 text-success" />
               <div>
                 <p className="text-2xl font-bold">{stats.available}</p>
-                <p className="text-xs text-muted">Available</p>
+                <p className="text-xs text-muted">{t('available')}</p>
               </div>
             </div>
           </CardContent>
@@ -162,7 +164,7 @@ export default function TablesPage() {
               <Users className="h-5 w-5 text-orange-600" />
               <div>
                 <p className="text-2xl font-bold">{stats.occupied}</p>
-                <p className="text-xs text-muted">Occupied</p>
+                <p className="text-xs text-muted">{t('occupied')}</p>
               </div>
             </div>
           </CardContent>
@@ -174,7 +176,7 @@ export default function TablesPage() {
               <Sparkles className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-2xl font-bold">{stats.cleaning}</p>
-                <p className="text-xs text-muted">Cleaning</p>
+                <p className="text-xs text-muted">{t('cleaning')}</p>
               </div>
             </div>
           </CardContent>
@@ -186,7 +188,7 @@ export default function TablesPage() {
               <Clock className="h-5 w-5 text-info" />
               <div>
                 <p className="text-2xl font-bold">{stats.reserved}</p>
-                <p className="text-xs text-muted">Reserved</p>
+                <p className="text-xs text-muted">{t('reserved')}</p>
               </div>
             </div>
           </CardContent>
@@ -198,13 +200,13 @@ export default function TablesPage() {
         <Card className="bg-panel border border-border shadow-soft">
           <CardContent className="py-12 text-center">
             <TableIcon className="h-12 w-12 text-muted mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No tables configured</h3>
-            <p className="text-muted mb-4">Go to Settings → Table Configuration to add tables</p>
+            <h3 className="text-lg font-medium mb-2">{t('noTablesConfiguredYet')}</h3>
+            <p className="text-muted mb-4">{t('goToSettingsToAddTables')}</p>
             <Button 
               onClick={() => window.location.href = '/admin/settings'}
               className="bg-primary hover:bg-primary-600 text-white"
             >
-              Configure Tables
+              {t('configureTables')}
             </Button>
           </CardContent>
         </Card>
@@ -226,8 +228,8 @@ export default function TablesPage() {
                   </Badge>
                 </div>
                 <CardDescription className="text-muted">
-                  Seats up to {table.capacity} people
-                </CardDescription>
+                {t('seatsUpTo')} {table.capacity} {t('people')}
+              </CardDescription>
               </CardHeader>
 
               <CardContent className="pt-0">
@@ -236,7 +238,7 @@ export default function TablesPage() {
                   {table.status === 'available' && (
                     <div className="bg-success/10 rounded-lg p-3 text-center">
                       <CheckCircle className="h-6 w-6 text-success mx-auto mb-1" />
-                      <p className="text-sm font-medium text-success">Ready for Guests</p>
+                      <p className="text-sm font-medium text-success">{t('readyForGuests')}</p>
                     </div>
                   )}
 
@@ -253,7 +255,7 @@ export default function TablesPage() {
                       ) : (
                         <Sparkles className="h-4 w-4 mr-2" />
                       )}
-                      Mark for Cleaning
+                      {t('markForCleaning')}
                     </Button>
                   )}
 
@@ -270,7 +272,7 @@ export default function TablesPage() {
                       ) : (
                         <CheckCircle className="h-4 w-4 mr-2" />
                       )}
-                      Mark Available
+                      {t('markAvailable')}
                     </Button>
                   )}
 
@@ -283,7 +285,7 @@ export default function TablesPage() {
                       disabled
                     >
                       <Clock className="h-4 w-4 mr-2" />
-                      Reserved
+                      {t('reserved')}
                     </Button>
                   )}
                 </div>

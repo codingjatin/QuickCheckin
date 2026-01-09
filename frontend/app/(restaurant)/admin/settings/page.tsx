@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Settings, ListRestart as Restaurant, MessageSquare, Clock, Save, Plus, Trash2, Loader2, Lock } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { apiClient, RestaurantSettings, Table } from '@/lib/api-client';
+import { useTranslation } from '@/lib/i18n';
 import { toast } from 'sonner';
 
 interface TableConfig {
@@ -20,6 +21,7 @@ interface TableConfig {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const { restaurantData } = useAuthStore();
   const restaurantId = restaurantData?.id;
 
@@ -45,7 +47,7 @@ export default function SettingsPage() {
           })));
         }
       } catch (error) {
-        toast.error('Failed to load settings');
+        toast.error(t('failedToLoadSettings'));
       } finally {
         setLoading(false);
       }
@@ -84,9 +86,9 @@ export default function SettingsPage() {
         return;
       }
 
-      toast.success('Settings saved successfully!');
+      toast.success(t('settingsSavedSuccess'));
     } catch (error) {
-      toast.error('Failed to save settings');
+      toast.error(t('failedToSaveSettings'));
     } finally {
       setSaving(false);
     }
@@ -122,7 +124,7 @@ export default function SettingsPage() {
   if (!settings) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted">Failed to load settings</p>
+        <p className="text-muted">{t('failedToLoadSettings')}</p>
       </div>
     );
   }
@@ -132,9 +134,9 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold mb-2">Restaurant Settings</h1>
+          <h1 className="text-3xl font-display font-bold mb-2">{t('restaurantSettings')}</h1>
           <p className="text-muted">
-            Manage your restaurant&apos;s configuration and preferences
+            {t('manageConfiguration')}
           </p>
         </div>
         <Button 
@@ -147,7 +149,7 @@ export default function SettingsPage() {
           ) : (
             <Save className="h-4 w-4 mr-2" />
           )}
-          Save Changes
+          {t('saveChanges')}
         </Button>
       </div>
 
@@ -156,17 +158,17 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Restaurant className="h-5 w-5 mr-2 text-primary" />
-            Restaurant Profile
+            {t('restaurantProfile')}
             <Lock className="h-4 w-4 ml-2 text-muted" />
           </CardTitle>
           <CardDescription className="text-muted">
-            Contact Super Admin to update these details
+            {t('contactSuperAdmin')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="name" className="text-ink">Restaurant Name</Label>
+              <Label htmlFor="name" className="text-ink">{t('restaurantName')}</Label>
               <Input
                 id="name"
                 value={settings.name}
@@ -176,7 +178,7 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <Label htmlFor="phone" className="text-ink">Phone Number</Label>
+              <Label htmlFor="phone" className="text-ink">{t('phoneNumber')}</Label>
               <Input
                 id="phone"
                 value={settings.phone}
@@ -187,7 +189,7 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <Label htmlFor="address" className="text-ink">Address</Label>
+            <Label htmlFor="address" className="text-ink">{t('address')}</Label>
             <Input
               id="address"
               value={settings.address || settings.city}
@@ -352,22 +354,22 @@ export default function SettingsPage() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center">
               <Restaurant className="h-5 w-5 mr-2 text-primary" />
-              Table Configuration
+              {t('tableConfiguration')}
             </div>
             <Button onClick={addTable} size="sm" className="bg-primary hover:bg-primary-600 text-white">
               <Plus className="h-4 w-4 mr-2" />
-              Add Table
+              {t('addTable')}
             </Button>
           </CardTitle>
           <CardDescription className="text-muted">
-            Manage your restaurant&apos;s individual tables
+            {t('manageIndividualTables')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {tableConfig.length === 0 ? (
               <div className="text-center py-8 text-muted">
-                No tables configured. Click "Add Table" to get started.
+                {t('noTablesConfigured')}
               </div>
             ) : (
               tableConfig.map((table, index) => (
@@ -377,7 +379,7 @@ export default function SettingsPage() {
                 >
                   <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-ink">Table Number</Label>
+                      <Label className="text-ink">{t('tableNumber')}</Label>
                       <Input
                         value={table.tableNumber}
                         onChange={(e) => updateTable(index, 'tableNumber', e.target.value)}
@@ -386,7 +388,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <Label className="text-ink">Capacity</Label>
+                      <Label className="text-ink">{t('capacity')}</Label>
                       <Input
                         type="number"
                         min={1}

@@ -75,8 +75,8 @@ export default function AdminDashboard() {
         duration: 10000
       });
     } else {
-      toast.success('New booking received!', {
-        description: `${booking?.customerName} - Party of ${booking?.partySize}`
+      toast.success(t('newBookingReceived'), {
+        description: `${booking?.customerName} - ${t('partyOf')} ${booking?.partySize}`
       });
     }
     fetchData(); // Refresh data
@@ -124,11 +124,11 @@ export default function AdminDashboard() {
       if (result.error) {
         toast.error(result.error.message);
       } else {
-        toast.success('Customer notified!');
+        toast.success(t('customerNotified'));
         fetchData();
       }
     } catch (error) {
-      toast.error('Failed to notify customer');
+      toast.error(t('failedToNotify'));
     } finally {
       setActionLoading(null);
     }
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
   // Handle mark seated with selected table
   const handleMarkSeated = async () => {
     if (!selectedBooking || !selectedTableId) {
-      toast.error('Please select a table');
+      toast.error(t('pleaseSelectTable'));
       return;
     }
     
@@ -165,14 +165,14 @@ export default function AdminDashboard() {
       if (result.error) {
         toast.error(result.error.message);
       } else {
-        toast.success('Customer seated!');
+        toast.success(t('customerSeated'));
         setShowTableModal(false);
         setSelectedBooking(null);
         setSelectedTableId('');
         fetchData();
       }
     } catch (error) {
-      toast.error('Failed to mark as seated');
+      toast.error(t('failedToSeat'));
     } finally {
       setActionLoading(null);
     }
@@ -186,11 +186,11 @@ export default function AdminDashboard() {
       if (result.error) {
         toast.error(result.error.message);
       } else {
-        toast.success('Booking cancelled');
+        toast.success(t('bookingCancelled'));
         fetchData();
       }
     } catch (error) {
-      toast.error('Failed to cancel booking');
+      toast.error(t('failedToCancel'));
     } finally {
       setActionLoading(null);
     }
@@ -254,30 +254,30 @@ export default function AdminDashboard() {
                 <Users className="h-8 w-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-amber-800 mb-2">
-                🚨 Custom Party Alert!
+                🚨 {t('customPartyAlert')}
               </h3>
               <p className="text-amber-700 mb-6">
-                A large party needs personal assistance
+                {t('largePartyNeedsAssistance')}
               </p>
               
               <div className="bg-white rounded-xl p-4 mb-6 text-left space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">Customer:</span>
+                  <span className="text-amber-700 font-medium">{t('customer')}:</span>
                   <span className="font-bold text-amber-900">{customPartyBooking.customerName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">Party Size:</span>
-                  <span className="font-bold text-amber-900">{customPartyBooking.partySize} people</span>
+                  <span className="text-amber-700 font-medium">{t('partySizeLabel')}:</span>
+                  <span className="font-bold text-amber-900">{customPartyBooking.partySize} {t('people')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-amber-700 font-medium">Phone:</span>
+                  <span className="text-amber-700 font-medium">{t('phone')}</span>
                   <span className="font-bold text-amber-900">{customPartyBooking.customerPhone}</span>
                 </div>
               </div>
               
               <div className="bg-amber-100 rounded-lg p-3 mb-6">
                 <p className="text-sm text-amber-800">
-                  <strong>Action Required:</strong> Please send a staff member to assist this customer at the kiosk area.
+                  <strong>{t('actionRequired')}:</strong> {t('sendStaffToAssist')}
                 </p>
               </div>
               
@@ -288,7 +288,7 @@ export default function AdminDashboard() {
                   setCustomPartyBooking(null);
                 }}
               >
-                Got it, I'll assist them
+                {t('gotItWillAssist')}
               </Button>
             </div>
           </div>
@@ -299,9 +299,9 @@ export default function AdminDashboard() {
       {showTableModal && selectedBooking && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-panel border border-border rounded-lg shadow-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-xl font-bold mb-2">Select Table</h3>
+            <h3 className="text-xl font-bold mb-2">{t('selectTable')}</h3>
             <p className="text-muted mb-4">
-              Assign a table for <span className="font-medium text-ink">{selectedBooking.customerName}</span> (Party of {selectedBooking.partySize})
+              {t('assignTableFor')} <span className="font-medium text-ink">{selectedBooking.customerName}</span> ({t('partyOf')} {selectedBooking.partySize})
             </p>
             
             {(() => {
@@ -311,24 +311,24 @@ export default function AdminDashboard() {
                 return (
                   <div className="text-center py-6">
                     <TableIcon className="h-12 w-12 text-muted mx-auto mb-3" />
-                    <p className="text-muted">No available tables for party of {selectedBooking.partySize}</p>
-                    <p className="text-sm text-muted mt-1">Please wait for a table to become available</p>
+                    <p className="text-muted">{t('noAvailableTablesForParty')} {selectedBooking.partySize}</p>
+                    <p className="text-sm text-muted mt-1">{t('pleaseWaitForTable')}</p>
                   </div>
                 );
               }
               
               return (
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">Available Tables (Capacity ≥ {selectedBooking.partySize})</label>
+                  <label className="text-sm font-medium">{t('availableTablesCapacity')} {selectedBooking.partySize})</label>
                   <select
                     value={selectedTableId}
                     onChange={(e) => setSelectedTableId(e.target.value)}
                     className="w-full h-12 px-4 rounded-lg border border-border bg-panel text-ink focus:ring-2 focus:ring-primary focus:border-primary"
                   >
-                    <option value="">-- Select a table --</option>
+                    <option value="">{t('selectATable')}</option>
                     {availableTables.map(table => (
                       <option key={table._id} value={table._id}>
-                        Table {table.tableNumber} (Seats {table.capacity})
+                        {t('table')} {table.tableNumber} ({t('seats')} {table.capacity})
                       </option>
                     ))}
                   </select>
@@ -358,7 +358,7 @@ export default function AdminDashboard() {
                 ) : (
                   <CheckCircle className="h-4 w-4 mr-2" />
                 )}
-                Confirm Seating
+                {t('confirmSeating')}
               </Button>
             </div>
           </div>
@@ -370,12 +370,12 @@ export default function AdminDashboard() {
         {isConnected ? (
           <>
             <Wifi className="h-4 w-4 text-success" />
-            <span className="text-success">Live updates active</span>
+            <span className="text-success">{t('liveUpdatesActive')}</span>
           </>
         ) : (
           <>
             <WifiOff className="h-4 w-4 text-muted" />
-            <span className="text-muted">Connecting...</span>
+            <span className="text-muted">{t('connecting')}</span>
           </>
         )}
       </div>
@@ -477,14 +477,14 @@ export default function AdminDashboard() {
                           <h3 className="font-medium">{booking.customerName}</h3>
                           {booking.isCustomParty && (
                             <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs">
-                              Custom Party
+                              {t('customParty')}
                             </Badge>
                           )}
                         </div>
                         <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
                           <span className="flex items-center">
                             <Users className="h-4 w-4 mr-1" />
-                            Party of {booking.partySize}
+                            {t('partyOf')} {booking.partySize}
                           </span>
                           <span className="flex items-center">
                             <Phone className="h-4 w-4 mr-1" />

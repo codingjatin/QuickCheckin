@@ -254,7 +254,7 @@ function KioskContent() {
                           onClick={handleCustomSelect}
                         >
                           <Users className="h-5 w-5 mr-2" />
-                          Custom Party Size (Larger Groups)
+                          {t('customPartySize')}
                         </Button>
                       </>
                     )}
@@ -268,35 +268,35 @@ function KioskContent() {
                     <Users className="h-10 w-10 text-primary" />
                   </div>
                   <h2 className="text-2xl font-bold mb-4 text-ink">
-                    Large Party Request
+                    {t('largePartyRequest')}
                   </h2>
                   <p className="text-lg text-muted mb-6">
-                    For groups larger than our standard tables, please enter your details below.
+                    {t('forLargerGroups')}
                   </p>
                   
                   <div className="space-y-4 mb-8 text-left">
                     <div>
-                      <label className="block text-lg font-medium mb-2 text-ink">Party Size *</label>
+                      <label className="block text-lg font-medium mb-2 text-ink">{t('partySizeLabel')} *</label>
                       <Input
                         type="number"
                         value={partySize || ''}
                         onChange={(e) => setPartySize(parseInt(e.target.value) || 0)}
-                        placeholder="Enter number of guests"
+                        placeholder={t('enterNumberOfGuests')}
                         min="1"
                         className="h-14 text-lg border-border focus-visible:ring-2 focus-visible:ring-primary"
                       />
                     </div>
                     <div>
-                      <label className="block text-lg font-medium mb-2 text-ink">Your Name *</label>
+                      <label className="block text-lg font-medium mb-2 text-ink">{t('yourName')} *</label>
                       <Input
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Enter your name"
+                        placeholder={t('enterYourName')}
                         className="h-14 text-lg border-border focus-visible:ring-2 focus-visible:ring-primary"
                       />
                     </div>
                     <div>
-                      <label className="block text-lg font-medium mb-2 text-ink">Phone Number *</label>
+                      <label className="block text-lg font-medium mb-2 text-ink">{t('phoneNumber')} *</label>
                       <div className="flex gap-2">
                         <select
                           value={countryCode}
@@ -318,7 +318,7 @@ function KioskContent() {
 
                   <div className="bg-amber-50 ring-1 ring-amber-200 rounded-xl p-4 mb-6">
                     <p className="text-sm text-amber-800">
-                      ⏳ Please wait for approximately 5 minutes. One of our representatives will come to assist you with seating. Please stay nearby.
+                      ⏳ {t('pleaseWaitForRepresentative')}
                     </p>
                   </div>
 
@@ -339,7 +339,7 @@ function KioskContent() {
                       disabled={isSubmitting}
                       onClick={async () => {
                         if (!name || !phone || !partySize) {
-                          toast.error('Please fill in all fields');
+                          toast.error(t('pleaseFillAllFields'));
                           return;
                         }
                         
@@ -375,10 +375,10 @@ function KioskContent() {
                       {isSubmitting ? (
                         <>
                           <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                          Submitting...
+                          {t('submitting')}
                         </>
                       ) : (
-                        'Join Waitlist'
+                        t('joinWaitlist')
                       )}
                     </Button>
                   </div>
@@ -499,7 +499,7 @@ function KioskContent() {
                         {isSubmitting ? (
                           <>
                             <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                            Creating...
+                            {t('creating')}
                           </>
                         ) : (
                           t('joinWaitlist')
@@ -543,17 +543,17 @@ function KioskContent() {
                     <CheckCircle className="h-10 w-10 text-primary" />
                   </div>
                   <h2 className="text-3xl font-display font-bold mb-4 text-ink">
-                    You're in Line!
+                    {t('youreInLine')}
                   </h2>
                   <p className="text-xl text-muted mb-6">
-                    Please wait a moment.
+                    {t('pleaseWaitMoment')}
                   </p>
                   <div className="bg-amber-50 ring-1 ring-amber-200 rounded-xl p-6 mb-8">
                     <p className="text-lg text-amber-800 font-medium">
-                      ⏳ One of our representatives will come to assist you shortly.
+                      ⏳ {t('representativeWillAssist')}
                     </p>
                     <p className="text-sm text-amber-700 mt-2">
-                      Please stay nearby. This usually takes about 5 minutes.
+                      {t('stayNearby')}
                     </p>
                   </div>
                   <Button
@@ -593,8 +593,8 @@ function KioskContent() {
                           <Phone className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-semibold text-ink text-sm">Restaurant</p>
-                          <p className="text-xs text-muted">SMS</p>
+                          <p className="font-semibold text-ink text-sm">{t('restaurant')}</p>
+                          <p className="text-xs text-muted">{t('sms')}</p>
                         </div>
                       </div>
                     </div>
@@ -605,17 +605,17 @@ function KioskContent() {
                       <div className="flex justify-start">
                         <div className="bg-ink/10 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[85%]">
                           <p className="text-sm text-ink">
-                            Hi {name || 'Customer'}! Your table for {partySize || 'X'} is ready. Please arrive within 15 min. Reply Y to confirm.
+                            {t('tableReadyMessage').replace('15 min', '15 min').replace('{name}', name || t('customer')).replace('{partySize}', String(partySize || 'X'))}
                           </p>
-                          <p className="text-[10px] text-muted mt-1">Now</p>
+                          <p className="text-[10px] text-muted mt-1">{t('now')}</p>
                         </div>
                       </div>
                       
                       {/* Outgoing Message */}
                       <div className="flex justify-end">
                         <div className="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[85%]">
-                          <p className="text-sm">Y</p>
-                          <p className="text-[10px] text-white/70 mt-1">Read</p>
+                          <p className="text-sm">{t('confirmationReply')}</p>
+                          <p className="text-[10px] text-white/70 mt-1">{t('readLabel')}</p>
                         </div>
                       </div>
                       
@@ -623,9 +623,9 @@ function KioskContent() {
                       <div className="flex justify-start">
                         <div className="bg-ink/10 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[85%]">
                           <p className="text-sm text-ink">
-                            Great! We'll hold your table. See you soon! 🎉
+                            {t('holdTableMessage')}
                           </p>
-                          <p className="text-[10px] text-muted mt-1">Now</p>
+                          <p className="text-[10px] text-muted mt-1">{t('now')}</p>
                         </div>
                       </div>
                     </div>
@@ -634,7 +634,7 @@ function KioskContent() {
                     <div className="px-4 py-3 border-t border-ink/10 bg-white">
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-ink/5 rounded-full px-4 py-2">
-                          <p className="text-sm text-muted">iMessage</p>
+                          <p className="text-sm text-muted">{t('iMessage')}</p>
                         </div>
                         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                           <ArrowRight className="h-4 w-4 text-white" />

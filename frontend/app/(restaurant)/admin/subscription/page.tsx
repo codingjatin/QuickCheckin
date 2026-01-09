@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useAuthStore } from '@/lib/auth-store';
+import { useTranslation } from '@/lib/i18n';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -35,6 +36,7 @@ interface SubscriptionData {
 function PaymentMethodUpdate({ restaurantId, onSuccess }: { restaurantId: string; onSuccess: () => void }) {
   const stripe = useStripe();
   const elements = useElements();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,7 +81,7 @@ function PaymentMethodUpdate({ restaurantId, onSuccess }: { restaurantId: string
         return;
       }
 
-      toast.success('Payment method updated successfully');
+      toast.success(t('paymentMethodUpdated'));
       onSuccess();
     } catch (error: any) {
       toast.error(error.message || 'Update failed');
@@ -109,7 +111,7 @@ function PaymentMethodUpdate({ restaurantId, onSuccess }: { restaurantId: string
         disabled={loading || !stripe}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
       >
-        {loading ? 'Updating...' : 'Update Payment Method'}
+        {loading ? t('updating') : t('updatePaymentMethod')}
       </button>
     </form>
   );
@@ -117,6 +119,7 @@ function PaymentMethodUpdate({ restaurantId, onSuccess }: { restaurantId: string
 
 export default function SubscriptionPage() {
   const { restaurantData } = useAuthStore();
+  const { t } = useTranslation();
   // Handle both 'id' and '_id' field names
   const restaurantId = restaurantData?.id || restaurantData?._id || '';
 
@@ -161,7 +164,7 @@ export default function SubscriptionPage() {
   }, [restaurantId]);
 
   const handleUpgrade = async () => {
-    if (!confirm('Upgrade to Large plan? You will be charged the prorated difference immediately.')) {
+    if (!confirm(t('confirmUpgrade'))) {
       return;
     }
 
@@ -185,12 +188,12 @@ export default function SubscriptionPage() {
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error('Upgrade failed');
+      toast.error(t('upgradeFailed'));
     }
   };
 
   const handleDowngrade = async () => {
-    if (!confirm('Downgrade to Small plan? This will take effect at your next billing cycle.')) {
+    if (!confirm(t('confirmDowngrade'))) {
       return;
     }
 
@@ -214,7 +217,7 @@ export default function SubscriptionPage() {
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error('Downgrade failed');
+      toast.error(t('downgradeFailed'));
     }
   };
 
@@ -267,7 +270,7 @@ export default function SubscriptionPage() {
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error('Update failed');
+      toast.error(t('updateFailed'));
     }
   };
 
@@ -283,15 +286,15 @@ export default function SubscriptionPage() {
     return (
       <div className="p-8">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold text-blue-800 mb-2">Loading Subscription Information...</h2>
+          <h2 className="text-lg font-semibold text-blue-800 mb-2">{t('loadingSubscription')}</h2>
           <p className="text-blue-700">
-            We're retrieving your subscription details. If this persists, please refresh the page or contact support.
+            {t('loadingSubscriptionDesc')}
           </p>
           <button 
             onClick={() => window.location.reload()} 
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Refresh Page
+            {t('refreshPage')}
           </button>
         </div>
       </div>
@@ -305,38 +308,38 @@ export default function SubscriptionPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-8 space-y-8">
-      <h1 className="text-3xl font-bold">Subscription Management</h1>
+      <h1 className="text-3xl font-bold">{t('subscriptionManagement')}</h1>
 
       {/* Status Banner */}
       {isPastDue && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800 font-semibold">⚠️ Payment Failed - Update your payment method to avoid service interruption</p>
+          <p className="text-red-800 font-semibold">⚠️ {t('paymentFailed')}</p>
         </div>
       )}
 
       {isTrialing && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-blue-800">🎉 You're on a free trial until {new Date(subscription.trialEnd!).toLocaleDateString()}</p>
+          <p className="text-blue-800">🎉 {t('freeTrialUntil')} {new Date(subscription.trialEnd!).toLocaleDateString()}</p>
         </div>
       )}
 
       {/* Current Plan */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">Current Plan</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('currentPlan')}</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <p className="text-sm text-gray-600">Plan</p>
+            <p className="text-sm text-gray-600">{t('plan')}</p>
             <p className="text-2xl font-bold capitalize">{subscription.plan}</p>
             {subscription.pendingPlanChange && (
               <p className="text-sm text-orange-600 mt-1">
-                Scheduled downgrade to {subscription.pendingPlanChange} at next billing
+                {t('scheduledDowngrade')} {subscription.pendingPlanChange} {t('atNextBilling')}
               </p>
             )}
           </div>
 
           <div>
-            <p className="text-sm text-gray-600">Status</p>
+            <p className="text-sm text-gray-600">{t('status')}</p>
             <p className={`text-lg font-semibold capitalize ${
               subscription.status === 'active' ? 'text-green-600' :
               subscription.status === 'trialing' ? 'text-blue-600' :
@@ -348,7 +351,7 @@ export default function SubscriptionPage() {
           </div>
 
           <div>
-            <p className="text-sm text-gray-600">Seat Capacity</p>
+            <p className="text-sm text-gray-600">{t('seatCapacity')}</p>
             {showSeatCapacityEdit ? (
               <div className="flex gap-2 mt-2">
                 <input
@@ -359,18 +362,18 @@ export default function SubscriptionPage() {
                   className="px-3 py-1 border border-gray-300 rounded"
                 />
                 <button onClick={handleUpdateSeatCapacity} className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
-                  Save
+                  {t('save')}
                 </button>
                 <button onClick={() => setShowSeatCapacityEdit(false)} className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100">
-                  Cancel
+                  {t('cancel')}
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <p className="text-lg font-semibold">{subscription.seatCapacity} seats</p>
+                <p className="text-lg font-semibold">{subscription.seatCapacity} {t('seatsLabel')}</p>
                 {!isLegacy && (
                   <button onClick={() => setShowSeatCapacityEdit(true)} className="text-sm text-blue-600 hover:underline">
-                    Edit
+                    {t('edit')}
                   </button>
                 )}
               </div>
@@ -379,7 +382,7 @@ export default function SubscriptionPage() {
 
           {subscription.nextBillingDate && (
             <div>
-              <p className="text-sm text-gray-600">Next Billing Date</p>
+              <p className="text-sm text-gray-600">{t('nextBillingDate')}</p>
               <p className="text-lg font-semibold">{new Date(subscription.nextBillingDate).toLocaleDateString()}</p>
             </div>
           )}
@@ -390,32 +393,32 @@ export default function SubscriptionPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             {subscription.plan === 'small' && !subscription.pendingPlanChange && (
               <button onClick={handleUpgrade} className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                Upgrade to Large
+                {t('upgradeToLarge')}
               </button>
             )}
 
             {subscription.plan === 'large' && !subscription.pendingPlanChange && (
               <button onClick={handleDowngrade} className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
-                Downgrade to Small
+                {t('downgradeToSmall')}
               </button>
             )}
 
             {subscription.pendingPlanChange && (
               <button onClick={handleCancelDowngrade} className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
-                Cancel Scheduled Downgrade
+                {t('cancelScheduledDowngrade')}
               </button>
             )}
 
             <button onClick={() => setShowPaymentUpdate(!showPaymentUpdate)} className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-              Update Payment Method
+              {t('updatePaymentMethod')}
             </button>
           </div>
         )}
 
         {isLegacy && (
           <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-            <p className="text-green-800 font-semibold">✨ Legacy Plan - Free Forever</p>
-            <p className="text-sm text-green-700 mt-1">Your account is on a grandfathered free plan with no billing.</p>
+            <p className="text-green-800 font-semibold">✨ {t('legacyPlan')}</p>
+            <p className="text-sm text-green-700 mt-1">{t('legacyPlanDescription')}</p>
           </div>
         )}
       </div>
@@ -423,7 +426,7 @@ export default function SubscriptionPage() {
       {/* Payment Method Update */}
       {showPaymentUpdate && !isLegacy && (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Update Payment Method</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('updatePaymentMethod')}</h2>
           <Elements stripe={stripePromise}>
             <PaymentMethodUpdate restaurantId={restaurantId} onSuccess={() => {
               setShowPaymentUpdate(false);
@@ -435,10 +438,10 @@ export default function SubscriptionPage() {
 
       {/* Subscription History */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">Subscription History</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('subscriptionHistory')}</h2>
         
         {history.length === 0 ? (
-          <p className="text-gray-500">No history available</p>
+          <p className="text-gray-500">{t('noHistoryAvailable')}</p>
         ) : (
           <div className="space-y-3">
             {history.map((item) => (
@@ -446,7 +449,7 @@ export default function SubscriptionPage() {
                 <div>
                   <p className="font-medium capitalize">{item.action.replace('_', ' ')}</p>
                   <p className="text-sm text-gray-600">
-                    {new Date(item.createdAt).toLocaleDateString()} at {new Date(item.createdAt).toLocaleTimeString()}
+                    {new Date(item.createdAt).toLocaleDateString()} {t('at')} {new Date(item.createdAt).toLocaleTimeString()}
                   </p>
                   {item.fromPlan && item.toPlan && (
                     <p className="text-sm text-gray-500">{item.fromPlan} → {item.toPlan}</p>

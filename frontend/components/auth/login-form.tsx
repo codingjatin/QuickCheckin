@@ -115,7 +115,7 @@ export function LoginForm() {
         {isLoading ? (
           <div className="flex items-center justify-center gap-2">
             <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-            Sending...
+            {t('sending')}
           </div>
         ) : (
           <>
@@ -126,7 +126,7 @@ export function LoginForm() {
       </Button>
 
       <p className="text-center text-sm text-muted">
-        You'll receive a 6-digit OTP via SMS to verify your number.
+        {t('otpSmsNotice')}
       </p>
     </motion.div>
   );

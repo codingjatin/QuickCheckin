@@ -9,7 +9,7 @@ import { useMarketingContent } from "../content";
 
 export default function PricingPage() {
   const { pages } = useMarketingContent();
-  const { usageNotes, faq, hero } = pages.pricing;
+  const { usageNotes, faq, hero, plans, whatsIncluded, includedItems, faqSection } = pages.pricing;
 
   const [country, setCountry] = useState<'US' | 'CA' | 'OTHER'>('US');
   const [detectingLocation, setDetectingLocation] = useState(true);
@@ -67,63 +67,6 @@ export default function PricingPage() {
 
   const currency = country === 'CA' ? 'CAD' : 'USD';
 
-  const plans = [
-    {
-      name: 'Small Plan',
-      price: '$299',
-      currency: currency,
-      cadence: 'per month',
-      description: 'Perfect for smaller restaurants.',
-      highlight: '30-day free trial included',
-      features: [
-        '50 seats or less',
-        'Digital waitlist & kiosk',
-        'Two-way SMS messaging',
-        'Real-time dashboard',
-        'Basic analytics',
-        'Email support',
-      ],
-      cta: { label: 'Start Free Trial', href: '/signup' },
-      featured: false,
-    },
-    {
-      name: 'Large Plan',
-      price: '$499',
-      currency: currency,
-      cadence: 'per month',
-      description: 'For larger restaurants with high volume.',
-      highlight: 'Most popular plan',
-      features: [
-        'More than 50 seats',
-        'Everything in Small Plan',
-        'Priority support',
-        'Advanced analytics',
-        'Custom integrations',
-        'Dedicated account manager',
-      ],
-      cta: { label: 'Start Free Trial', href: '/signup' },
-      featured: true,
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      currency: '',
-      cadence: '',
-      description: 'Multi-location management with custom SLAs and white-glove support.',
-      highlight: 'For restaurant groups',
-      features: [
-        'Multiple locations',
-        'Custom seat limits',
-        'SSO & advanced security',
-        'Custom integrations',
-        'White-glove onboarding',
-        '24/7 priority support',
-      ],
-      cta: { label: 'Book a Demo', href: '/contact' },
-      featured: false,
-    },
-  ];
-
   return (
     <div className="bg-off text-ink">
       <PageHero
@@ -161,7 +104,7 @@ export default function PricingPage() {
                 <h2 className="text-xl font-semibold text-ink">{plan.name}</h2>
                 {plan.featured && (
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary">
-                    Most popular
+                    {plan.highlight}
                   </span>
                 )}
               </div>
@@ -170,9 +113,6 @@ export default function PricingPage() {
 
               <div className="mt-6">
                 <span className="text-4xl font-bold text-ink">{plan.price}</span>
-                {plan.currency && (
-                  <span className="ml-1 text-sm text-muted">{plan.currency}</span>
-                )}
                 {plan.cadence && (
                   <span className="ml-1 text-sm text-muted">{plan.cadence}</span>
                 )}
@@ -181,7 +121,7 @@ export default function PricingPage() {
               <p className="mt-3 text-sm font-semibold text-primary">{plan.highlight}</p>
 
               <ul className="mt-6 space-y-2 text-sm text-muted">
-                {plan.features.map((feature) => (
+                {plan.features?.map((feature) => (
                   <li key={feature} className="rounded-xl bg-off/70 px-4 py-2">
                     ✓ {feature}
                   </li>
@@ -203,22 +143,15 @@ export default function PricingPage() {
       <section className="bg-panel py-20">
         <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            title="What's Included"
-            description="Transparent billing with all the features you need."
+            title={whatsIncluded.title}
+            description={whatsIncluded.description}
           />
           <ul className="space-y-4 text-sm text-muted">
-            <li className="rounded-xl border border-border bg-off/60 px-4 py-3">
-              ✓ 30-day free trial on all plans - no credit card required
-            </li>
-            <li className="rounded-xl border border-border bg-off/60 px-4 py-3">
-              ✓ Unlimited SMS messaging included - no hidden fees
-            </li>
-            <li className="rounded-xl border border-border bg-off/60 px-4 py-3">
-              ✓ Plan automatically adjusts based on your seat capacity
-            </li>
-            <li className="rounded-xl border border-border bg-off/60 px-4 py-3">
-              ✓ Cancel anytime - no long-term contracts
-            </li>
+            {includedItems.map((item: string, idx: number) => (
+              <li key={idx} className="rounded-xl border border-border bg-off/60 px-4 py-3">
+                ✓ {item}
+              </li>
+            ))}
           </ul>
         </div>
       </section>
@@ -227,8 +160,8 @@ export default function PricingPage() {
       <section className="bg-off py-20">
         <div className="mx-auto flex max-w-4xl flex-col gap-8 px-4 sm:px-6 lg:px-8">
           <SectionHeading
-            title="Pricing FAQ"
-            description="Common questions about billing, trials, and credits."
+            title={faqSection.title}
+            description={faqSection.description}
           />
           <div className="space-y-4">
             {faq.map((item) => (

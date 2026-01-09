@@ -8,11 +8,13 @@ import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/lib/auth-store';
 import { apiClient, Conversation, Message } from '@/lib/api-client';
 import { useSSE } from '@/hooks/useSSE';
+import { useTranslation } from '@/lib/i18n';
 import { MessageSquare, Send, Phone, Clock, Search, Loader2, Wifi, WifiOff } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function MessagesPage() {
   const { restaurantData } = useAuthStore();
+  const { t } = useTranslation();
   const restaurantId = restaurantData?.id;
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -97,19 +99,19 @@ export default function MessagesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-display font-bold mb-2">Message Center</h1>
-          <p className="text-muted">View SMS communications with customers</p>
+          <h1 className="text-3xl font-display font-bold mb-2">{t('messageCenter')}</h1>
+          <p className="text-muted">{t('viewSmsComms')}</p>
         </div>
         <div className="flex items-center gap-2 text-sm">
           {isConnected ? (
             <>
               <Wifi className="h-4 w-4 text-success" />
-              <span className="text-success">Live</span>
-            </>
-          ) : (
-            <>
-              <WifiOff className="h-4 w-4 text-muted" />
-              <span className="text-muted">Connecting...</span>
+            <span className="text-success">{t('live')}</span>
+          </>
+        ) : (
+          <>
+            <WifiOff className="h-4 w-4 text-muted" />
+            <span className="text-muted">{t('connecting')}</span>
             </>
           )}
         </div>
@@ -120,7 +122,7 @@ export default function MessagesPage() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted" />
           <Input
-            placeholder="Search messages, names, or phone numbers..."
+            placeholder={t('searchMessagesPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 border-border focus-visible:ring-2 focus-visible:ring-primary"
@@ -131,13 +133,13 @@ export default function MessagesPage() {
             <p className="text-2xl font-bold">
               {conversations.reduce((sum, c) => sum + c.messages.filter(m => m.direction === 'outbound').length, 0)}
             </p>
-            <p className="text-xs text-muted">Sent Today</p>
+            <p className="text-xs text-muted">{t('sentToday')}</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-success">
               {conversations.reduce((sum, c) => sum + c.messages.filter(m => m.direction === 'inbound').length, 0)}
             </p>
-            <p className="text-xs text-muted">Responses</p>
+            <p className="text-xs text-muted">{t('responses')}</p>
           </div>
         </div>
       </div>
@@ -146,8 +148,8 @@ export default function MessagesPage() {
         <Card className="bg-panel border border-border shadow-soft">
           <CardContent className="py-12 text-center">
             <MessageSquare className="h-12 w-12 text-muted mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No messages yet</h3>
-            <p className="text-muted">SMS conversations will appear here when customers are notified</p>
+            <h3 className="text-lg font-medium mb-2">{t('noMessagesYet')}</h3>
+            <p className="text-muted">{t('smsConversationsWillAppear')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -156,7 +158,7 @@ export default function MessagesPage() {
           <div className="lg:col-span-1">
             <Card className="bg-panel border border-border shadow-soft">
               <CardHeader>
-                <CardTitle className="text-lg">Conversations</CardTitle>
+                <CardTitle className="text-lg">{t('conversations')}</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border max-h-[600px] overflow-y-auto">
@@ -175,7 +177,7 @@ export default function MessagesPage() {
                         onClick={() => setSelectedPhone(conv.customerPhone)}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-medium">{conv.customerName || 'Unknown'}</h3>
+                          <h3 className="font-medium">{conv.customerName || t('unknown')}</h3>
                           <Badge className={`${getMessageTypeColor(lastMessage.messageType)} border-0`}>
                             {lastMessage.messageType}
                           </Badge>
@@ -205,8 +207,8 @@ export default function MessagesPage() {
                 <CardTitle className="flex items-center">
                   <MessageSquare className="h-5 w-5 mr-2 text-primary" />
                   {selectedConversation
-                    ? `Conversation with ${selectedConversation.customerName || selectedConversation.customerPhone}`
-                    : 'Select a conversation'}
+                    ? `${t('conversationWith')} ${selectedConversation.customerName || selectedConversation.customerPhone}`
+                    : t('selectConversation')}
                 </CardTitle>
                 {selectedConversation && (
                   <CardDescription className="text-muted">
@@ -258,8 +260,8 @@ export default function MessagesPage() {
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                       <MessageSquare className="h-12 w-12 text-muted mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">No conversation selected</h3>
-                      <p className="text-muted">Select a customer from the list to view their message history</p>
+                      <h3 className="text-lg font-medium mb-2">{t('noConversationSelected')}</h3>
+                      <p className="text-muted">{t('selectCustomerToView')}</p>
                     </div>
                   </div>
                 )}

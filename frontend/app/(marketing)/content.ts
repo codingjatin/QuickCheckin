@@ -198,6 +198,9 @@ type PricingContent = {
   usageNotes: string[]
   comparison: ComparisonRow[]
   faq: FAQItem[]
+  whatsIncluded: { title: string; description: string }
+  includedItems: string[]
+  faqSection: { title: string; description: string }
 }
 
 type FeaturesContent = {
@@ -378,7 +381,7 @@ const content: Record<Language, MarketingContent> = {
             price: '$349',
             cadence: 'per month',
             description: 'Multi-location management with advanced automations and integrations.',
-            highlight: 'Most popular with growing groups.',
+            highlight: '',
             featured: true,
             cta: { label: 'Start free trial', href: '/pricing' },
           },
@@ -512,7 +515,7 @@ const content: Record<Language, MarketingContent> = {
             price: '$349',
             cadence: 'per month',
             description: 'Multi-location management with advanced automations and integrations.',
-            highlight: 'Most popular with growing groups.',
+            highlight: '',
             features: [
               'Everything in Starter',
               'Multi-location controls',
@@ -557,6 +560,20 @@ const content: Record<Language, MarketingContent> = {
           { question: 'Do you charge per SMS?', answer: 'No. SMS messaging is fully included in your plan with no additional charges.' },
           { question: 'Is onboarding included?', answer: 'Yes, onboarding is included with all plans to help you get started smoothly.' },
         ],
+        whatsIncluded: {
+          title: "What's Included",
+          description: 'Transparent billing with all the features you need.',
+        },
+        includedItems: [
+          '1-month free trial on all plans - no credit card required',
+          'Unlimited SMS messaging included - no hidden fees',
+          'Plan automatically adjusts based on your seat capacity',
+          'Cancel anytime - no long-term contracts',
+        ],
+        faqSection: {
+          title: 'Pricing FAQ',
+          description: 'Common questions about billing, trials, and credits.',
+        },
       },
     },
     footer: {
@@ -851,7 +868,7 @@ const content: Record<Language, MarketingContent> = {
             price: '349 $',
             cadence: 'par mois',
             description: 'Gestion multi-sites avec automatisations avancées et intégrations POS.',
-            highlight: 'Formule préférée des groupes en croissance.',
+            highlight: '',
             features: [
               'Tout Starter inclus',
               'Pilotage multi-établissements',
@@ -896,6 +913,20 @@ const content: Record<Language, MarketingContent> = {
           { question: 'Facturez-vous chaque SMS ?', answer: 'Non. La messagerie SMS est entièrement incluse dans votre plan sans frais supplémentaires.' },
           { question: "L'onboarding est-il inclus ?", answer: "Oui, l'accompagnement à la mise en place est inclus avec toutes les formules pour vous aider à démarrer." },
         ],
+        whatsIncluded: {
+          title: 'Ce qui est inclus',
+          description: 'Facturation transparente avec toutes les fonctionnalités dont vous avez besoin.',
+        },
+        includedItems: [
+          '1 mois d\'essai gratuit sur toutes les formules - sans carte de crédit',
+          'Messagerie SMS illimitée incluse - sans frais cachés',
+          'Le forfait s\'adapte automatiquement à votre capacité d\'accueil',
+          'Résiliez à tout moment - pas de contrat longue durée',
+        ],
+        faqSection: {
+          title: 'FAQ Tarification',
+          description: 'Questions fréquentes sur la facturation, les essais et les crédits.',
+        },
       },
     },
     footer: {

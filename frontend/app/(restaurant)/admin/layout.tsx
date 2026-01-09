@@ -32,11 +32,11 @@ const CheckCircleIcon = dynamic(() => Promise.resolve(CheckCircle), { ssr: false
 const LogOutIcon = dynamic(() => Promise.resolve(LogOut), { ssr: false });
 
 const navigation = [
-  { name: 'Waitlist', href: '/admin', icon: Users },
-  { name: 'Tables', href: '/admin/tables', icon: Table },
-  { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
-  { name: 'Subscription', href: '/admin/subscription', icon: CreditCard },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { nameKey: 'waitlist', href: '/admin', icon: Users },
+  { nameKey: 'tables', href: '/admin/tables', icon: Table },
+  { nameKey: 'messages', href: '/admin/messages', icon: MessageSquare },
+  { nameKey: 'subscription', href: '/admin/subscription', icon: CreditCard },
+  { nameKey: 'settings', href: '/admin/settings', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -91,7 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span className="text-2xl font-display font-bold">QuickCheck</span>
               </Link>
               <div className="hidden sm:block text-sm text-muted">
-                Restaurant Admin • {restaurantData?.name || 'Restaurant Panel'}
+                {t('restaurantAdmin')} • {restaurantData?.name || t('restaurantPanel')}
               </div>
               <div className="hidden sm:block text-xs text-muted">
                 {phoneNumber}
@@ -132,7 +132,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 const active = pathname === item.href;
                 return (
                   <Link
-                    key={item.name}
+                    key={item.nameKey}
                     href={item.href}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
@@ -142,7 +142,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     )}
                   >
                     <item.icon className="h-5 w-5" />
-                    <span>{item.name}</span>
+                    <span>{t(item.nameKey as any)}</span>
                   </Link>
                 );
               })}
