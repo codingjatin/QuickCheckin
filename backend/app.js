@@ -60,7 +60,15 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // --- Compression ---
-app.use(compression());
+app.use(compression({
+  filter: (req, res) => {
+    if (req.originalUrl.includes('/api/sse')) {
+      return false; // Don't compress SSE streams
+    }
+    // Fallback to standard filter function
+    return compression.filter(req, res);
+  }
+}));
 
 // --- Rate limiting (env-driven) ---
 const WINDOW_MS = Number(process.env.RATE_WINDOW_MS || 15 * 60 * 1000);
