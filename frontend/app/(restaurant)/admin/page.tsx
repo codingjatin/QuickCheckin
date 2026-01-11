@@ -145,12 +145,12 @@ export default function AdminDashboard() {
     setShowTableModal(true);
   };
 
-  // Get available tables that can accommodate the party size
+  // Get available tables that exactly match the party size
   const getAvailableTables = (partySize: number) => {
     return tables.filter(t => 
       t.status === 'available' && 
       t.isActive && 
-      t.capacity >= partySize
+      t.capacity === partySize
     );
   };
 

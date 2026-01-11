@@ -550,6 +550,9 @@ const handleCustomerResponse = async (req, res) => {
       });
     }
     
+    // Broadcast updated wait times (especially important if booking was cancelled)
+    broadcastWaitTimeUpdate(req, restaurant._id);
+    
     res.json({ message: 'Customer response processed successfully' });
   } catch (error) {
     console.error('Handle customer response error:', error);

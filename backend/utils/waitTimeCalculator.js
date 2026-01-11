@@ -4,100 +4,170 @@ const Table = require('../models/Table');
 const PartyDuration = require('../models/PartyDuration');
 
 /**
- * Smart Wait Time Calculator
+ * Smart Wait Time Calculator with Queue Simulation
  * 
  * Algorithm:
- * 1. Find all tables with capacity >= partySize
- * 2. If any table is available → return 5 min (cleaning buffer)
- * 3. For occupied tables: calculate when they'll be free
- * 4. Return earliest availability + 5 min buffer
+ * 1. Initialize "Free At" times for all tables based on current status (Available vs Occupied).
+ * 2. Fetch active waitlist (bookings waiting to be seated).
+ * 3. Simulate seating the waitlist FCFS (First-Come-First-Served) onto compatible tables.
+ *    - Update "Free At" times as virtual bookings take up slots.
+ * 4. Find the best slot for the *new* inquiry based on the post-simulation state.
  */
 const calculateWaitTime = async (restaurantId, partySize) => {
   try {
-    // Get party duration for this size
-    let partyDuration = await PartyDuration.findOne({ partySize });
-    if (!partyDuration) {
-      // Fallback: use closest party size or default
-      partyDuration = await PartyDuration.findOne({ partySize: { $gte: partySize } }).sort({ partySize: 1 });
-      if (!partyDuration) {
-        partyDuration = { avgDuration: 90 }; // Default 90 minutes
+    const now = new Date();
+    const TURNAROUND_BUFFER = 5; // 5 minutes for cleaning/seating
+
+    // 1. Fetch Configuration & Data
+    // ---------------------------------------------------------
+    const [tables, activeBookings, partyDurations] = await Promise.all([
+      // Active tables
+      Table.find({ 
+        restaurantId: new mongoose.Types.ObjectId(restaurantId), 
+        isActive: true 
+      }).sort({ capacity: 1 }), // Sort by capacity for preference logic
+
+      // Waitlist queue (excluding seeded/cancelled/completed)
+      Booking.find({
+        restaurantId: new mongoose.Types.ObjectId(restaurantId),
+        status: { $in: ['waiting', 'notified', 'confirmed'] }
+      }).sort({ createdAt: 1 }), // Oldest first (FIFO)
+
+      // Party Durations Lookup
+      PartyDuration.find({})
+    ]);
+
+    // Create a Duration Map for O(1) lookup
+    // Map party size to duration (minutes)
+    const durationMap = new Map();
+    partyDurations.forEach(pd => durationMap.set(pd.partySize, pd.avgDuration));
+    
+    // Helper to get duration
+    const getDuration = (size) => {
+      // Exact match
+      if (durationMap.has(size)) return durationMap.get(size);
+      
+      // Closest larger size (if configured 2, 4, 6 and size is 3 -> use 4's duration)
+      // If we don't have configured durations, fallback to logic or default 90
+      const sizes = Array.from(durationMap.keys()).sort((a, b) => a - b);
+      const larger = sizes.find(s => s >= size);
+      
+      if (larger) return durationMap.get(larger);
+      
+      // Absolute fallback if map is empty
+      return 90;
+    };
+
+
+    // 2. Initialize Table Availability Timeline
+    // ---------------------------------------------------------
+    // Map: TableID -> Date (When it will be free)
+    const tableTimeline = new Map();
+
+    for (const table of tables) {
+      if (table.status === 'available') {
+        // Available now (plus buffer for immediate seating)
+        tableTimeline.set(table._id.toString(), new Date(now.getTime() + TURNAROUND_BUFFER * 60000));
+      } else {
+        // Occupied/Cleaning/Reserved
+        // Determine when it frees up
+        let minutesUntilFree = 0;
+
+        if (table.status === 'occupied') {
+          // If occupied, calculate remaining time
+          const startTime = table.seatedAt || table.updatedAt || now; // Fallback to updatedAt/now if seatedAt missing
+          
+          // We need expected duration for the CURRENT occupant. 
+          // Ideally we'd look up the booking on this table, but for speed estimation: 
+          // we treat it as taking "Average Duration" for its capacity or a standard amount.
+          // Wait, better: look up booking attached to table? 
+          // Optimization: Assume standard duration for table capacity if booking lookup is too heavy?
+          // Let's use standard duration for the table's capacity as a proxy for the current party.
+          const duration = getDuration(table.capacity); 
+          const elapsed = (now - new Date(startTime)) / 60000;
+          minutesUntilFree = Math.max(0, duration - elapsed);
+        } else {
+          // Cleaning/Reserved -> assume nearly ready
+          minutesUntilFree = 10;
+        }
+
+        const freeAt = new Date(now.getTime() + (minutesUntilFree + TURNAROUND_BUFFER) * 60000);
+        tableTimeline.set(table._id.toString(), freeAt);
       }
     }
 
-    // Find all tables that can accommodate this party size
-    const suitableTables = await Table.find({
-      restaurantId: new mongoose.Types.ObjectId(restaurantId),
-      capacity: { $gte: partySize },
-      isActive: true
-    }).sort({ capacity: 1 }); // Prefer smaller tables first
 
-    if (suitableTables.length === 0) {
-      // No suitable tables exist
+    // 3. Simulate The Queue (Virtual Seating)
+    // ---------------------------------------------------------
+    for (const booking of activeBookings) {
+      // Find compatible tables for this booking
+      // Logic: Table Capacity >= Booking Party Size
+      const compatibleTables = tables.filter(t => t.capacity >= booking.partySize);
+
+      if (compatibleTables.length > 0) {
+        // Find the one that becomes free EARLIEST
+        let bestTable = null;
+        let earliestFreeTime = null;
+
+        for (const table of compatibleTables) {
+          const tableFreeAt = tableTimeline.get(table._id.toString());
+          
+          if (!bestTable || tableFreeAt < earliestFreeTime) {
+            bestTable = table;
+            earliestFreeTime = tableFreeAt;
+          }
+        }
+
+        // 'Assign' this booking to that table
+        // New Free Time = (Wait for table) + (Dining Duration) + (Buffer)
+        const diningDuration = getDuration(booking.partySize);
+        
+        // The booking starts dining either NOW (if table ready) or when table frees up
+        const diningStartTime = earliestFreeTime < now ? now : earliestFreeTime;
+        const newFreeTime = new Date(diningStartTime.getTime() + (diningDuration + TURNAROUND_BUFFER) * 60000);
+
+        // Update timeline
+        tableTimeline.set(bestTable._id.toString(), newFreeTime);
+      }
+      // If no compatible tables, this booking is stuck (phantom), we ignore it for simulation to prevent blocking
+    }
+
+
+    // 4. Calculate "My" Wait Time (Post-Simulation)
+    // ---------------------------------------------------------
+    // Now the timeline reflects the state AFTER all current waiters are served.
+    const myCompatibleTables = tables.filter(t => t.capacity >= partySize);
+
+    if (myCompatibleTables.length === 0) {
       return { waitTime: 60, message: 'No suitable tables available' };
     }
 
-    // Check for available tables
-    const availableTables = suitableTables.filter(t => t.status === 'available');
-    
-    if (availableTables.length > 0) {
-      // Table is available! Just cleaning buffer
-      return { 
-        waitTime: 5, 
-        tableId: availableTables[0]._id,
-        message: 'Table available shortly' 
-      };
+    // Find my best slot
+    let myEarliestFreeTime = null;
+
+    for (const table of myCompatibleTables) {
+      const freeAt = tableTimeline.get(table._id.toString());
+      if (!myEarliestFreeTime || freeAt < myEarliestFreeTime) {
+        myEarliestFreeTime = freeAt;
+      }
     }
 
-    // All tables are occupied - calculate when the earliest will be free
-    const occupiedTables = suitableTables.filter(t => t.status === 'occupied' && t.seatedAt);
-    
-    if (occupiedTables.length === 0) {
-      // Tables exist but are in cleaning/reserved state
-      return { waitTime: 10, message: 'Tables being prepared' };
+    // Result
+    let waitMinutes = Math.ceil((myEarliestFreeTime - now) / 60000);
+    waitMinutes = Math.max(0, waitMinutes); // No negative time
+
+    // Format message
+    let message = '';
+    if (waitMinutes <= 5) {
+      message = 'Table available shortly';
+    } else {
+      message = `Estimated wait: ${waitMinutes} minutes`;
     }
-
-    // Calculate expected end time for each occupied table
-    const now = new Date();
-    const tableAvailabilities = await Promise.all(
-      occupiedTables.map(async (table) => {
-        // Get the current booking for this table
-        const booking = await Booking.findOne({
-          tableId: table._id,
-          status: { $in: ['seated', 'confirmed'] }
-        });
-
-        if (!booking) {
-          // No active booking, table should be free soon
-          return { tableId: table._id, minutesUntilFree: 5 };
-        }
-
-        // Get party duration for this booking's party size
-        let duration = partyDuration.avgDuration;
-        const bookingDuration = await PartyDuration.findOne({ partySize: booking.partySize });
-        if (bookingDuration) {
-          duration = bookingDuration.avgDuration;
-        }
-
-        // Calculate expected end time
-        const seatedTime = new Date(table.seatedAt);
-        const expectedEnd = new Date(seatedTime.getTime() + duration * 60 * 1000);
-        const minutesUntilFree = Math.max(0, Math.ceil((expectedEnd - now) / (60 * 1000)));
-
-        return { tableId: table._id, minutesUntilFree, expectedEnd };
-      })
-    );
-
-    // Find the earliest available table
-    tableAvailabilities.sort((a, b) => a.minutesUntilFree - b.minutesUntilFree);
-    const earliest = tableAvailabilities[0];
-
-    // Add 5 minutes buffer for cleaning
-    const waitTime = earliest.minutesUntilFree + 5;
 
     return {
-      waitTime: Math.max(waitTime, 5), // Minimum 5 minutes
-      tableId: earliest.tableId,
-      message: `Estimated wait: ${waitTime} minutes`
+      waitTime: waitMinutes,
+      tableId: null, // Specific table is unpredictable in simulation
+      message
     };
 
   } catch (error) {

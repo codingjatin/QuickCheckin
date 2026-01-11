@@ -6,6 +6,7 @@ const Message = require('../models/Message');
 const jwt = require('jsonwebtoken');
 const generateOTP = require('../utils/otpGenerator');
 const { sendSMS, formatPhoneNumber } = require('../utils/telnyxService');
+const { calculateWaitTime } = require('../utils/waitTimeCalculator');
 
 // Restaurant Admin Login - Request OTP
 const requestLoginOTP = async (req, res) => {
@@ -339,6 +340,34 @@ const getMessages = async (req, res) => {
   }
 };
 
+// Helper to broadcast wait time updates via SSE
+const broadcastWaitTimeUpdate = async (req, restaurantId) => {
+  try {
+    const sseEmitter = req.app.get('sseEmitter');
+    if (!sseEmitter) return;
+    
+    // Get all table capacities
+    const tables = await Table.find({ 
+      restaurantId, 
+      isActive: true 
+    }).distinct('capacity');
+    
+    if (tables.length === 0) return;
+    
+    // Calculate wait times for each party size
+    const waitTimes = {};
+    for (const size of tables.sort((a, b) => a - b)) {
+      const result = await calculateWaitTime(restaurantId, size);
+      waitTimes[size] = result.waitTime;
+    }
+    
+    // Emit wait time update event
+    sseEmitter.emit('waitTime', { restaurantId, type: 'wait_time_update', waitTimes });
+  } catch (error) {
+    console.error('Error broadcasting wait times:', error);
+  }
+};
+
 // Update table status (for cleaning/available flow)
 const updateTableStatus = async (req, res) => {
   try {
@@ -373,6 +402,9 @@ const updateTableStatus = async (req, res) => {
         table 
       });
     }
+
+    // Broadcast updated wait times
+    broadcastWaitTimeUpdate(req, table.restaurantId);
 
     res.json({
       message: `Table marked as ${status}`,
