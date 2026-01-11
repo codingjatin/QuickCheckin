@@ -370,7 +370,7 @@ const content: Record<Language, MarketingContent> = {
         plans: [
           {
             name: 'Starter',
-            price: '$149',
+            price: '$249',
             cadence: 'per month',
             description: 'Single location waitlist with core messaging and kiosk mode.',
             highlight: 'Perfect for first-time digital waitlists.',
@@ -497,7 +497,7 @@ const content: Record<Language, MarketingContent> = {
         plans: [
           {
             name: 'Starter',
-            price: '$149',
+            price: '$249',
             cadence: 'per month',
             description: 'Single location waitlist with core messaging and kiosk mode.',
             highlight: 'Perfect for first-time digital waitlists.',
@@ -719,7 +719,7 @@ const content: Record<Language, MarketingContent> = {
         plans: [
           {
             name: 'Starter',
-            price: '149 $',
+            price: '249 $',
             cadence: 'par mois',
             description: 'Une adresse avec messagerie essentielle et mode kiosque.',
             highlight: "Idéal pour digitaliser sa liste d'attente.",
@@ -850,7 +850,7 @@ const content: Record<Language, MarketingContent> = {
         plans: [
           {
             name: 'Starter',
-            price: '149 $',
+            price: '249 $',
             cadence: 'par mois',
             description: 'Une localisation avec messagerie et kiosque essentiels.',
             highlight: 'Idéal pour une première digitalisation.',
