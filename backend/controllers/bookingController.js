@@ -6,6 +6,7 @@ const PartyDuration = require('../models/PartyDuration');
 const { calculateWaitTime, getWaitTimeRange } = require('../utils/waitTimeCalculator');
 const { sendSMS } = require('../utils/telnyxService');
 const { formatPhoneNumber } = require('../utils/helpers');
+const { startNotificationTimers, cancelTimers } = require('../utils/notificationTimers');
 
 // Helper to log SMS to Message model
 const logMessage = async (restaurantId, bookingId, customerPhone, customerName, direction, messageType, content, telnyxMessageId = null) => {
@@ -211,6 +212,9 @@ const notifyCustomer = async (req, res) => {
       sseEmitter.emit('booking', { restaurantId: restaurant._id, type: 'status_change', booking });
     }
     
+    // Start notification timers (7-min follow-up, 20-min auto-cancel)
+    startNotificationTimers(booking._id.toString(), req.app);
+    
     res.json({ message: 'Customer notified successfully' });
   } catch (error) {
     console.error('Notify customer error:', error);
@@ -268,6 +272,9 @@ const markSeated = async (req, res) => {
     
     const now = new Date();
     const expectedEndTime = new Date(now.getTime() + partyDuration.avgDuration * 60 * 1000);
+    
+    // Cancel any pending notification timers (follow-up / auto-cancel)
+    cancelTimers(booking._id.toString());
     
     // Update table status to occupied
     table.status = 'occupied';
@@ -488,6 +495,9 @@ const handleCustomerResponse = async (req, res) => {
     const response = body.trim().toUpperCase();
     
     if (response === 'Y' || response === 'YES') {
+      // Cancel the follow-up and auto-cancel timers
+      cancelTimers(booking._id.toString());
+      
       booking.status = 'confirmed';
       booking.confirmationReceivedAt = new Date();
       await booking.save();
@@ -497,6 +507,9 @@ const handleCustomerResponse = async (req, res) => {
       await logMessage(restaurant._id, booking._id, from, booking.customerName, 'outbound', 'response', message);
       
     } else if (response === 'N' || response === 'NO') {
+      // Cancel the follow-up and auto-cancel timers
+      cancelTimers(booking._id.toString());
+      
       // Free up table
       if (booking.tableId) {
         const table = await Table.findById(booking.tableId);

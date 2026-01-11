@@ -169,6 +169,8 @@ export const translations = {
     holdTableMessage: 'Great! We\'ll hold your table. See you soon! 🎉',
     now: 'Now',
     iMessage: 'iMessage',
+    kioskTablesNotSetUp: 'Tables Not Set Up',
+    pleaseContactStaff: 'Please contact staff for assistance or check back later.',
     
     // Admin Navigation
     waitlist: 'Waitlist',
@@ -241,6 +243,9 @@ export const translations = {
     readyForGuests: 'Ready for Guests',
     markForCleaning: 'Mark for Cleaning',
     markAvailable: 'Mark Available',
+    occupiedTables: 'Occupied Tables',
+    manageTableTurnover: 'Manage table turnover from here',
+    beingCleaned: 'Being cleaned...',
     failedToLoadTables: 'Failed to load tables',
     failedToUpdateTableStatus: 'Failed to update table status',
     
@@ -444,6 +449,8 @@ export const translations = {
     holdTableMessage: 'Super ! Nous vous gardons votre table. À bientôt ! 🎉',
     now: 'Maintenant',
     iMessage: 'iMessage',
+    kioskTablesNotSetUp: 'Tables non configurées',
+    pleaseContactStaff: 'Veuillez contacter le personnel pour de l\'aide ou revenez plus tard.',
     
     // Admin Navigation
     waitlist: 'Liste d\'attente',
@@ -516,6 +523,9 @@ export const translations = {
     readyForGuests: 'Prêt pour les clients',
     markForCleaning: 'Marquer pour nettoyage',
     markAvailable: 'Marquer disponible',
+    occupiedTables: 'Tables occupées',
+    manageTableTurnover: 'Gérer le roulement des tables ici',
+    beingCleaned: 'En cours de nettoyage...',
     failedToLoadTables: 'Échec du chargement des tables',
     failedToUpdateTableStatus: 'Échec de la mise à jour du statut de la table',
     

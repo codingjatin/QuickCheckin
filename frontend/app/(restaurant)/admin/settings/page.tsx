@@ -100,7 +100,7 @@ export default function SettingsPage() {
       : 1;
     const newTable: TableConfig = {
       tableNumber: `T${nextNumber}`,
-      capacity: 4,
+      capacity: 0, // Empty - user must fill in
     };
     setTableConfig([...tableConfig, newTable]);
   };
@@ -393,8 +393,9 @@ export default function SettingsPage() {
                         type="number"
                         min={1}
                         max={20}
-                        value={table.capacity}
-                        onChange={(e) => updateTable(index, 'capacity', parseInt(e.target.value || '1'))}
+                        value={table.capacity === 0 ? '' : table.capacity}
+                        onChange={(e) => updateTable(index, 'capacity', parseInt(e.target.value) || 0)}
+                        placeholder="Enter capacity"
                         className="mt-2 border-border focus-visible:ring-2 focus-visible:ring-primary"
                       />
                     </div>

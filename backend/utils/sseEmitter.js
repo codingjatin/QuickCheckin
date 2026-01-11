@@ -6,6 +6,7 @@ class SSEEmitter extends EventEmitter {
   constructor() {
     super();
     this.clients = new Map(); // Map of restaurantId -> Set of response objects
+    this.serverId = `server_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`; // Unique ID for this server instance
     
     // Redis Setup for Horizontal Scaling
     const redisUrl = process.env.REDIS_URL;
@@ -33,10 +34,14 @@ class SSEEmitter extends EventEmitter {
         else console.log('[SSE] Subscribed to Redis broadcast channel');
       });
 
-      // Listen for messages from Redis (triggered by ANY server instance)
+      // Listen for messages from Redis (triggered by OTHER server instances only)
       this.sub.on('message', (channel, message) => {
         try {
-          const { restaurantId, type, data } = JSON.parse(message);
+          const { restaurantId, type, data, sourceServerId } = JSON.parse(message);
+          // Skip if this message originated from this server (already delivered locally)
+          if (sourceServerId === this.serverId) {
+            return;
+          }
           // Broadcast to LOCAL clients connected to THIS server instance
           this.sendToLocalClients(restaurantId, type, data);
         } catch (error) {
@@ -66,18 +71,23 @@ class SSEEmitter extends EventEmitter {
     }
   }
 
-  // PUBLIC API: Broadcast event (Using Redis if available)
+  // PUBLIC API: Broadcast event (Using Redis if available, but always send locally too)
   sendToRestaurant(restaurantId, eventType, data) {
-    if (this.pub) {
-      // Setup: Publish to Redis -> Redis notifies ALL instances -> instances call sendToLocalClients
+    console.log(`[SSE] 📤 Sending ${eventType} to restaurant ${restaurantId}`);
+    
+    // ALWAYS send to local clients first (immediate delivery for this server instance)
+    this.sendToLocalClients(restaurantId, eventType, data);
+    
+    // ALSO publish to Redis for other server instances (if Redis is configured)
+    if (this.pub && this.pub.status === 'ready') {
       this.pub.publish('sse-broadcast', JSON.stringify({
-        restaurantId,
+        restaurantId: restaurantId.toString(),
         type: eventType,
-        data
-      })).catch(err => console.error('[SSE] Publish error:', err));
-    } else {
-      // Fallback: Just send locally (Single instance mode)
-      this.sendToLocalClients(restaurantId, eventType, data);
+        data,
+        sourceServerId: this.serverId
+      })).catch(err => {
+        console.error('[SSE] Redis publish failed (local delivery still worked):', err.message);
+      });
     }
   }
 
@@ -92,8 +102,13 @@ class SSEEmitter extends EventEmitter {
 
   // INTERNAL: Send to locally connected clients
   sendToLocalClients(restaurantId, eventType, data) {
-    const clients = this.clients.get(restaurantId.toString());
+    const rid = restaurantId.toString();
+    const clients = this.clients.get(rid);
+    
+    console.log(`[SSE] 📬 Broadcasting ${eventType} to ${clients?.size || 0} clients for restaurant ${rid}`);
+    
     if (!clients || clients.size === 0) {
+      console.log(`[SSE] ⚠️ No connected clients for restaurant ${rid}`);
       return;
     }
 
@@ -106,6 +121,7 @@ class SSEEmitter extends EventEmitter {
     clients.forEach((res) => {
       try {
         res.write(`data: ${eventData}\n\n`);
+        console.log(`[SSE] ✅ Event sent successfully`);
       } catch (error) {
         console.error('[SSE] Error sending to client:', error);
         this.removeClient(restaurantId, res);

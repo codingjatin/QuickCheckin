@@ -23,6 +23,7 @@ interface UseSSEOptions {
 export function useSSE(options: UseSSEOptions) {
   const { restaurantId, onNewBooking, onStatusChange, onNewMessage, onWaitTimeUpdate, playSound = true } = options;
   const [isConnected, setIsConnected] = useState(false);
+  const [isAudioReady, setIsAudioReady] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUnlockedRef = useRef(false);
@@ -31,37 +32,58 @@ export function useSSE(options: UseSSEOptions) {
   useEffect(() => {
     if (typeof window !== 'undefined' && playSound) {
       try {
-        audioRef.current = new Audio('/sounds/bell_notification.wav');
+        audioRef.current = new Audio('/sounds/bell_notification.mp3');
         audioRef.current.volume = 0.7;
         audioRef.current.preload = 'auto';
         
-        // Try to unlock audio on any user interaction (browser autoplay policy)
-        const unlockAudio = () => {
-          if (!audioUnlockedRef.current && audioRef.current) {
-            // Play and immediately pause to "unlock" the audio context
-            audioRef.current.play().then(() => {
-              audioRef.current?.pause();
-              audioRef.current!.currentTime = 0;
-              audioUnlockedRef.current = true;
-              console.log('[Audio] Notification sound unlocked');
-            }).catch(() => {
-              // Still locked, will try again on next interaction
-            });
-          }
+        // Handle audio load errors
+        audioRef.current.onerror = (e) => {
+          console.error('[Audio] Failed to load notification sound:', e);
         };
         
+        audioRef.current.oncanplaythrough = () => {
+          console.log('[Audio] Notification sound loaded and ready');
+        };
+
+        // Try to unlock audio on any user interaction (browser autoplay policy)
+        const unlockAudio = async () => {
+          if (!audioUnlockedRef.current && audioRef.current) {
+            try {
+              // Create a short silent play to unlock
+              audioRef.current.volume = 0;
+              await audioRef.current.play();
+              audioRef.current.pause();
+              audioRef.current.currentTime = 0;
+              audioRef.current.volume = 0.7;
+              audioUnlockedRef.current = true;
+              setIsAudioReady(true);
+              console.log('[Audio] ✅ Notification sound unlocked successfully');
+              
+              // Remove listeners once unlocked
+              document.removeEventListener('click', unlockAudio);
+              document.removeEventListener('touchstart', unlockAudio);
+              document.removeEventListener('keydown', unlockAudio);
+            } catch (err) {
+              console.log('[Audio] Could not unlock yet, waiting for user interaction...');
+            }
+          }
+        };
+
         // Add listeners for user interaction to unlock audio
-        document.addEventListener('click', unlockAudio, { once: false });
-        document.addEventListener('touchstart', unlockAudio, { once: false });
-        document.addEventListener('keydown', unlockAudio, { once: false });
+        document.addEventListener('click', unlockAudio);
+        document.addEventListener('touchstart', unlockAudio);
+        document.addEventListener('keydown', unlockAudio);
         
+        // Also try to unlock immediately in case autoplay is allowed
+        unlockAudio();
+
         return () => {
           document.removeEventListener('click', unlockAudio);
           document.removeEventListener('touchstart', unlockAudio);
           document.removeEventListener('keydown', unlockAudio);
         };
       } catch (err) {
-        console.log('Notification sound not available:', err);
+        console.error('[Audio] Error initializing notification sound:', err);
         audioRef.current = null;
       }
     }
@@ -69,11 +91,20 @@ export function useSSE(options: UseSSEOptions) {
 
   const playNotificationSound = useCallback(() => {
     if (audioRef.current && playSound) {
-      console.log('[Audio] Playing notification sound...');
+      console.log('[Audio] 🔔 Attempting to play notification sound...');
+      console.log('[Audio] Audio unlocked:', audioUnlockedRef.current);
+      
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(err => {
-        console.log('Could not play notification sound (user interaction required):', err);
-      });
+      audioRef.current.play()
+        .then(() => {
+          console.log('[Audio] ✅ Notification sound played successfully');
+        })
+        .catch(err => {
+          console.error('[Audio] ❌ Failed to play notification sound:', err.message);
+          console.log('[Audio] Tip: Click anywhere on the page to enable sounds');
+        });
+    } else {
+      console.log('[Audio] Sound not available - audioRef:', !!audioRef.current, 'playSound:', playSound);
     }
   }, [playSound]);
 
@@ -81,7 +112,7 @@ export function useSSE(options: UseSSEOptions) {
     if (!restaurantId) return;
 
     const sseUrl = apiClient.getSSEUrl(restaurantId);
-    
+
     const connect = () => {
       try {
         eventSourceRef.current = new EventSource(sseUrl);
@@ -94,16 +125,19 @@ export function useSSE(options: UseSSEOptions) {
         eventSourceRef.current.onmessage = (event) => {
           try {
             const eventData: SSEEvent = JSON.parse(event.data);
-            
+            console.log('[SSE] 📨 Event received:', eventData.type, eventData);
+
             switch (eventData.type) {
               case 'connected':
                 console.log('[SSE] Connection confirmed');
                 break;
               case 'new_booking':
+                console.log('[SSE] 🆕 NEW BOOKING - Playing sound!');
                 playNotificationSound();
                 onNewBooking?.(eventData.data);
                 break;
               case 'status_change':
+                console.log('[SSE] 🔄 Status change');
                 onStatusChange?.(eventData.data);
                 break;
               case 'new_message':
@@ -122,7 +156,7 @@ export function useSSE(options: UseSSEOptions) {
           console.error('[SSE] Error:', error);
           setIsConnected(false);
           eventSourceRef.current?.close();
-          
+
           // Reconnect after 5 seconds
           setTimeout(connect, 5000);
         };
@@ -140,5 +174,5 @@ export function useSSE(options: UseSSEOptions) {
     };
   }, [restaurantId, onNewBooking, onStatusChange, onNewMessage, onWaitTimeUpdate, playNotificationSound]);
 
-  return { isConnected };
+  return { isConnected, isAudioReady, testSound: playNotificationSound };
 }

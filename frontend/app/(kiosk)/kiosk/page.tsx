@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Phone, ArrowRight, Home, LogOut, Loader2, Users, Wifi, Battery, Signal, Clock } from 'lucide-react';
+import { CheckCircle, Phone, ArrowRight, Home, LogOut, Loader2, Users, Wifi, Battery, Signal, Clock, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { AuthWrapper } from '@/components/auth/auth-wrapper';
 import { useTranslation } from '@/lib/i18n';
@@ -30,7 +30,8 @@ function KioskContent() {
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [waitTime, setWaitTime] = useState<number>(0);
-  const [allowedPartySizes, setAllowedPartySizes] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8]);
+  const [allowedPartySizes, setAllowedPartySizes] = useState<number[]>([]);
+  const [tablesConfigured, setTablesConfigured] = useState(true); // Assume configured until we check
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [waitTimes, setWaitTimes] = useState<Record<number, number>>({});
 
@@ -72,7 +73,13 @@ function KioskContent() {
           
           if (uniqueCapacities.length > 0) {
             setAllowedPartySizes(uniqueCapacities);
+            setTablesConfigured(true);
+          } else {
+            setTablesConfigured(false);
           }
+        } else {
+          // No tables configured
+          setTablesConfigured(false);
         }
         
         if (waitTimesResult.data?.waitTimes) {
@@ -220,6 +227,18 @@ function KioskContent() {
                     {loadingSettings ? (
                       <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    ) : !tablesConfigured ? (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <AlertTriangle className="h-8 w-8 text-amber-600" />
+                        </div>
+                        <h3 className="text-lg font-medium text-ink mb-2">
+                          {t('kioskTablesNotSetUp') || 'Tables Not Set Up'}
+                        </h3>
+                        <p className="text-muted">
+                          {t('pleaseContactStaff') || 'Please contact staff for assistance or check back later.'}
+                        </p>
                       </div>
                     ) : (
                       <>

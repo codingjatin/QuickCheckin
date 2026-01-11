@@ -9,7 +9,7 @@ import { useAuthStore } from '@/lib/auth-store';
 import { apiClient, Booking, DashboardStats, Table } from '@/lib/api-client';
 import { useSSE } from '@/hooks/useSSE';
 import { useTranslation } from '@/lib/i18n';
-import { Clock, Users, MessageCircle, CheckCircle, X, Phone, Loader2, Wifi, WifiOff, Table as TableIcon } from 'lucide-react';
+import { Clock, Users, MessageCircle, CheckCircle, X, Phone, Loader2, Wifi, WifiOff, Table as TableIcon, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -23,11 +23,15 @@ export default function AdminDashboard() {
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [updatingTableId, setUpdatingTableId] = useState<string | null>(null);
   
   // Table selection modal state
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [selectedTableId, setSelectedTableId] = useState<string>('');
   const [showTableModal, setShowTableModal] = useState(false);
+  
+  // Track bookings being removed for animation
+  const [removingBookingIds, setRemovingBookingIds] = useState<Set<string>>(new Set());
 
   const restaurantId = restaurantData?.id;
 
@@ -87,7 +91,7 @@ export default function AdminDashboard() {
   }, [fetchData]);
 
   // Connect to SSE for real-time updates
-  const { isConnected } = useSSE({
+  const { isConnected, isAudioReady, testSound } = useSSE({
     restaurantId: restaurantId || '',
     onNewBooking: handleNewBooking,
     onStatusChange: handleStatusChange,
@@ -169,7 +173,19 @@ export default function AdminDashboard() {
         setShowTableModal(false);
         setSelectedBooking(null);
         setSelectedTableId('');
-        fetchData();
+        
+        // Add to removing set for animation
+        setRemovingBookingIds(prev => new Set(prev).add(bookingId));
+        
+        // Wait for animation then refresh data
+        setTimeout(() => {
+          setRemovingBookingIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(bookingId);
+            return newSet;
+          });
+          fetchData();
+        }, 400);
       }
     } catch (error) {
       toast.error(t('failedToSeat'));
@@ -193,6 +209,24 @@ export default function AdminDashboard() {
       toast.error(t('failedToCancel'));
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  // Handle table status update (cleaning -> available)
+  const handleUpdateTableStatus = async (tableId: string, status: 'available' | 'cleaning' | 'occupied') => {
+    setUpdatingTableId(tableId);
+    try {
+      const result = await apiClient.updateTableStatus(tableId, status);
+      if (result.data) {
+        toast.success(result.data.message);
+        fetchData(); // Refresh all data
+      } else if (result.error) {
+        toast.error(result.error.message);
+      }
+    } catch (error) {
+      toast.error('Failed to update table status');
+    } finally {
+      setUpdatingTableId(null);
     }
   };
 
@@ -239,9 +273,14 @@ export default function AdminDashboard() {
     );
   }
 
-  const activeBookings = bookings.filter(b => 
-    ['waiting', 'notified', 'confirmed', 'seated'].includes(b.status)
-  );
+  // Filter out seated customers and sort by creation time (earliest first)
+  const activeBookings = bookings
+    .filter(b => ['waiting', 'notified', 'confirmed'].includes(b.status))
+    .sort((a, b) => {
+      const dateA = new Date(a.checkInTime || a.createdAt).getTime();
+      const dateB = new Date(b.checkInTime || b.createdAt).getTime();
+      return dateA - dateB; // Ascending: earliest first
+    });
 
   return (
     <div className="space-y-8 text-ink">
@@ -366,22 +405,41 @@ export default function AdminDashboard() {
       )}
 
       {/* Connection Status */}
-      <div className="flex items-center gap-2 text-sm">
-        {isConnected ? (
-          <>
-            <Wifi className="h-4 w-4 text-success" />
-            <span className="text-success">{t('liveUpdatesActive')}</span>
-          </>
-        ) : (
-          <>
-            <WifiOff className="h-4 w-4 text-muted" />
-            <span className="text-muted">{t('connecting')}</span>
-          </>
-        )}
+      <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-2">
+          {isConnected ? (
+            <>
+              <Wifi className="h-4 w-4 text-success" />
+              <span className="text-success">{t('liveUpdatesActive')}</span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="h-4 w-4 text-muted" />
+              <span className="text-muted">{t('connecting')}</span>
+            </>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {isAudioReady ? (
+            <button 
+              onClick={testSound}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              title="Click to test notification sound"
+            >
+              <Volume2 className="h-4 w-4 text-success" />
+              <span className="text-success">Sound on (click to test)</span>
+            </button>
+          ) : (
+            <>
+              <VolumeX className="h-4 w-4 text-amber-500" />
+              <span className="text-amber-500 cursor-pointer" title="Click anywhere to enable sounds">Click to enable sound</span>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-panel border border-border shadow-soft">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('totalWaiting') || 'Total Waiting'}</CardTitle>
@@ -392,19 +450,6 @@ export default function AdminDashboard() {
               {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats?.totalWaiting || 0}
             </div>
             <p className="text-xs text-muted">{t('activeInQueue') || 'Active in queue'}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-panel border border-border shadow-soft">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('avgWaitTime') || 'Avg Wait Time'}</CardTitle>
-            <Clock className="h-4 w-4 text-ink/70" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${stats?.avgWaitTime || 0} min`}
-            </div>
-            <p className="text-xs text-muted">{t('currentEstimate') || 'Current estimate'}</p>
           </CardContent>
         </Card>
 
@@ -466,7 +511,11 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={bookingId}
-                    className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-off transition-colors"
+                    className={`flex items-center justify-between p-4 border border-border rounded-lg hover:bg-off transition-all duration-300 ease-out ${
+                      removingBookingIds.has(bookingId) 
+                        ? 'opacity-0 transform -translate-x-full max-h-0 py-0 my-0 border-0 overflow-hidden' 
+                        : 'opacity-100 transform translate-x-0 max-h-40'
+                    }`}
                   >
                     <div className="flex items-center gap-4">
                       <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
@@ -564,6 +613,128 @@ export default function AdminDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Occupied Tables Section */}
+      {tables.filter(t => t.status === 'occupied' || t.status === 'cleaning').length > 0 && (
+        <Card className="bg-panel border border-border shadow-soft">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <TableIcon className="h-5 w-5" />
+                  {t('occupiedTables') || 'Occupied Tables'}
+                </CardTitle>
+                <CardDescription className="text-muted">
+                  {t('manageTableTurnover') || 'Manage table turnover from here'}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Badge className="bg-orange-500/10 text-orange-600 border border-orange-500/30">
+                  <Users className="h-3 w-3 mr-1" />
+                  {tables.filter(t => t.status === 'occupied').length} {t('occupied') || 'Occupied'}
+                </Badge>
+                <Badge className="bg-purple-500/10 text-purple-600 border border-purple-500/30">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  {tables.filter(t => t.status === 'cleaning').length} {t('cleaning') || 'Cleaning'}
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {/* Occupied Tables */}
+              {tables.filter(t => t.status === 'occupied').map(table => {
+                // Find the booking for this table
+                const tableBooking = bookings.find(b => 
+                  b.tableId === table._id && b.status === 'seated'
+                );
+                
+                return (
+                  <div
+                    key={table._id}
+                    className="flex items-center justify-between p-4 border border-orange-500/30 rounded-lg bg-orange-500/5"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex-shrink-0 w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center">
+                        <TableIcon className="h-5 w-5 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Table {table.tableNumber}</p>
+                        <div className="flex items-center gap-2 text-sm text-muted">
+                          <Users className="h-3 w-3" />
+                          {tableBooking ? (
+                            <span>{tableBooking.customerName} ({tableBooking.partySize})</span>
+                          ) : (
+                            <span>{t('capacity')}: {table.capacity}</span>
+                          )}
+                          {tableBooking?.seatedAt && (
+                            <>
+                              <span>•</span>
+                              <Clock className="h-3 w-3" />
+                              <span>{formatDistanceToNow(new Date(tableBooking.seatedAt), { addSuffix: false })}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleUpdateTableStatus(table._id, 'cleaning')}
+                      disabled={updatingTableId === table._id}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {updatingTableId === table._id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-1" />
+                          {t('markForCleaning') || 'Mark for Cleaning'}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
+
+              {/* Cleaning Tables */}
+              {tables.filter(t => t.status === 'cleaning').map(table => (
+                <div
+                  key={table._id}
+                  className="flex items-center justify-between p-4 border border-purple-500/30 rounded-lg bg-purple-500/5"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0 w-10 h-10 bg-purple-500/10 rounded-full flex items-center justify-center">
+                      <Sparkles className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Table {table.tableNumber}</p>
+                      <div className="flex items-center gap-2 text-sm text-purple-600">
+                        <Sparkles className="h-3 w-3" />
+                        <span>{t('beingCleaned') || 'Being cleaned...'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => handleUpdateTableStatus(table._id, 'available')}
+                    disabled={updatingTableId === table._id}
+                    className="bg-success hover:bg-success/90 text-white"
+                  >
+                    {updatingTableId === table._id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        {t('markAvailable') || 'Mark Available'}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
