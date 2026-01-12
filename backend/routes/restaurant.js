@@ -9,6 +9,7 @@ const {
   updateTables,
   updateTableStatus,
   updateLogo,
+  createWalkIn,
   getMessages
 } = require('../controllers/restaurantController');
 const { authenticateUser } = require('../middleware/auth');
@@ -43,5 +44,8 @@ router.put('/:restaurantId/tables', authenticateUser, updateTables);
 router.patch('/table/:tableId/status', authenticateUser, updateTableStatus);
 router.post('/:restaurantId/logo', authenticateUser, upload.single('logo'), updateLogo);
 router.get('/:restaurantId/messages', authenticateUser, getMessages);
+
+// Create Walk-in (Quick Seat)
+router.post('/walk-in', authenticateUser, createWalkIn);
 
 module.exports = router;

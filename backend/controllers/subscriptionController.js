@@ -334,7 +334,7 @@ const updateSeatCapacity = async (req, res) => {
 
     const oldCapacity = restaurant.seatCapacity;
     const oldPlan = restaurant.subscriptionPlan;
-    const newPlan = seatCapacity >= 50 ? 'large' : 'small';
+    const newPlan = seatCapacity > 50 ? 'large' : 'small';
 
     // Check if plan change is needed
     if (oldPlan !== newPlan && restaurant.stripeSubscriptionId) {

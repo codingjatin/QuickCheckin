@@ -7,7 +7,7 @@ import { Sparkles } from "lucide-react";
 import { useHero } from "../content";
 
 export function HeroSection() {
-  const { eyebrow, title, description, primaryCta, secondaryCta, stats } = useHero();
+  const { eyebrow, title, description, primaryCta, secondaryCta } = useHero();
 
   return (
     <section className="relative overflow-hidden">

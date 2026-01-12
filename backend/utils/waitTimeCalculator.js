@@ -24,7 +24,8 @@ const calculateWaitTime = async (restaurantId, partySize) => {
       // Active tables
       Table.find({ 
         restaurantId: new mongoose.Types.ObjectId(restaurantId), 
-        isActive: true 
+        isActive: true,
+        status: { $ne: 'unavailable' }
       }).sort({ capacity: 1 }), // Sort by capacity for preference logic
 
       // Waitlist queue (excluding seeded/cancelled/completed)
@@ -36,6 +37,12 @@ const calculateWaitTime = async (restaurantId, partySize) => {
       // Party Durations Lookup
       PartyDuration.find({})
     ]);
+
+    console.log(`[WaitTime] Calculator Start - Restaurant: ${restaurantId}, PartySize: ${partySize}`);
+    console.log(`[WaitTime] Data: ${tables.length} Tables, ${activeBookings.length} ActiveBookings, ${partyDurations.length} DurationsConfig`);
+    if (partyDurations.length > 0) {
+       console.log(`[WaitTime] Durations Map: ${JSON.stringify(partyDurations)}`);
+    }
 
     // Create a Duration Map for O(1) lookup
     // Map party size to duration (minutes)
@@ -68,6 +75,7 @@ const calculateWaitTime = async (restaurantId, partySize) => {
       if (table.status === 'available') {
         // Available now (plus buffer for immediate seating)
         tableTimeline.set(table._id.toString(), new Date(now.getTime() + TURNAROUND_BUFFER * 60000));
+        console.log(`[WaitTime] Table ${table.tableNumber} (Available) -> FreeAt: ${new Date(now.getTime() + TURNAROUND_BUFFER * 60000).toISOString()}`);
       } else {
         // Occupied/Cleaning/Reserved
         // Determine when it frees up
@@ -78,17 +86,14 @@ const calculateWaitTime = async (restaurantId, partySize) => {
           const startTime = table.seatedAt || table.updatedAt || now; // Fallback to updatedAt/now if seatedAt missing
           
           // We need expected duration for the CURRENT occupant. 
-          // Ideally we'd look up the booking on this table, but for speed estimation: 
-          // we treat it as taking "Average Duration" for its capacity or a standard amount.
-          // Wait, better: look up booking attached to table? 
-          // Optimization: Assume standard duration for table capacity if booking lookup is too heavy?
-          // Let's use standard duration for the table's capacity as a proxy for the current party.
           const duration = getDuration(table.capacity); 
           const elapsed = (now - new Date(startTime)) / 60000;
           minutesUntilFree = Math.max(0, duration - elapsed);
+          console.log(`[WaitTime] Table ${table.tableNumber} (Occupied) -> Duration: ${duration}, Start: ${startTime}, Elapsed: ${elapsed.toFixed(1)}, MinsFree: ${minutesUntilFree}`);
         } else {
           // Cleaning/Reserved -> assume nearly ready
           minutesUntilFree = 10;
+          console.log(`[WaitTime] Table ${table.tableNumber} (${table.status}) -> Default MinsFree: ${minutesUntilFree}`);
         }
 
         const freeAt = new Date(now.getTime() + (minutesUntilFree + TURNAROUND_BUFFER) * 60000);
@@ -147,6 +152,9 @@ const calculateWaitTime = async (restaurantId, partySize) => {
 
     for (const table of myCompatibleTables) {
       const freeAt = tableTimeline.get(table._id.toString());
+      // Debug Log
+      console.log(`[WaitTime] Table ${table.tableNumber} (Cap ${table.capacity}) Status: ${table.status}, FreeAt: ${freeAt.toISOString()}, DurationUsed: ${getDuration(table.capacity)}`);
+      
       if (!myEarliestFreeTime || freeAt < myEarliestFreeTime) {
         myEarliestFreeTime = freeAt;
       }
@@ -155,6 +163,8 @@ const calculateWaitTime = async (restaurantId, partySize) => {
     // Result
     let waitMinutes = Math.ceil((myEarliestFreeTime - now) / 60000);
     waitMinutes = Math.max(0, waitMinutes); // No negative time
+
+    console.log(`[WaitTime] Final Calc for PartySize ${partySize}: ${waitMinutes}m`);
 
     // Format message
     let message = '';

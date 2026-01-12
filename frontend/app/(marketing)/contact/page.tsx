@@ -94,7 +94,7 @@ const STRINGS = {
     faqs: [
       {
         q: 'How quickly can we get started?',
-        a: 'Most restaurants are up and running within 24–48 hours. We provide full setup support and training.',
+        a: 'Most restaurants are up and running within 24–48 hours. We provide onboarding assistance to help you get set up.',
       },
       {
         q: 'Do you offer a free trial?',
@@ -102,11 +102,11 @@ const STRINGS = {
       },
       {
         q: 'What kind of support do you provide?',
-        a: 'We offer 24/7 email support, phone support during business hours, and comprehensive documentation.',
+        a: 'We offer email support and phone support during business hours, along with setup assistance and documentation.',
       },
       {
-        q: 'Can QuickCheck integrate with our POS system?',
-        a: 'Yes, we integrate with most major POS systems. Contact us to discuss your specific requirements.',
+        q: 'What is the pricing?',
+        a: 'We have two simple plans: Small ($299/month) for 50 seats or less, and Large ($499/month) for 51+ seats. Both include all features and unlimited SMS.',
       },
     ],
     // autoresponse
@@ -186,11 +186,11 @@ const STRINGS = {
       },
       {
         q: 'Quel support proposez-vous ?',
-        a: 'Support e-mail 24/7, téléphone aux horaires ouvrés et documentation complète.',
+        a: 'Support e-mail et téléphone aux horaires ouvrés, assistance à la configuration et documentation.',
       },
       {
-        q: 'QuickCheck s’intègre-t-il à notre POS ?',
-        a: 'Oui, nous intégrons la plupart des POS majeurs. Contactez-nous pour vos besoins spécifiques.',
+        q: 'Quels sont les tarifs ?',
+        a: 'Deux forfaits simples : Small (299 $/mois) pour 50 places ou moins, et Large (499 $/mois) pour 51+ places. Les deux incluent toutes les fonctionnalités et SMS illimités.',
       },
     ],
     // autoresponse

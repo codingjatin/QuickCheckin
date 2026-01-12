@@ -141,6 +141,8 @@ const getSettings = async (req, res) => {
         address: restaurant.address,
         city: restaurant.city,
         logo: restaurant.logo,
+        subscriptionPlan: restaurant.subscriptionPlan,
+        seatCapacity: restaurant.seatCapacity,
         // Editable fields
         gracePeriodMinutes: restaurant.gracePeriodMinutes,
         reminderDelayMinutes: restaurant.reminderDelayMinutes,
@@ -205,6 +207,24 @@ const updateTables = async (req, res) => {
 
     if (!Array.isArray(tables)) {
       return res.status(400).json({ message: 'Tables array is required.' });
+    }
+
+    // Check seat capacity limit for small plan
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found.' });
+    }
+
+    const totalSeats = tables.reduce((sum, t) => sum + (parseInt(t.capacity) || 0), 0);
+
+    // Enforce 50 seat limit for small plan
+    if (restaurant.subscriptionPlan === 'small' && totalSeats > 50) {
+      return res.status(403).json({
+        message: `Your Small plan allows up to 50 seats. You're trying to configure ${totalSeats} seats. Please upgrade to the Large plan for unlimited seating.`,
+        code: 'SEAT_LIMIT_EXCEEDED',
+        currentSeats: totalSeats,
+        maxSeats: 50
+      });
     }
 
     // Get existing table IDs to track deletions
@@ -349,7 +369,8 @@ const broadcastWaitTimeUpdate = async (req, restaurantId) => {
     // Get all table capacities
     const tables = await Table.find({ 
       restaurantId, 
-      isActive: true 
+      isActive: true,
+      status: { $ne: 'unavailable' }
     }).distinct('capacity');
     
     if (tables.length === 0) return;
@@ -374,7 +395,7 @@ const updateTableStatus = async (req, res) => {
     const { tableId } = req.params;
     const { status } = req.body;
 
-    if (!['available', 'occupied', 'reserved', 'cleaning'].includes(status)) {
+    if (!['available', 'occupied', 'reserved', 'cleaning', 'unavailable'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status.' });
     }
 
@@ -385,10 +406,13 @@ const updateTableStatus = async (req, res) => {
 
     table.status = status;
     
-    // Clear booking reference if marking available or cleaning
-    if (status === 'available' || status === 'cleaning') {
+    // Clear booking reference if marking available, cleaning, or unavailable
+    if (status === 'available' || status === 'cleaning' || status === 'unavailable') {
       table.currentBookingId = null;
       table.seatedAt = null;
+    } else if (status === 'occupied') {
+      // Ensure seatedAt is fresh if manually marking occupied
+      table.seatedAt = new Date();
     }
 
     await table.save();
@@ -438,6 +462,81 @@ const updateLogo = async (req, res) => {
   }
 };
 
+// Create Walk-in Booking (Quick Seat)
+const createWalkIn = async (req, res) => {
+  try {
+    const { tableId, partySize } = req.body;
+
+    if (!tableId) {
+      return res.status(400).json({ message: 'Table ID is required.' });
+    }
+
+    const table = await Table.findById(tableId);
+    if (!table) {
+      return res.status(404).json({ message: 'Table not found.' });
+    }
+
+    if (table.status !== 'available') {
+      return res.status(400).json({ message: `Table is currently ${table.status}.` });
+    }
+
+    // Default to table capacity if party size not provided
+    const size = partySize || table.capacity;
+
+    const now = new Date();
+    
+    // Create "Walk-in" booking
+    const booking = new Booking({
+      restaurantId: table.restaurantId,
+      customerName: 'Walk-in Guest',
+      customerPhone: 'N/A',
+      partySize: size,
+      status: 'seated',
+      waitTime: 0,
+      checkInTime: now,
+      seatedAt: now,
+      tableId: table._id,
+      isCustomParty: false
+    });
+
+    await booking.save();
+
+    // Update Table
+    table.status = 'occupied';
+    table.currentBookingId = booking._id;
+    table.seatedAt = now;
+    await table.save();
+
+    // Emit SSE events
+    const sseEmitter = req.app.get('sseEmitter');
+    if (sseEmitter) {
+      sseEmitter.emit('booking', { 
+        restaurantId: table.restaurantId, 
+        type: 'new_booking', 
+        booking 
+      });
+      sseEmitter.emit('table', { 
+        restaurantId: table.restaurantId, 
+        type: 'status_change', 
+        table 
+      });
+    }
+
+    // Broadcast updated wait times
+    broadcastWaitTimeUpdate(req, table.restaurantId);
+
+    res.status(201).json({
+      message: 'Walk-in seated successfully',
+      booking,
+      table
+    });
+
+  } catch (error) {
+    console.error('Create walk-in error:', error);
+    res.status(500).json({ message: 'Server error creating walk-in.' });
+  }
+};
+
 module.exports = {
   requestLoginOTP,
   verifyLoginOTP,
@@ -447,5 +546,6 @@ module.exports = {
   updateTables,
   updateTableStatus,
   updateLogo,
+  createWalkIn,
   getMessages
 };

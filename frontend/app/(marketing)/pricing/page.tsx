@@ -9,7 +9,7 @@ import { useMarketingContent } from "../content";
 
 export default function PricingPage() {
   const { pages } = useMarketingContent();
-  const { usageNotes, faq, hero, plans, whatsIncluded, includedItems, faqSection } = pages.pricing;
+  const { faq, hero, plans, whatsIncluded, includedItems, faqSection } = pages.pricing;
 
   const [country, setCountry] = useState<'US' | 'CA' | 'OTHER'>('US');
   const [detectingLocation, setDetectingLocation] = useState(true);

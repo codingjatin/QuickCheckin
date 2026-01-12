@@ -243,7 +243,7 @@ function KioskContent() {
                     ) : (
                       <>
                         <div className="grid grid-cols-5 gap-4 mb-6">
-                          {allowedPartySizes.map((size) => (
+                          {allowedPartySizes.filter(size => waitTimes[size] !== undefined).map((size) => (
                             <Button
                               key={size}
                               size="lg"

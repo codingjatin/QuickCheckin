@@ -25,7 +25,7 @@ export interface Table {
   _id: string;
   tableNumber: string;
   capacity: number;
-  status: 'available' | 'occupied' | 'reserved' | 'cleaning';
+  status: 'available' | 'occupied' | 'reserved' | 'cleaning' | 'unavailable';
   isActive: boolean;
 }
 
@@ -43,6 +43,8 @@ export interface RestaurantSettings {
   address: string;
   city: string;
   logo: string;
+  subscriptionPlan?: 'small' | 'large' | 'legacy-free';
+  seatCapacity?: number;
   gracePeriodMinutes: number;
   reminderDelayMinutes: number;
   allowedPartySizes: number[];
@@ -259,10 +261,17 @@ class ApiClient {
     });
   }
 
-  async updateTableStatus(tableId: string, status: 'available' | 'occupied' | 'reserved' | 'cleaning') {
+  async updateTableStatus(tableId: string, status: 'available' | 'occupied' | 'reserved' | 'cleaning' | 'unavailable') {
     return this.request<{ message: string; table: Table }>(`/api/restaurant/table/${tableId}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
+    });
+  }
+
+  async createWalkIn(tableId: string, partySize?: number) {
+    return this.request<{ message: string; booking: Booking; table: Table }>('/api/restaurant/walk-in', {
+      method: 'POST',
+      body: JSON.stringify({ tableId, partySize }),
     });
   }
 

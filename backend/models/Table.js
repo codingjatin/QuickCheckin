@@ -18,7 +18,7 @@ const tableSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['available', 'occupied', 'reserved', 'cleaning'],
+    enum: ['available', 'occupied', 'reserved', 'cleaning', 'unavailable'],
     default: 'available'
   },
   currentBookingId: {

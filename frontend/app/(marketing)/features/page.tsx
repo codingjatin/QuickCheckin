@@ -62,9 +62,9 @@ export default function FeaturesPage() {
         <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 sm:px-6 lg:px-8">
           <SectionHeading
             align="left"
-            eyebrow="Scale with confidence"
-            title="Feature availability by plan"
-            description="Every plan includes unlimited users and core waitlist functionality. Advanced automation and integrations unlock with Pro and Enterprise."
+            eyebrow="Simple pricing"
+            title="All features, every plan"
+            description="Both Small and Large plans include all features. Choose based on your seating capacity—50 seats or less, or 51+ seats."
           />
 
           <div className="grid gap-6 lg:grid-cols-3">

@@ -47,7 +47,8 @@ const broadcastWaitTimeUpdate = async (req, restaurantId) => {
     // Get all table capacities
     const tables = await Table.find({ 
       restaurantId, 
-      isActive: true 
+      isActive: true,
+      status: { $ne: 'unavailable' }
     }).distinct('capacity');
     
     if (tables.length === 0) return;
@@ -691,7 +692,8 @@ const getWaitTimes = async (req, res) => {
     // Get all table capacities to determine party sizes
     const tables = await Table.find({ 
       restaurantId, 
-      isActive: true 
+      isActive: true,
+      status: { $ne: 'unavailable' }
     }).distinct('capacity');
     
     if (tables.length === 0) {

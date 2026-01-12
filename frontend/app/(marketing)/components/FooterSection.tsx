@@ -90,61 +90,31 @@ export function FooterSection() {
             </div>
           ))}
 
-          {/* --- Right Side: Contact & Socials --- */}
+          {/* --- Right Side: Socials --- */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
-              Contact Us
-            </h3>
-            <ul className="mt-4 space-y-3 text-sm text-muted">
-              <li>
-                <Link
-                  href="mailto:info@quickcheckin.ca"
-                  className="hover:text-ink"
-                >
-                  info@quickcheckin.ca
-                </Link>
-              </li>
-              <li>
-                <Link href="tel:+16472216677" className="hover:text-ink">
-                  +1 647-221-6677
-                </Link>
-              </li>
-            </ul>
-
             {/* --- Social Media Links --- */}
-            <div className="mt-6">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-muted mb-3">
-                Follow Us
-              </h4>
-              <div className="flex items-center gap-4 text-muted">
-                <Link
-                  href="https://www.instagram.com/quickcheckin.ca/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                  aria-label="Instagram"
-                >
-                  <Instagram size={20} />
-                </Link>
-                {/* <Link
-                  href="https://www.facebook.com/kohligarageinc"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                  aria-label="Facebook"
-                >
-                  <Facebook size={20} />
-                </Link> */}
-                <Link
-                  href="https://www.linkedin.com/showcase/quickcheckin/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                  aria-label="LinkedIn"
-                >
-                  <Linkedin size={20} />
-                </Link>
-              </div>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
+              Follow Us
+            </h3>
+            <div className="flex items-center gap-4 text-muted mt-4">
+              <Link
+                href="https://www.instagram.com/quickcheckin.ca/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-primary transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram size={20} />
+              </Link>
+              <Link
+                href="https://www.linkedin.com/showcase/quickcheckin/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-primary transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin size={20} />
+              </Link>
             </div>
           </div>
         </div>

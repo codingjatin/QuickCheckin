@@ -227,6 +227,9 @@ export const translations = {
     failedToLoadSettings: 'Failed to load settings',
     settingsSavedSuccess: 'Settings saved successfully!',
     failedToSaveSettings: 'Failed to save settings',
+    planUsageSmallLimit: 'Plan Usage (Small Limit: 50 seats)',
+    needMoreSeats: 'Need more seats?',
+    upgradeToLargeUnlimited: 'Upgrade to Large Plan for unlimited capacity.',
     
     // Admin Tables
     tableManagement: 'Table Management',
@@ -248,6 +251,11 @@ export const translations = {
     beingCleaned: 'Being cleaned...',
     failedToLoadTables: 'Failed to load tables',
     failedToUpdateTableStatus: 'Failed to update table status',
+    seatWalkIn: 'Seat Walk-In',
+    walkInSeatedSuccess: 'Walk-in seated successfully',
+    failedToSeatWalkIn: 'Failed to seat walk-in',
+    tableUnavailable: 'Table Unavailable',
+    unavailable: 'Unavailable',
     
     // Admin Messages
     messageCenter: 'Message Center',
@@ -507,6 +515,9 @@ export const translations = {
     failedToLoadSettings: 'Échec du chargement des paramètres',
     settingsSavedSuccess: 'Paramètres enregistrés avec succès !',
     failedToSaveSettings: 'Échec de l\'enregistrement des paramètres',
+    planUsageSmallLimit: 'Utilisation du forfait (Limite Small : 50 places)',
+    needMoreSeats: 'Besoin de plus de places ?',
+    upgradeToLargeUnlimited: 'Passez au forfait Large pour une capacité illimitée.',
     
     // Admin Tables
     tableManagement: 'Gestion des tables',
@@ -528,6 +539,11 @@ export const translations = {
     beingCleaned: 'En cours de nettoyage...',
     failedToLoadTables: 'Échec du chargement des tables',
     failedToUpdateTableStatus: 'Échec de la mise à jour du statut de la table',
+    seatWalkIn: 'Placer sans réservation',
+    walkInSeatedSuccess: 'Client placé avec succès',
+    failedToSeatWalkIn: 'Échec du placement du client',
+    tableUnavailable: 'Table indisponible',
+    unavailable: 'Indisponible',
     
     // Admin Messages
     messageCenter: 'Centre de messages',

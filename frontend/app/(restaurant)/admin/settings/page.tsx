@@ -356,7 +356,15 @@ export default function SettingsPage() {
               <Restaurant className="h-5 w-5 mr-2 text-primary" />
               {t('tableConfiguration')}
             </div>
-            <Button onClick={addTable} size="sm" className="bg-primary hover:bg-primary-600 text-white">
+            <Button 
+              onClick={addTable} 
+              size="sm" 
+              className="bg-primary hover:bg-primary-600 text-white"
+              disabled={
+                settings.subscriptionPlan === 'small' && 
+                tableConfig.reduce((acc, t) => acc + (t.capacity || 0), 0) >= 50
+              }
+            >
               <Plus className="h-4 w-4 mr-2" />
               {t('addTable')}
             </Button>
@@ -364,6 +372,39 @@ export default function SettingsPage() {
           <CardDescription className="text-muted">
             {t('manageIndividualTables')}
           </CardDescription>
+
+          {/* Seat Capacity Monitor */}
+          {settings.subscriptionPlan === 'small' && (
+            <div className="mt-4 p-4 bg-off rounded-lg border border-border">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium">{t('planUsageSmallLimit')}</span>
+                <span className={`text-sm font-bold ${
+                  tableConfig.reduce((acc, t) => acc + (t.capacity || 0), 0) > 50 
+                    ? 'text-red-500' 
+                    : 'text-primary'
+                }`}>
+                  {tableConfig.reduce((acc, t) => acc + (t.capacity || 0), 0)} / 50 {t('seatsLabel')}
+                </span>
+              </div>
+              <div className="w-full bg-border h-2 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-300 ${
+                    tableConfig.reduce((acc, t) => acc + (t.capacity || 0), 0) > 50 
+                      ? 'bg-red-500' 
+                      : 'bg-primary'
+                  }`}
+                  style={{ 
+                    width: `${Math.min((tableConfig.reduce((acc, t) => acc + (t.capacity || 0), 0) / 50) * 100, 100)}%` 
+                  }}
+                />
+              </div>
+              {tableConfig.reduce((acc, t) => acc + (t.capacity || 0), 0) >= 40 && (
+                <p className="text-xs text-muted mt-2">
+                  {t('needMoreSeats')} <a href="/admin/subscription" className="text-primary hover:underline font-medium">{t('upgradeToLargeUnlimited')}</a>
+                </p>
+              )}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

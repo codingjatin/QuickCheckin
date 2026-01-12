@@ -18,6 +18,8 @@ import {
   Loader2,
   RefreshCw,
   Sparkles,
+  Ban, 
+  Footprints,
 } from 'lucide-react';
 
 export default function TablesPage() {
@@ -60,7 +62,7 @@ export default function TablesPage() {
     fetchTables();
   };
 
-  const handleUpdateStatus = async (tableId: string, status: 'available' | 'cleaning' | 'occupied') => {
+  const handleUpdateStatus = async (tableId: string, status: 'available' | 'cleaning' | 'occupied' | 'unavailable') => {
     setUpdatingTableId(tableId);
     try {
       const result = await apiClient.updateTableStatus(tableId, status);
@@ -80,6 +82,23 @@ export default function TablesPage() {
     }
   };
 
+  const handleWalkIn = async (tableId: string, capacity: number) => {
+    setUpdatingTableId(tableId);
+    try {
+      const result = await apiClient.createWalkIn(tableId, capacity);
+      if (result.data) {
+        toast.success(t('walkInSeatedSuccess') || 'Walk-in seated successfully');
+        fetchTables(); // Refresh to get updated status and booking link
+      } else if (result.error) {
+        toast.error(result.error.message);
+      }
+    } catch (error) {
+      toast.error(t('failedToSeatWalkIn') || 'Failed to seat walk-in');
+    } finally {
+      setUpdatingTableId(null);
+    }
+  };
+
   const getTableStatusColor = (status: string) => {
     switch (status) {
       case 'available':
@@ -90,6 +109,10 @@ export default function TablesPage() {
         return 'bg-orange-500/10 text-orange-600 border border-orange-500/30';
       case 'cleaning':
         return 'bg-purple-500/10 text-purple-600 border border-purple-500/30';
+      case 'cleaning':
+        return 'bg-purple-500/10 text-purple-600 border border-purple-500/30';
+      case 'unavailable':
+        return 'bg-red-500/10 text-red-600 border border-red-500/30';
       default:
         return 'bg-ink/10 text-ink border border-ink/20';
     }
@@ -105,6 +128,10 @@ export default function TablesPage() {
         return <Users className="h-4 w-4" />;
       case 'cleaning':
         return <Sparkles className="h-4 w-4" />;
+      case 'cleaning':
+        return <Sparkles className="h-4 w-4" />;
+      case 'unavailable':
+        return <Ban className="h-4 w-4" />;
       default:
         return <AlertCircle className="h-4 w-4" />;
     }
@@ -123,6 +150,7 @@ export default function TablesPage() {
     reserved: tables.filter(t => t.status === 'reserved').length,
     occupied: tables.filter(t => t.status === 'occupied').length,
     cleaning: tables.filter(t => t.status === 'cleaning').length,
+    unavailable: tables.filter(t => t.status === 'unavailable').length,
   };
 
   return (
@@ -193,6 +221,30 @@ export default function TablesPage() {
             </div>
           </CardContent>
         </Card>
+        <Card className="bg-panel border border-border shadow-soft">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-info" />
+              <div>
+                <p className="text-2xl font-bold">{stats.reserved}</p>
+                <p className="text-xs text-muted">{t('reserved')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Unavailable Stats */}
+         <Card className="bg-panel border border-border shadow-soft">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="text-2xl font-bold">{stats.unavailable}</p>
+                <p className="text-xs text-muted">{t('unavailable') || 'Unavailable'}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tables Grid */}
@@ -234,12 +286,38 @@ export default function TablesPage() {
 
               <CardContent className="pt-0">
                 <div className="space-y-2">
-                  {/* Available - Ready for guests */}
                   {table.status === 'available' && (
-                    <div className="bg-success/10 rounded-lg p-3 text-center">
-                      <CheckCircle className="h-6 w-6 text-success mx-auto mb-1" />
-                      <p className="text-sm font-medium text-success">{t('readyForGuests')}</p>
-                    </div>
+                    <>
+                      <div className="bg-success/10 rounded-lg p-3 text-center">
+                        <CheckCircle className="h-6 w-6 text-success mx-auto mb-1" />
+                        <p className="text-sm font-medium text-success">{t('readyForGuests')}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleWalkIn(table._id, table.capacity)}
+                          disabled={updatingTableId === table._id}
+                          className="bg-primary hover:bg-primary-600 text-white"
+                        >
+                           {updatingTableId === table._id ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Footprints className="h-4 w-4 mr-2" />
+                          )}
+                          {t('seatWalkIn') || 'Walk-In'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleUpdateStatus(table._id, 'unavailable')}
+                          disabled={updatingTableId === table._id}
+                          className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+                        >
+                          <Ban className="h-4 w-4 mr-1" />
+                          {t('unavailable') || 'Unavailable'}
+                        </Button>
+                      </div>
+                    </>
                   )}
 
                   {/* Occupied - Show Mark for Cleaning button */}
@@ -287,6 +365,29 @@ export default function TablesPage() {
                       <Clock className="h-4 w-4 mr-2" />
                       {t('reserved')}
                     </Button>
+                  )}
+
+                  {/* Unavailable */}
+                  {table.status === 'unavailable' && (
+                    <div className="space-y-2">
+                      <div className="bg-red-500/10 rounded-lg p-3 text-center border border-red-500/20">
+                        <Ban className="h-6 w-6 text-red-600 mx-auto mb-1" />
+                        <p className="text-sm font-medium text-red-600">{t('tableUnavailable') || 'Table Unavailable'}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleUpdateStatus(table._id, 'available')}
+                        disabled={updatingTableId === table._id}
+                        className="w-full bg-success hover:bg-success/90 text-white"
+                      >
+                        {updatingTableId === table._id ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                        )}
+                        {t('markAvailable')}
+                      </Button>
+                    </div>
                   )}
                 </div>
               </CardContent>

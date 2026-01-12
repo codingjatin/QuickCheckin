@@ -42,14 +42,14 @@ function SignupForm() {
     businessNumber: '',
     email: '',
     phone: '',
-    seatCapacity: 30
+    seatCapacity: 50
   });
 
   const [loading, setLoading] = useState(false);
   const [verifyingBusinessNumber, setVerifyingBusinessNumber] = useState(false);
   const [businessNumberAvailable, setBusinessNumberAvailable] = useState<boolean | null>(null);
 
-  const plan = formData.seatCapacity >= 50 ? 'Large' : 'Small';
+  const plan = formData.seatCapacity > 50 ? 'Large' : 'Small';
   const price = plan === 'Small' ? 299 : 499;
   const currency = formData.country === 'CA' ? 'CAD' : 'USD';
 
@@ -373,7 +373,7 @@ function SignupForm() {
                     <div className="space-y-3">
                       <label 
                         className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
-                          formData.seatCapacity < 50 
+                          formData.seatCapacity <= 50 
                             ? 'border-primary bg-primary/5 ring-2 ring-primary' 
                             : 'border-border hover:border-primary/50'
                         }`}
@@ -382,15 +382,15 @@ function SignupForm() {
                           type="radio"
                           name="seatCapacity"
                           value="30"
-                          checked={formData.seatCapacity < 50}
-                          onChange={() => setFormData(prev => ({ ...prev, seatCapacity: 30 }))}
+                          checked={formData.seatCapacity <= 50}
+                          onChange={() => setFormData(prev => ({ ...prev, seatCapacity: 50 }))}
                           className="sr-only"
                         />
                         <div className="flex-1">
-                          <p className="font-medium text-ink">Less than 50 seats</p>
+                          <p className="font-medium text-ink">50 seats or less</p>
                           <p className="text-sm text-muted">Small Plan - $299 {currency}/month</p>
                         </div>
-                        {formData.seatCapacity < 50 && (
+                        {formData.seatCapacity <= 50 && (
                           <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
                             <Check size={14} className="text-white" />
                           </div>
@@ -399,7 +399,7 @@ function SignupForm() {
                       
                       <label 
                         className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
-                          formData.seatCapacity >= 50 
+                          formData.seatCapacity > 50 
                             ? 'border-primary bg-primary/5 ring-2 ring-primary' 
                             : 'border-border hover:border-primary/50'
                         }`}
@@ -408,15 +408,15 @@ function SignupForm() {
                           type="radio"
                           name="seatCapacity"
                           value="50"
-                          checked={formData.seatCapacity >= 50}
-                          onChange={() => setFormData(prev => ({ ...prev, seatCapacity: 50 }))}
+                          checked={formData.seatCapacity > 50}
+                          onChange={() => setFormData(prev => ({ ...prev, seatCapacity: 51 }))}
                           className="sr-only"
                         />
                         <div className="flex-1">
-                          <p className="font-medium text-ink">50 or more seats</p>
+                          <p className="font-medium text-ink">51 or more seats</p>
                           <p className="text-sm text-muted">Large Plan - $499 {currency}/month</p>
                         </div>
-                        {formData.seatCapacity >= 50 && (
+                        {formData.seatCapacity > 50 && (
                           <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
                             <Check size={14} className="text-white" />
                           </div>

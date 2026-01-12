@@ -37,23 +37,6 @@ export function IntegrationsSection() {
             </Card>
           ))}
         </div>
-
-        <div className="rounded-2xl border border-dashed border-border bg-off/60 p-6 sm:p-10">
-          <p className="text-sm font-semibold uppercase tracking-wide text-muted">
-            {/* Optional localized label; falls back if you don't add it */}
-            {(integ as any).logosLabel ?? "Integrations strip"}
-          </p>
-          <div className="mt-6 grid grid-cols-2 gap-4 text-sm font-medium text-muted sm:grid-cols-4 lg:grid-cols-8">
-            {integ.logos.map((logo) => (
-              <div
-                key={logo}
-                className="flex h-12 items-center justify-center rounded-lg border border-border/50 bg-panel px-4 text-center text-ink shadow-sm"
-              >
-                {logo}
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );

@@ -126,8 +126,10 @@ export function LiveDemoSection() {
 
               {/* chat area */}
               <div className="flex h-full flex-col gap-3 overflow-y-auto p-4">
-                {live.messages.map((m, idx) => (
-                  <div key={m.title} className="contents">
+                {live.messages.map((m, idx) => {
+                  const isGuest = m.from === 'guest'
+                  return (
+                  <div key={m.title + idx} className="contents">
                     {/* Title / status bubble */}
                     <div className="mx-auto mt-1 rounded-full border border-border/70 bg-off/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted">
                       {m.title}
@@ -137,29 +139,25 @@ export function LiveDemoSection() {
                     <div
                       className={[
                         'relative mt-2 max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm',
-                        idx % 2 === 0
-                          ? 'self-start rounded-bl-md border border-border bg-white text-ink'
-                          : 'self-end rounded-br-md bg-primary text-white',
+                        isGuest
+                          ? 'self-end rounded-br-md bg-primary text-white'
+                          : 'self-start rounded-bl-md border border-border bg-white text-ink',
                       ].join(' ')}
                     >
                       <p>{m.body}</p>
 
-                      {/* reply hint (only show on last bubble if available) */}
-                      {idx === live.messages.length - 1 && live.replyHint ? (
+                      {/* reply hint (only show on last bubble if available and if quickcheck message) */}
+                      {idx === live.messages.length - 1 && live.replyHint && !isGuest ? (
                         <div
-                          className={[
-                            'mt-3 rounded-lg px-3 py-2 text-[11px]',
-                            idx % 2 === 0
-                              ? 'bg-off/70 text-muted border border-border/70'
-                              : 'bg-white/15 text-white/90',
-                          ].join(' ')}
+                          className='mt-3 rounded-lg px-3 py-2 text-[11px] bg-off/70 text-muted border border-border/70'
                         >
                           {live.replyHint}
                         </div>
                       ) : null}
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
 
               {/* bottom safe area gloss */}

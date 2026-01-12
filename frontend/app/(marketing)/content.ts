@@ -12,7 +12,6 @@ import {
   MessageCircle,
   Monitor,
   PlugZap,
-  Presentation,
   Repeat,
   Settings2,
   ShieldCheck,
@@ -34,11 +33,6 @@ export type ButtonLink = {
   href: string
 }
 
-type StatItem = {
-  value: string
-  label: string
-}
-
 type ProblemPoint = {
   title: string
   description: string
@@ -58,6 +52,7 @@ type FeatureHighlight = {
 type DemoMessage = {
   title: string
   body: string
+  from?: 'quickcheck' | 'guest'
 }
 
 type IntegrationCard = {
@@ -76,13 +71,6 @@ type PlanPreview = {
   cta: ButtonLink
   featured?: boolean
   features?: string[]
-}
-
-type ComparisonRow = {
-  feature: string
-  starter: string
-  pro: string
-  enterprise: string
 }
 
 export type FAQItem = {
@@ -114,7 +102,6 @@ type LandingContent = {
     description: string
     primaryCta: ButtonLink
     secondaryCta: ButtonLink
-    stats: StatItem[]
   }
   problemOutcome: {
     eyebrow: string
@@ -128,7 +115,6 @@ type LandingContent = {
       outcomesHeading: string
     }
   }
-  // (Removed howItWorks)
   features: {
     title: string
     description: string
@@ -151,7 +137,6 @@ type LandingContent = {
     title: string
     description: string
     cards: IntegrationCard[]
-    logos: string[]
   }
   pricingPreview: {
     eyebrow: string
@@ -195,8 +180,6 @@ type PageHeroContent = {
 type PricingContent = {
   hero: PageHeroContent
   plans: PlanPreview[]
-  usageNotes: string[]
-  comparison: ComparisonRow[]
   faq: FAQItem[]
   whatsIncluded: { title: string; description: string }
   includedItems: string[]
@@ -218,7 +201,6 @@ type MarketingContent = {
   }
   landing: LandingContent
   pages: {
-    // (Removed howItWorks page)
     features: FeaturesContent
     pricing: PricingContent
   }
@@ -227,24 +209,6 @@ type MarketingContent = {
 
 // ---------------- Constants ----------------
 
-const PARTNER_LOGOS = [
-  'Toast',
-  'Square',
-  'Lightspeed',
-  'SevenRooms',
-  'Twilio',
-  'Vonage',
-  'Zapier',
-  'Google Calendar',
-] as const
-
-const SOCIAL_PROOF_BRANDS = [
-  'Seoul Kitchen Group',
-  'Garden Bistro Collective',
-  'Oak & Vine Hospitality',
-  'Northern Lights Dining',
-] as const
-
 const CURRENT_YEAR = 2025 as const
 
 // ---------------- Content (EN + FR) ----------------
@@ -252,11 +216,10 @@ const CURRENT_YEAR = 2025 as const
 const content: Record<Language, MarketingContent> = {
   en: {
     announcement:
-      'QuickCheck v2 now supports two-way SMS and multi-location dashboards.',
+      'QuickCheck - Digital waitlist management for modern restaurants. Start your 1-month free trial today!',
     nav: {
       links: [
         { label: 'Home', href: '/' },
-        // Removed: How it works
         { label: 'Features', href: '/features' },
         { label: 'Pricing', href: '/pricing' },
         { label: 'Contact', href: '/contact' },
@@ -267,22 +230,17 @@ const content: Record<Language, MarketingContent> = {
     landing: {
       hero: {
         eyebrow: 'Digital waitlists that text back',
-        title: 'Digital waitlists & reservations that text back.',
+        title: 'A modern digital waitlist and reservation system for restaurants.',
         description:
-          'Reduce walk-offs, auto-notify guests, and track seating in real time. QuickCheck replaces clipboards with automated flows built for the dinner rush.',
+          'Reduce walk-offs, auto-notify guests, and track seating in real time. QuickCheck replaces clipboards with automated SMS flows built for the dinner rush.',
         primaryCta: { label: 'Start free trial', href: '/pricing' },
         secondaryCta: { label: 'View pricing', href: '/pricing' },
-        stats: [
-          { value: '60k+', label: 'Guests seated through QuickCheck each month' },
-          { value: '7 min', label: 'Average table reclaim after the first alert' },
-          { value: '99.9%', label: 'Uptime target backed by status page transparency' },
-        ],
       },
       problemOutcome: {
         eyebrow: 'Problem & outcome',
         title: 'Give hosts back their focus and guests their confidence',
         description:
-          'Manual processes make the host stand chaotic. QuickCheck automates messaging and seating so service feels calm.',
+          'Manual processes make the host stand chaotic. QuickCheck automates messaging and seating, so service stays calm and organized.',
         problems: [
           { title: 'Manual notes', description: 'Hosts juggle clipboards and sticky notes that never stay in sync.' },
           { title: 'Missed calls', description: 'Guests give up when no one can answer the phone during the dinner rush.' },
@@ -290,7 +248,7 @@ const content: Record<Language, MarketingContent> = {
           { title: 'No status updates', description: 'Guests stay in the dark, walk off, or crowd the host stand for updates.' },
         ],
         outcomes: [
-          { stat: '30-60% fewer walk-offs', description: 'Automated SMS updates keep guests informed and eager to return.' },
+          { stat: 'Fewer walk-offs', description: 'Automated SMS updates keep guests informed and eager to return.' },
           { stat: 'Faster table turns', description: 'Smart reassignment frees blocked tables the moment plans change.' },
           { stat: 'Happier staff & guests', description: 'Hosts focus on hospitality instead of spreadsheets and status calls.' },
         ],
@@ -300,14 +258,13 @@ const content: Record<Language, MarketingContent> = {
           outcomesHeading: 'Outcomes restaurants see',
         },
       },
-      // (Removed landing.howItWorks)
       features: {
         title: 'Key features built for busy floors',
         description:
           'Digital waitlists, two-way SMS, and smart seating combine into one platform that keeps your dining room humming.',
         highlights: [
           { icon: ClipboardList, title: 'Digital waitlists', description: 'Replace paper lists with synced kiosks, QR codes, and host tablets.' },
-          { icon: MessageCircle, title: 'Two-way messaging', description: 'Guest replies update statuses instantly so staff never wonder who is coming back.' },
+          { icon: MessageCircle, title: 'Two-way messaging', description: 'Guest replies update statuses instantly, so staff always know who is coming back.' },
           { icon: Monitor, title: 'Real-time dashboard', description: 'View party statuses, table availability, and pacing metrics from any device.' },
           { icon: Repeat, title: 'Smart follow-ups', description: 'Automated nudges reclaim tables while your hosts stay focused on guests.' },
         ],
@@ -324,171 +281,165 @@ const content: Record<Language, MarketingContent> = {
         placeholder: '(555) 123-4567',
         replyHint: 'Reply options: Y to confirm, N to release, STOP to opt out.',
         messages: [
-          { title: 'Confirmation', body: "Thanks for joining the QuickCheck waitlist! We'll text you when your table is ready." },
-          { title: 'Table ready', body: 'Your table is ready at Willow & Rye. Reply Y to hold it for 15 minutes or N to release.' },
-          { title: 'Smart follow-up', body: "Still on your way? Reply Y to keep your spot. Otherwise we'll seat the next party." },
+          { title: 'Confirmation', body: "Thanks for joining the QuickCheck waitlist! We'll text you when your table is ready.", from: 'quickcheck' },
+          { title: 'Table ready', body: 'Your table is ready at Willow & Rye. Reply Y to hold it for 15 minutes or N to release.', from: 'quickcheck' },
+          { title: 'Guest reply', body: 'Y', from: 'guest' },
+          { title: 'Confirmed', body: 'Thanks for confirming! Your table is being held. Please arrive within 15 minutes.', from: 'quickcheck' },
         ],
       },
       integrations: {
         eyebrow: 'Integrations',
-        title: 'Works with your POS, SMS provider, and calendar',
+        title: 'Works with your existing setup',
         description:
-          'QuickCheck connects to the tools you already rely on with secure APIs, webhooks, and native partnerships.',
+          'QuickCheck is designed to work alongside your existing operations with minimal setup required.',
         cards: [
           {
             icon: PlugZap,
-            title: 'Connect your stack',
+            title: 'Easy setup',
             description:
-              'POS sync, messaging providers, and calendar workflows keep operations tightly aligned.',
+              'Get started in minutes with our simple onboarding process. No complex integrations required.',
             bullets: [
-              'POS seat status updates and CSV exports',
-              'Twilio, Vonage, and regional messaging partners',
-              'Webhook triggers for CRMs and marketing tools',
-              'Open REST API (beta) for custom flows',
+              'Self-service kiosk setup',
+              'SMS notifications via Telnyx',
+              'Real-time dashboard access',
+              'Export data anytime (CSV)',
             ],
           },
           {
             icon: ShieldCheck,
-            title: 'Security first',
+            title: 'Secure & reliable',
             description:
-              'Role-based permissions, detailed audit logs, and encrypted messaging keep sensitive data safe.',
+              'Your data is protected with industry-standard security measures.',
             bullets: [
-              'Granular access controls by location and role',
-              'Message retention rules and deletion workflows',
-              'Carrier compliance checks with automatic alerts',
-              'Encryption at rest and in transit by default',
+              'Encrypted data transmission',
+              'Secure cloud hosting on AWS',
+              'Regular automated backups',
+              'TCPA-compliant SMS messaging',
             ],
           },
         ],
-        logos: [...PARTNER_LOGOS],
       },
       pricingPreview: {
-        eyebrow: 'Pricing teaser',
-        title: 'Flexible plans for single sites and multi-location groups',
+        eyebrow: 'Simple pricing',
+        title: 'Two plans. No hidden fees. All features included.',
         description:
-          'Start with a free trial, upgrade as you scale, and only pay for the locations you activate.',
+          'Choose based on your restaurant\'s seating capacity. Both plans include all features, unlimited SMS, and a 1-month free trial.',
         plans: [
           {
-            name: 'Starter',
-            price: '$249',
+            name: 'Small',
+            price: '$299',
             cadence: 'per month',
-            description: 'Single location waitlist with core messaging and kiosk mode.',
-            highlight: 'Perfect for first-time digital waitlists.',
-            cta: { label: 'Start trial', href: '/pricing' },
+            description: 'For restaurants with 50 seats or less.',
+            highlight: 'All features included',
+            cta: { label: 'Start free trial', href: '/pricing' },
           },
           {
-            name: 'Pro',
-            price: '$349',
+            name: 'Large',
+            price: '$499',
             cadence: 'per month',
-            description: 'Multi-location management with advanced automations and integrations.',
-            highlight: '',
+            description: 'For restaurants with 51 or more seats.',
+            highlight: 'All features included',
             featured: true,
             cta: { label: 'Start free trial', href: '/pricing' },
           },
           {
-            name: 'Enterprise',
+            name: 'Multi-Location',
             price: 'Custom',
-            description: 'Custom SLAs, SSO, and white-glove onboarding for hospitality groups.',
-            highlight: 'Purpose-built for national brands.',
+            description: 'For restaurant groups operating multiple locations.',
+            highlight: 'Volume discounts available',
             cta: { label: 'Talk to sales', href: '/contact' },
           },
         ],
         link: { label: 'View detailed pricing', href: '/pricing' },
       },
       testimonials: {
-        title: 'Loved by fast-casuals and fine dining teams alike',
-        description:
-          'Operations teams choose QuickCheck to run every service with confident pacing, reliable messaging, and flexible controls.',
-        brands: [...SOCIAL_PROOF_BRANDS],
-        quotes: [
-          { quote: 'QuickCheck cut our walk-offs in half in two weeks. Guests finally trust our quoted times.', author: 'Maria Rodriguez', role: 'Owner, Tapas Barcelona' },
-          { quote: 'The kiosk freed our hosts to greet guests instead of juggling clipboards and phone calls.', author: 'James Park', role: 'Manager, Seoul Kitchen' },
-          { quote: 'Multi-location reporting lets me see pacing and staffing issues before the weekend rush.', author: 'Sarah Chen', role: 'Director of Operations, Garden Bistro Group' },
-        ],
+        title: '',
+        description: '',
+        brands: [],
+        quotes: [],
       },
       reliability: {
-        eyebrow: 'Compliance & reliability',
-        title: 'Built for enterprise-grade reliability from day one',
+        eyebrow: 'Reliability & compliance',
+        title: 'Built for restaurants that depend on uptime',
         description:
-          'QuickCheck protects guest data, keeps service online, and gives your security team the transparency they expect.',
+          'QuickCheck is hosted on AWS with redundancy built in. Your guest communications are protected and compliant.',
         highlights: [
-          { stat: '99.9% uptime target', description: 'Redundant infrastructure, status page transparency, and proactive monitoring.' },
-          { stat: 'SOC 2 controls in progress', description: 'Role-based access, audit logs, and change management aligned to SOC 2 Type II.' },
-          { stat: 'Regional SMS compliance', description: 'Consent, opt-out keywords, and sender ID guidance for North America and EU.' },
+          { stat: 'Cloud-hosted on AWS', description: 'Reliable infrastructure with automatic scaling and redundancy.' },
+          { stat: 'SMS compliance', description: 'TCPA-compliant messaging with opt-out support and consent tracking.' },
+          { stat: 'Data security', description: 'Encrypted connections and secure data storage for peace of mind.' },
         ],
-        link: { label: 'Read about security & compliance', href: '#' },
+        link: { label: 'Contact us about security', href: '/contact' },
       },
       cta: {
         title: 'Launch your digital waitlist in minutes',
         description:
-          'Sign up for a free trial or schedule a guided demo to see how QuickCheck keeps guests informed and your floor at capacity.',
+          'Sign up for a free trial or schedule a guided demo to see how QuickCheck keeps guests informed and your dining room at capacity.',
         primaryCta: { label: 'Start free trial', href: '/pricing' },
         secondaryCta: { label: 'Talk to sales', href: '/contact' },
       },
     },
     pages: {
-      // (Removed howItWorks)
       features: {
         hero: {
           eyebrow: 'Feature overview',
-          title: 'Everything teams need to run a calm, connected service',
+          title: 'Everything you need to manage your waitlist',
           description:
-            'QuickCheck unifies guest check-in, two-way messaging, seating intelligence, and analytics in one platform built for hospitality.',
+            'QuickCheck unifies guest check-in, two-way SMS messaging, seating management, and analytics in one simple platform.',
           actions: [
-            { label: 'Compare plans', href: '/pricing' },
-            { label: 'Download feature guide', href: '#' },
+            { label: 'View pricing', href: '/pricing' },
+            { label: 'Contact us', href: '/contact' },
           ],
         },
         clusters: [
           {
             category: 'Waitlist & kiosk',
-            summary: 'Branded experiences that keep guests informed from arrival to seating.',
+            summary: 'Self-service check-in that keeps guests informed from arrival to seating.',
             items: [
-              { icon: Tablet, title: 'Self check-in kiosk', description: 'Custom logos, colors, and prompts that feel on-brand in every venue.' },
-              { icon: UserRound, title: 'Walk-ins & reservations', description: 'Merge pre-booked parties with live walk-ins without losing track of order.' },
-              { icon: UserCheck, title: 'Party size rules', description: 'Block over-capacity requests and flag special needs like patio or high chairs.' },
+              { icon: Tablet, title: 'Self check-in kiosk', description: 'Guests join the waitlist themselves with party size, name, and phone number.' },
+              { icon: UserRound, title: 'Walk-ins welcome', description: 'Add walk-in customers to the queue quickly and easily.' },
+              { icon: UserCheck, title: 'Party size management', description: 'Match parties to appropriately sized tables automatically.' },
             ],
           },
           {
-            category: 'Messaging engine',
+            category: 'SMS messaging',
             summary: 'Two-way SMS that keeps guests in the loop and staff in control.',
             items: [
-              { icon: MailCheck, title: 'Responsive templates', description: 'Pre-built copy for confirmations, table-ready alerts, follow-ups, and no-show notices.' },
-              { icon: BellRing, title: 'Smart reminders', description: 'Nudge guests after seven minutes with automated rules you control.' },
-              { icon: ShieldCheck, title: 'Opt-out compliance', description: 'Respect TCPA and regional opt-out keywords with automatic logging.' },
+              { icon: MailCheck, title: 'Automated notifications', description: 'Table-ready alerts sent automatically when you notify a guest.' },
+              { icon: BellRing, title: 'Smart reminders', description: 'Follow-up messages if guests don\'t respond within your set timeframe.' },
+              { icon: ShieldCheck, title: 'Opt-out compliance', description: 'Automatic STOP keyword handling for TCPA compliance.' },
             ],
           },
           {
-            category: 'Smart seating',
-            summary: 'Keep tables moving with real-time data and auto assignments.',
+            category: 'Table management',
+            summary: 'Keep tables moving with real-time status tracking.',
             items: [
-              { icon: Timer, title: 'Grace periods', description: 'Hold tables for confirmed parties and release them once timers expire.' },
-              { icon: LayoutDashboard, title: 'Table matching', description: 'Pair parties with the right table size, zone, and amenities automatically.' },
-              { icon: Settings2, title: 'Staff overrides', description: 'Allow hosts to adjust priorities, mark no-shows, or seat walk-ins instantly.' },
+              { icon: Timer, title: 'Wait time estimates', description: 'Automatic wait time calculations based on table turnover.' },
+              { icon: LayoutDashboard, title: 'Table status board', description: 'See all tables at a glance - available, occupied, or being cleaned.' },
+              { icon: Settings2, title: 'Easy overrides', description: 'Staff can adjust statuses, mark no-shows, or seat walk-ins instantly.' },
             ],
           },
           {
-            category: 'Analytics & admin',
-            summary: 'Understand performance in real time across locations.',
+            category: 'Dashboard & analytics',
+            summary: 'Understand your operations with real-time data.',
             items: [
-              { icon: Presentation, title: 'Live dashboards', description: 'Monitor wait times, table statuses, and pacing from any device.' },
-              { icon: BarChart3, title: 'Conversion analytics', description: 'Track check-ins to seated conversions and identify walk-off trends.' },
-              { icon: Building2, title: 'Multi-location controls', description: 'Super admins manage branding, rules, and reporting across sites.' },
+              { icon: Monitor, title: 'Live dashboard', description: 'Monitor wait times, queue length, and table statuses in real time.' },
+              { icon: BarChart3, title: 'Performance insights', description: 'Track seating efficiency and identify peak times.' },
+              { icon: Building2, title: 'Message history', description: 'View all SMS conversations with guests in one place.' },
             ],
           },
         ],
         planHighlights: [
-          'Unlimited users on every plan.',
-          'Multi-location controls unlock with Pro and Enterprise.',
-          'Enterprise plans include SSO, SLAs, and dedicated onboarding.',
+          'All features included in both Small and Large plans.',
+          'Unlimited SMS messaging - no per-message fees.',
+          'Onboarding assistance included with every plan.',
         ],
       },
       pricing: {
         hero: {
           eyebrow: 'Pricing',
-          title: 'Plans that flex with service volume',
+          title: 'Simple, transparent pricing',
           description:
-            'No per-user fees. Activate new locations in minutes and only pay for the seats you manage.',
+            'Choose based on your seating capacity. All features included in every plan. No hidden fees.',
           actions: [
             { label: 'Start free trial', href: '/pricing' },
             { label: 'Talk to sales', href: '/contact' },
@@ -496,98 +447,100 @@ const content: Record<Language, MarketingContent> = {
         },
         plans: [
           {
-            name: 'Starter',
-            price: '$249',
+            name: 'Small',
+            price: '$299',
             cadence: 'per month',
-            description: 'Single location waitlist with core messaging and kiosk mode.',
-            highlight: 'Perfect for first-time digital waitlists.',
+            description: 'For restaurants with 50 seats or less.',
+            highlight: '1-month free trial',
             features: [
-              'Unlimited waitlist parties',
-              'Self check-in kiosk & QR flows',
-              'Table-ready & reminder SMS',
-              'Real-time host dashboard',
-              'Basic analytics & exports',
+              'Self check-in kiosk',
+              'Unlimited SMS notifications',
+              'Two-way guest messaging',
+              'Real-time dashboard',
+              'Table management',
+              'Wait time estimates',
+              'Message history',
+              'Onboarding included',
             ],
-            cta: { label: 'Start free trial', href: '/pricing' },
+            cta: { label: 'Start free trial', href: '/signup' },
           },
           {
-            name: 'Pro',
-            price: '$349',
+            name: 'Large',
+            price: '$499',
             cadence: 'per month',
-            description: 'Multi-location management with advanced automations and integrations.',
-            highlight: '',
+            description: 'For restaurants with 51 or more seats.',
+            highlight: '1-month free trial',
             features: [
-              'Everything in Starter',
-              'Multi-location controls',
-              'Advanced seating rules & follow-ups',
-              'POS & calendar integrations',
-              'Branding controls per venue',
+              'Self check-in kiosk',
+              'Unlimited SMS notifications',
+              'Two-way guest messaging',
+              'Real-time dashboard',
+              'Table management',
+              'Wait time estimates',
+              'Message history',
+              'Onboarding included',
             ],
             featured: true,
-            cta: { label: 'Start free trial', href: '/pricing' },
+            cta: { label: 'Start free trial', href: '/signup' },
           },
           {
-            name: 'Enterprise',
+            name: 'Multi-Location',
             price: 'Talk to us',
-            description: 'Custom SLAs, SSO, and white-glove onboarding for hospitality groups.',
-            highlight: 'Purpose-built for national brands.',
+            description: 'For restaurant groups with multiple locations.',
+            highlight: 'Volume discounts available',
             features: [
-              'Dedicated success manager',
-              'SSO & SCIM provisioning',
-              'Custom integrations',
-              'Advanced reporting APIs',
-              '24/7 priority support',
+              'All features from Small/Large plans',
+              'Multiple location management',
+              'Centralized billing',
+              'Volume-based pricing',
+              'Dedicated onboarding support',
             ],
-            cta: { label: 'Book a demo', href: '/contact' },
+            cta: { label: 'Contact sales', href: '/contact' },
           },
         ],
-        usageNotes: [
-          'SMS and WhatsApp credits included with fair-use tiers. Regional pricing available.',
-          'Overage rates apply beyond pooled credits with alerts before thresholds are met.',
-          'Annual contracts include two months free and onboarding concierge.',
-        ],
-        comparison: [
-          { feature: 'Locations', starter: '1', pro: 'Up to 10', enterprise: 'Unlimited' },
-          { feature: 'Two-way messaging', starter: 'Included', pro: 'SMS + WhatsApp', enterprise: 'Custom routing' },
-          { feature: 'Integrations', starter: 'CSV exports', pro: 'POS, calendar, webhooks', enterprise: 'Custom + API access' },
-          { feature: 'Analytics', starter: 'Core dashboards', pro: 'Advanced insights', enterprise: 'Data warehouse feeds' },
-          { feature: 'Support', starter: 'Chat & email', pro: 'Phone + success reviews', enterprise: 'Dedicated team' },
-        ],
         faq: [
-          { question: 'How long is the free trial?', answer: 'All plans include a 1-month free trial with full access to kiosk, messaging, and analytics features.' },
-          { question: 'What payment methods do you accept?', answer: 'We accept debit and credit cards for monthly plans. Annual contracts support invoicing and procurement workflows.' },
-          { question: 'Can we cancel anytime?', answer: "Yes. Monthly plans can be cancelled anytime. Annual plans require 30 days' notice before renewal." },
-          { question: 'Do you charge per SMS?', answer: 'No. SMS messaging is fully included in your plan with no additional charges.' },
-          { question: 'Is onboarding included?', answer: 'Yes, onboarding is included with all plans to help you get started smoothly.' },
+          { question: 'How long is the free trial?', answer: 'All plans include a 1-month free trial with full access to all features. No credit card required to start.' },
+          { question: 'What payment methods do you accept?', answer: 'We accept all major debit and credit cards for monthly billing.' },
+          { question: 'Can I cancel anytime?', answer: 'Yes. You can cancel your subscription at any time with no cancellation fees.' },
+          { question: 'Are SMS messages included?', answer: 'Yes! Unlimited SMS messaging is fully included in your plan with no additional charges.' },
+          { question: 'Is onboarding included?', answer: 'Yes. Guided onboarding is included with all plans to help you get started smoothly.' },
+          { question: 'How do I know which plan to choose?', answer: 'Choose based on your restaurant\'s seating capacity. 50 seats or less = Small plan. 51+ seats = Large plan. Both plans include identical features.' },
         ],
         whatsIncluded: {
           title: "What's Included",
-          description: 'Transparent billing with all the features you need.',
+          description: 'Every plan includes everything you need to manage your waitlist.',
         },
         includedItems: [
-          '1-month free trial on all plans - no credit card required',
-          'Unlimited SMS messaging included - no hidden fees',
-          'Plan automatically adjusts based on your seat capacity',
+          '1-month free trial - no credit card required',
+          'Unlimited SMS messaging - no per-message fees',
+          'All features included - no tier restrictions',
+          'Onboarding assistance included',
           'Cancel anytime - no long-term contracts',
         ],
         faqSection: {
-          title: 'Pricing FAQ',
-          description: 'Common questions about billing, trials, and credits.',
+          title: 'Frequently Asked Questions',
+          description: 'Common questions about pricing, billing, and features.',
         },
       },
     },
     footer: {
       tagline: 'QuickCheck',
       description:
-        'Digital waitlists, two-way SMS, and real-time dashboards that keep seats full and guests informed.',
+        'Digital waitlists with two-way SMS that keep your tables full and guests informed.',
       columns: [
         {
           title: 'Product',
           links: [
-            // removed: { label: 'How it works', href: '/how-it-works' }
             { label: 'Features', href: '/features' },
             { label: 'Pricing', href: '/pricing' },
-            { label: 'Security & compliance', href: '#' },
+          ],
+        },
+        {
+          title: 'Contact Us',
+          links: [
+            { label: 'Get in touch', href: '/contact' },
+            { label: 'info@quickcheckin.ca', href: 'mailto:info@quickcheckin.ca' },
+            { label: '+1 647-221-6677', href: 'tel:+16472216677' },
           ],
         },
       ],
@@ -601,70 +554,63 @@ const content: Record<Language, MarketingContent> = {
 
   fr: {
     announcement:
-      'QuickCheck v2 prend désormais en charge la messagerie bidirectionnelle et les tableaux de bord multi-sites.',
+      'QuickCheck - Gestion digitale des listes d\'attente pour restaurants modernes. Commencez votre essai gratuit d\'1 mois !',
     nav: {
       links: [
         { label: 'Accueil', href: '/' },
-        // supprimé : Comment ça marche
         { label: 'Fonctionnalités', href: '/features' },
         { label: 'Tarifs', href: '/pricing' },
         { label: 'Contact', href: '/contact' },
       ],
       login: { label: 'Connexion', href: '/auth' },
-      primaryCta: { label: 'Réserver une démo', href: '/contact' },
+      primaryCta: { label: 'Essai gratuit', href: '/pricing' },
     },
     landing: {
       hero: {
-        eyebrow: "Listes d'attente numériques qui répondent",
-        title: "Listes d'attente et réservations numériques qui envoient des SMS.",
+        eyebrow: 'Listes d\'attente numériques qui répondent',
+        title: 'Un système moderne de liste d\'attente et de réservation numérique pour restaurants.',
         description:
-          "Réduisez les abandons, avertissez automatiquement les clients et suivez l'occupation des tables en temps réel. QuickCheck remplace les carnets papier par des flux automatisés pensés pour les heures de pointe.",
-        primaryCta: { label: "Démarrer l'essai gratuit", href: '/pricing' },
-        secondaryCta: { label: 'Réserver une démo', href: '/contact' },
-        stats: [
-          { value: '60k+', label: 'Convives installés chaque mois grâce à QuickCheck' },
-          { value: '7 min', label: 'Délai moyen pour réattribuer une table après la première alerte' },
-          { value: '99,9%', label: 'Objectif de disponibilité avec transparence sur la page statut' },
-        ],
+          'Réduisez les abandons, avertissez automatiquement les clients et suivez l\'occupation des tables en temps réel. QuickCheck remplace les carnets papier par des SMS automatisés.',
+        primaryCta: { label: 'Essai gratuit', href: '/pricing' },
+        secondaryCta: { label: 'Voir les tarifs', href: '/pricing' },
       },
       problemOutcome: {
-        eyebrow: 'Problème & impact',
+        eyebrow: 'Problème & solution',
         title: 'Redonnez sérénité à vos hôtes et confiance à vos clients',
         description:
-          "Les processus manuels rendent le comptoir d'accueil chaotique. QuickCheck automatise la messagerie et l'attribution des tables pour un service fluide.",
+          'Les processus manuels rendent l\'accueil chaotique. QuickCheck automatise la messagerie et l\'attribution des tables, pour un service fluide et organisé.',
         problems: [
           { title: 'Notes manuscrites', description: 'Les hôtes jonglent entre carnets et post-it jamais synchronisés.' },
-          { title: 'Appels manqués', description: 'Les clients abandonnent quand personne ne répond pendant le rush du dîner.' },
-          { title: 'Tables bloquées', description: "Des tables restent vides tandis qu'on gère absences et estimations obsolètes." },
-          { title: 'Communication limitée', description: 'Les clients restent dans le flou, partent ou se massent au comptoir pour demander des nouvelles.' },
+          { title: 'Appels manqués', description: 'Les clients abandonnent quand personne ne répond pendant le rush.' },
+          { title: 'Tables bloquées', description: 'Des tables restent vides pendant qu\'on gère les absences.' },
+          { title: 'Communication limitée', description: 'Les clients restent dans le flou et viennent demander des nouvelles.' },
         ],
         outcomes: [
-          { stat: "30-60 % d'abandons en moins", description: 'Des SMS automatisés tiennent les clients informés et motivés à revenir.' },
-          { stat: 'Rotation des tables accélérée', description: 'La réaffectation intelligente libère immédiatement les tables quand un plan change.' },
-          { stat: 'Équipes et clients satisfaits', description: "Les hôtes se concentrent sur l'accueil plutôt que sur tableurs et appels." },
+          { stat: 'Moins d\'abandons', description: 'Des SMS automatisés tiennent les clients informés.' },
+          { stat: 'Rotation accélérée', description: 'La réaffectation intelligente libère les tables rapidement.' },
+          { stat: 'Équipes satisfaites', description: 'Les hôtes se concentrent sur l\'accueil.' },
         ],
-        note: "QuickCheck s'adapte à vos méthodes actuelles et automatise uniquement ce qui crée de la valeur.",
+        note: 'QuickCheck s\'adapte à vos méthodes et automatise ce qui compte.',
         labels: {
-          problemsHeading: 'Irritants que nous éliminons',
-          outcomesHeading: 'Résultats constatés par les restaurants',
+          problemsHeading: 'Problèmes que nous résolvons',
+          outcomesHeading: 'Résultats constatés',
         },
       },
-      // (Supprimé: landing.howItWorks)
       features: {
-        title: 'Des fonctionnalités pensées pour les salles animées',
+        title: 'Fonctionnalités conçues pour les salles animées',
         description:
-          "Listes d'attente numériques, SMS bidirectionnels et assignations intelligentes réunis dans une même plateforme.",
+          'Listes d\'attente numériques, SMS bidirectionnels et gestion intelligente des tables réunis dans une plateforme simple.',
         highlights: [
-          { icon: ClipboardList, title: "Listes d'attente digitalisées", description: 'Remplacez le papier par des kiosques, QR codes et tablettes synchronisés.' },
-          { icon: MessageCircle, title: 'Messagerie bidirectionnelle', description: "Les réponses clients mettent à jour le statut en temps réel sans stress pour l'équipe." },
-          { icon: Monitor, title: 'Tableau de bord temps réel', description: 'Visualisez les statuts, la disponibilité des tables et le rythme du service.' },
-          { icon: Repeat, title: 'Relances intelligentes', description: "Des rappels automatiques pour récupérer les tables tout en gardant l'accueil concentré." },
+          { icon: ClipboardList, title: 'Listes d\'attente digitales', description: 'Remplacez le papier par des kiosques et tablettes synchronisés.' },
+          { icon: MessageCircle, title: 'Messagerie bidirectionnelle', description: 'Les réponses clients mettent à jour le statut en temps réel, pour que le personnel sache toujours qui revient.' },
+          { icon: Monitor, title: 'Tableau de bord temps réel', description: 'Visualisez les statuts et la disponibilité des tables.' },
+          { icon: Repeat, title: 'Relances intelligentes', description: 'Des rappels automatiques pour récupérer les tables.' },
         ],
       },
       liveDemo: {
-        title: "Testez l'expérience client",
+        title: 'Testez l\'expérience client',
         description:
-          "Saisissez un numéro pour visualiser le flux de SMS automatisés. Démo instantanée, aucun message réel n'est envoyé.",
+          'Saisissez un numéro pour visualiser le flux SMS automatisé. Démo instantanée, aucun message réel envoyé.',
         inputLabel: 'Entrez un numéro de mobile',
         helperText: 'Aucun SMS ne sera envoyé : ce numéro sert uniquement à la prévisualisation.',
         submitLabel: 'Prévisualiser le flux SMS',
@@ -673,283 +619,274 @@ const content: Record<Language, MarketingContent> = {
         placeholder: '06 12 34 56 78',
         replyHint: 'Réponses possibles : O pour confirmer, N pour libérer, STOP pour se désinscrire.',
         messages: [
-          { title: 'Confirmation', body: "Merci d'avoir rejoint la liste d'attente QuickCheck ! Nous vous avertirons quand votre table sera prête." },
-          { title: 'Table prête', body: 'Votre table est prête chez Willow & Rye. Répondez O pour la garder 15 minutes ou N pour la libérer.' },
-          { title: 'Relance intelligente', body: 'Toujours en route ? Répondez O pour conserver votre place, sinon nous assignerons le groupe suivant.' },
+          { title: 'Confirmation', body: 'Merci d\'avoir rejoint la liste d\'attente QuickCheck ! Nous vous avertirons quand votre table sera prête.', from: 'quickcheck' },
+          { title: 'Table prête', body: 'Votre table est prête. Répondez O pour la garder 15 minutes ou N pour la libérer.', from: 'quickcheck' },
+          { title: 'Réponse client', body: 'O', from: 'guest' },
+          { title: 'Confirmé', body: 'Merci pour votre confirmation ! Votre table est réservée. Veuillez arriver dans les 15 minutes.', from: 'quickcheck' },
         ],
       },
       integrations: {
         eyebrow: 'Intégrations',
-        title: 'Compatible avec votre POS, vos SMS et vos agendas',
+        title: 'Fonctionne avec votre configuration existante',
         description:
-          "QuickCheck s'intègre à vos outils via API sécurisées, webhooks et partenariats natifs.",
+          'QuickCheck est conçu pour fonctionner avec vos opérations existantes avec une configuration minimale.',
         cards: [
           {
             icon: PlugZap,
-            title: 'Connectez votre stack',
+            title: 'Configuration simple',
             description:
-              'Synchronisation POS, fournisseurs SMS et workflows calendaires pour une exploitation alignée.',
+              'Commencez en quelques minutes avec notre processus d\'intégration simple.',
             bullets: [
-              "Mises à jour d'état des tables et exports CSV",
-              'Partenaires SMS : Twilio, Vonage et acteurs régionaux',
-              'Webhooks vers CRM et outils marketing',
-              'API REST (bêta) pour les flux sur mesure',
+              'Configuration du kiosque en libre-service',
+              'Notifications SMS via Telnyx',
+              'Accès au tableau de bord en temps réel',
+              'Export des données (CSV)',
             ],
           },
           {
             icon: ShieldCheck,
-            title: 'Sécurité avant tout',
+            title: 'Sécurisé et fiable',
             description:
-              "Permissions par rôle, journaux d'audit et messages chiffrés pour protéger vos données.",
+              'Vos données sont protégées avec des mesures de sécurité standard.',
             bullets: [
-              "Contrôles d'accès granulaires par site et rôle",
-              'Règles de conservation et workflows de suppression',
-              'Alertes automatiques de conformité opérateur',
-              'Chiffrement au repos et en transit par défaut',
+              'Transmission de données chiffrée',
+              'Hébergement cloud sécurisé sur AWS',
+              'Sauvegardes automatiques régulières',
+              'Messagerie SMS conforme TCPA',
             ],
           },
         ],
-        logos: [...PARTNER_LOGOS],
       },
       pricingPreview: {
-        eyebrow: 'Aperçu des tarifs',
-        title: 'Des offres flexibles pour un ou plusieurs établissements',
+        eyebrow: 'Tarifs simples',
+        title: 'Deux forfaits. Pas de frais cachés. Toutes les fonctionnalités incluses.',
         description:
-          'Commencez avec un essai gratuit, montez en gamme selon vos besoins et ne payez que les sites activés.',
+          'Choisissez en fonction de la capacité de votre restaurant. Les deux forfaits incluent toutes les fonctionnalités, SMS illimités et 1 mois d\'essai gratuit.',
         plans: [
           {
-            name: 'Starter',
-            price: '249 $',
+            name: 'Small',
+            price: '299 $',
             cadence: 'par mois',
-            description: 'Une adresse avec messagerie essentielle et mode kiosque.',
-            highlight: "Idéal pour digitaliser sa liste d'attente.",
-            cta: { label: "Démarrer l'essai", href: '/pricing' },
+            description: 'Pour les restaurants de 50 places ou moins.',
+            highlight: 'Toutes fonctionnalités incluses',
+            cta: { label: 'Essai gratuit', href: '/pricing' },
           },
           {
-            name: 'Pro',
-            price: '349 $',
+            name: 'Large',
+            price: '499 $',
             cadence: 'par mois',
-            description: 'Gestion multi-sites avec automatisations avancées et intégrations.',
-            highlight: 'Formule plébiscitée par les groupes en croissance.',
+            description: 'Pour les restaurants de 51 places ou plus.',
+            highlight: 'Toutes fonctionnalités incluses',
             featured: true,
-            cta: { label: 'Réserver une démo', href: '/contact' },
+            cta: { label: 'Essai gratuit', href: '/pricing' },
           },
           {
-            name: 'Enterprise',
+            name: 'Multi-établissements',
             price: 'Sur devis',
-            description: 'SLA personnalisés, SSO et accompagnement premium pour réseaux nationaux.',
-            highlight: 'Pensé pour les chaînes multi-marques.',
+            description: 'Pour les groupes de restauration avec plusieurs établissements.',
+            highlight: 'Remises volume disponibles',
             cta: { label: 'Contacter les ventes', href: '/contact' },
           },
         ],
         link: { label: 'Voir les tarifs détaillés', href: '/pricing' },
       },
       testimonials: {
-        title: 'Approuvé par les restaurants rapides et gastronomiques',
-        description:
-          "Les équipes d'exploitation choisissent QuickCheck pour un service rythmé, une messagerie fiable et un pilotage souple.",
-        brands: [...SOCIAL_PROOF_BRANDS],
-        quotes: [
-          { quote: 'QuickCheck a réduit de moitié nos départs en deux semaines. Les clients font confiance à nos délais.', author: 'Maria Rodriguez', role: 'Propriétaire, Tapas Barcelona' },
-          { quote: 'Le kiosque libère nos hôtes : ils accueillent les clients plutôt que de jongler avec carnets et téléphone.', author: 'James Park', role: 'Manager, Seoul Kitchen' },
-          { quote: "Les rapports multi-sites me permettent d'anticiper les besoins en personnel avant les pics.", author: 'Sarah Chen', role: 'Directrice des opérations, Garden Bistro Group' },
-        ],
+        title: '',
+        description: '',
+        brands: [],
+        quotes: [],
       },
       reliability: {
-        eyebrow: 'Fiabilité & conformité',
-        title: 'Une fiabilité de niveau entreprise dès le premier jour',
+        eyebrow: 'Fiabilité et conformité',
+        title: 'Conçu pour les restaurants qui dépendent de la disponibilité',
         description:
-          'QuickCheck protège les données clients, assure la continuité du service et offre la transparence attendue par vos équipes sécurité.',
+          'QuickCheck est hébergé sur AWS avec redondance intégrée. Vos communications avec les clients sont protégées et conformes.',
         highlights: [
-          { stat: 'Disponibilité cible 99,9 %', description: 'Infrastructure redondante, page de statut publique et surveillance proactive.' },
-          { stat: 'Contrôles SOC 2 en cours', description: "Gestion des accès, journaux d'audit et gouvernance des changements alignés sur SOC 2 type II." },
-          { stat: 'Conformité SMS régionale', description: "Consentement, mots-clés STOP et identité d'expéditeur adaptés aux marchés nord-américain et européen." },
+          { stat: 'Hébergé sur AWS', description: 'Infrastructure fiable avec mise à l\'échelle automatique et redondance.' },
+          { stat: 'Conformité SMS', description: 'Messagerie conforme TCPA avec support de désinscription.' },
+          { stat: 'Sécurité des données', description: 'Connexions chiffrées et stockage sécurisé des données.' },
         ],
-        link: { label: 'En savoir plus sur la sécurité', href: '#' },
+        link: { label: 'Contactez-nous pour la sécurité', href: '/contact' },
       },
       cta: {
-        title: "Déployez votre liste d'attente digitale en quelques minutes",
+        title: 'Lancez votre liste d\'attente digitale en quelques minutes',
         description:
-          "Essayez QuickCheck gratuitement ou planifiez une démo guidée pour découvrir comment l'outil informe vos clients et optimise vos tables.",
-        primaryCta: { label: "Démarrer l'essai gratuit", href: '/pricing' },
+          'Inscrivez-vous pour un essai gratuit ou planifiez une démo guidée pour découvrir comment QuickCheck garde vos clients informés et votre salle à pleine capacité.',
+        primaryCta: { label: 'Essai gratuit', href: '/pricing' },
         secondaryCta: { label: 'Contacter les ventes', href: '/contact' },
       },
     },
     pages: {
-      // (Supprimé : howItWorks)
       features: {
         hero: {
-          eyebrow: 'Panorama des fonctionnalités',
-          title: "Tout ce qu'il faut pour un service fluide et connecté",
+          eyebrow: 'Aperçu des fonctionnalités',
+          title: 'Tout ce dont vous avez besoin pour gérer votre liste d\'attente',
           description:
-            "QuickCheck réunit check-in client, messagerie bidirectionnelle, intelligence d'attribution et analytics dans une plateforme dédiée à la restauration.",
+            'QuickCheck réunit l\'enregistrement client, la messagerie SMS bidirectionnelle, la gestion des tables et les analyses dans une plateforme simple.',
           actions: [
-            { label: 'Comparer les offres', href: '/pricing' },
-            { label: 'Télécharger le guide', href: '#' },
+            { label: 'Voir les tarifs', href: '/pricing' },
+            { label: 'Nous contacter', href: '/contact' },
           ],
         },
         clusters: [
           {
-            category: "Liste d'attente & kiosque",
-            summary:
-              'Des expériences à votre image qui informent les clients du hall à la table.',
+            category: 'Liste d\'attente & kiosque',
+            summary: 'Enregistrement en libre-service qui informe les clients de l\'arrivée à l\'installation.',
             items: [
-              { icon: Tablet, title: 'Kiosque libre-service', description: 'Logos, couleurs et messages personnalisés pour chaque concept.' },
-              { icon: UserRound, title: 'Walk-ins & réservations', description: 'Fusionnez réservations et arrivées spontanées sans perdre la priorité.' },
-              { icon: UserCheck, title: 'Règles par taille de groupe', description: 'Bloquez les demandes hors capacité et signalez les besoins spécifiques.' },
+              { icon: Tablet, title: 'Kiosque libre-service', description: 'Les clients rejoignent la liste d\'attente avec leur taille de groupe, nom et téléphone.' },
+              { icon: UserRound, title: 'Walk-ins bienvenus', description: 'Ajoutez rapidement les clients sans réservation à la file.' },
+              { icon: UserCheck, title: 'Gestion des groupes', description: 'Associez automatiquement les groupes aux tables de taille appropriée.' },
             ],
           },
           {
-            category: 'Moteur de messagerie',
-            summary:
-              'SMS bidirectionnels qui informent les clients et simplifient le pilotage.',
+            category: 'Messagerie SMS',
+            summary: 'SMS bidirectionnels qui informent les clients et simplifient le travail du personnel.',
             items: [
-              { icon: MailCheck, title: 'Modèles réactifs', description: "Confirmations, alertes table prête, relances et messages d'absence prêts à l'emploi." },
-              { icon: BellRing, title: 'Rappels intelligents', description: 'Relances après sept minutes ou selon vos règles par établissement.' },
-              { icon: ShieldCheck, title: 'Conformité opt-out', description: 'Respect automatique des mots-clés STOP et journalisation des consentements.' },
+              { icon: MailCheck, title: 'Notifications automatiques', description: 'Alertes table prête envoyées automatiquement quand vous notifiez un client.' },
+              { icon: BellRing, title: 'Rappels intelligents', description: 'Messages de suivi si les clients ne répondent pas dans le délai défini.' },
+              { icon: ShieldCheck, title: 'Conformité désinscription', description: 'Gestion automatique du mot-clé STOP pour la conformité TCPA.' },
             ],
           },
           {
-            category: 'Attribution intelligente',
-            summary:
-              "Gardez les tables en mouvement grâce aux données et à l'automatisation.",
+            category: 'Gestion des tables',
+            summary: 'Gardez les tables en mouvement avec le suivi des statuts en temps réel.',
             items: [
-              { icon: Timer, title: 'Délais de grâce', description: 'Conservez la table pour les confirmations puis libérez-la automatiquement.' },
-              { icon: LayoutDashboard, title: 'Appariement des tables', description: 'Associez automatiquement la bonne table selon taille, zone et contraintes.' },
-              { icon: Settings2, title: 'Override maîtrisé', description: "Permettez aux hôtes d'ajuster priorités ou no-show en un geste." },
+              { icon: Timer, title: 'Estimations de temps d\'attente', description: 'Calculs automatiques du temps d\'attente basés sur la rotation des tables.' },
+              { icon: LayoutDashboard, title: 'Tableau des statuts', description: 'Voyez toutes les tables d\'un coup d\'œil - disponible, occupée ou en nettoyage.' },
+              { icon: Settings2, title: 'Ajustements faciles', description: 'Le personnel peut modifier les statuts, marquer les absences ou installer les walk-ins instantanément.' },
             ],
           },
           {
-            category: 'Analytics & admin',
-            summary:
-              "Comprenez les performances et pilotez l'expérience à l'échelle.",
+            category: 'Tableau de bord & analyses',
+            summary: 'Comprenez vos opérations avec des données en temps réel.',
             items: [
-              { icon: Presentation, title: 'Tableaux de bord live', description: 'Suivez attentes, statuts et rythme de service sur tout appareil.' },
-              { icon: BarChart3, title: 'Analyses de conversion', description: "Analysez le passage du check-in à l'installation et détectez les abandons." },
-              { icon: Building2, title: 'Contrôle multi-sites', description: 'Les super admins ajustent branding, règles et rapports par établissement.' },
+              { icon: Monitor, title: 'Tableau de bord live', description: 'Surveillez les temps d\'attente, la longueur de la file et les statuts des tables.' },
+              { icon: BarChart3, title: 'Insights performance', description: 'Suivez l\'efficacité de l\'installation et identifiez les heures de pointe.' },
+              { icon: Building2, title: 'Historique des messages', description: 'Consultez toutes les conversations SMS avec les clients.' },
             ],
           },
         ],
         planHighlights: [
-          'Utilisateurs illimités sur chaque formule.',
-          "Fonctions multi-sites disponibles dès l'offre Pro.",
-          'Enterprise inclut SSO, SLA et onboarding dédié.',
+          'Toutes les fonctionnalités incluses dans les forfaits Small et Large.',
+          'Messagerie SMS illimitée - pas de frais par message.',
+          'Assistance à l\'intégration incluse avec chaque forfait.',
         ],
       },
       pricing: {
         hero: {
           eyebrow: 'Tarification',
-          title: "Des formules qui s'adaptent à votre volume",
+          title: 'Tarifs simples et transparents',
           description:
-            'Aucun coût par utilisateur. Activez de nouveaux sites en quelques minutes et payez uniquement ceux que vous exploitez.',
+            'Choisissez en fonction de votre capacité d\'accueil. Toutes les fonctionnalités incluses. Pas de frais cachés.',
           actions: [
-            { label: "Lancer l'essai gratuit", href: '/contact' },
+            { label: 'Essai gratuit', href: '/pricing' },
             { label: 'Contacter les ventes', href: '/contact' },
           ],
         },
         plans: [
           {
-            name: 'Starter',
-            price: '249 $',
+            name: 'Small',
+            price: '299 $',
             cadence: 'par mois',
-            description: 'Une localisation avec messagerie et kiosque essentiels.',
-            highlight: 'Idéal pour une première digitalisation.',
+            description: 'Pour les restaurants de 50 places ou moins.',
+            highlight: '1 mois d\'essai gratuit',
             features: [
-              'Groupes illimités',
-              "Kiosque & QR d'auto-enregistrement",
-              'SMS table prête & rappels',
-              'Tableau de bord hôte',
-              'Analyses et exports de base',
+              'Kiosque d\'enregistrement',
+              'SMS illimités',
+              'Messagerie bidirectionnelle',
+              'Tableau de bord temps réel',
+              'Gestion des tables',
+              'Estimation des temps d\'attente',
+              'Historique des messages',
+              'Intégration incluse',
             ],
-            cta: { label: "Démarrer l'essai gratuit", href: '/contact' },
+            cta: { label: 'Essai gratuit', href: '/signup' },
           },
           {
-            name: 'Pro',
-            price: '349 $',
+            name: 'Large',
+            price: '499 $',
             cadence: 'par mois',
-            description: 'Gestion multi-sites avec automatisations avancées et intégrations POS.',
-            highlight: '',
+            description: 'Pour les restaurants de 51 places ou plus.',
+            highlight: '1 mois d\'essai gratuit',
             features: [
-              'Tout Starter inclus',
-              'Pilotage multi-établissements',
-              "Règles d'attribution avancées",
-              'Intégrations POS & agenda',
-              'Contrôles de marque par site',
+              'Kiosque d\'enregistrement',
+              'SMS illimités',
+              'Messagerie bidirectionnelle',
+              'Tableau de bord temps réel',
+              'Gestion des tables',
+              'Estimation des temps d\'attente',
+              'Historique des messages',
+              'Intégration incluse',
             ],
             featured: true,
-            cta: { label: 'Réserver une démo', href: '/contact' },
+            cta: { label: 'Essai gratuit', href: '/signup' },
           },
           {
-            name: 'Enterprise',
+            name: 'Multi-établissements',
             price: 'Sur devis',
-            description: 'SLA personnalisés, SSO et accompagnement premium pour groupes nationaux.',
-            highlight: 'Pensé pour les réseaux multi-marques.',
+            description: 'Pour les groupes de restauration avec plusieurs établissements.',
+            highlight: 'Remises volume disponibles',
             features: [
-              'Customer success dédié',
-              'Provisionnement SSO & SCIM',
-              'Intégrations sur mesure',
-              'API de reporting avancées',
-              'Support prioritaire 24/7',
+              'Toutes fonctionnalités Small/Large',
+              'Gestion multi-établissements',
+              'Facturation centralisée',
+              'Tarification basée sur le volume',
+              'Support d\'intégration dédié',
             ],
             cta: { label: 'Contacter les ventes', href: '/contact' },
           },
         ],
-        usageNotes: [
-          'Crédits SMS et WhatsApp inclus avec alertes avant dépassement.',
-          'Surcoûts appliqués au-delà du forfait, au tarif régional.',
-          'Contrats annuels : deux mois offerts et onboarding accompagné.',
-        ],
-        comparison: [
-          { feature: 'Sites inclus', starter: '1', pro: "Jusqu'à 10", enterprise: 'Illimités' },
-          { feature: 'Messagerie bidirectionnelle', starter: 'SMS inclus', pro: 'SMS + WhatsApp', enterprise: 'Routage personnalisé' },
-          { feature: 'Intégrations', starter: 'Exports CSV', pro: 'POS, agenda, webhooks', enterprise: 'Sur mesure + API' },
-          { feature: 'Analyses', starter: 'Dashboards essentiels', pro: 'Insights avancés', enterprise: 'Flux data warehouse' },
-          { feature: 'Support', starter: 'Chat & email', pro: 'Téléphone + revues succès', enterprise: 'Équipe dédiée' },
-        ],
         faq: [
-          { question: "Quelle est la durée de l'essai gratuit ?", answer: "Toutes les formules incluent 1 mois d'essai gratuit avec accès complet au kiosque, à la messagerie et aux analyses." },
-          { question: 'Quels moyens de paiement acceptez-vous ?', answer: 'Nous acceptons les cartes de débit et de crédit pour les formules mensuelles. Les contrats annuels acceptent la facturation.' },
-          { question: 'Peut-on résilier à tout moment ?', answer: 'Oui pour les formules mensuelles. Les contrats annuels nécessitent 30 jours de préavis.' },
-          { question: 'Facturez-vous chaque SMS ?', answer: 'Non. La messagerie SMS est entièrement incluse dans votre plan sans frais supplémentaires.' },
-          { question: "L'onboarding est-il inclus ?", answer: "Oui, l'accompagnement à la mise en place est inclus avec toutes les formules pour vous aider à démarrer." },
+          { question: 'Quelle est la durée de l\'essai gratuit ?', answer: 'Tous les forfaits incluent 1 mois d\'essai gratuit avec accès complet à toutes les fonctionnalités. Aucune carte de crédit requise.' },
+          { question: 'Quels moyens de paiement acceptez-vous ?', answer: 'Nous acceptons toutes les principales cartes de débit et de crédit pour la facturation mensuelle.' },
+          { question: 'Puis-je annuler à tout moment ?', answer: 'Oui. Vous pouvez annuler votre abonnement à tout moment sans frais d\'annulation.' },
+          { question: 'Les SMS sont-ils inclus ?', answer: 'Oui ! La messagerie SMS illimitée est entièrement incluse dans votre forfait sans frais supplémentaires.' },
+          { question: 'L\'intégration est-elle incluse ?', answer: 'Oui, l\'assistance à l\'intégration est incluse avec tous les forfaits pour vous aider à démarrer.' },
+          { question: 'Comment choisir le bon forfait ?', answer: 'Choisissez en fonction de la capacité de votre restaurant. 50 places ou moins = forfait Small. 51+ places = forfait Large. Les deux forfaits incluent les mêmes fonctionnalités.' },
         ],
         whatsIncluded: {
           title: 'Ce qui est inclus',
-          description: 'Facturation transparente avec toutes les fonctionnalités dont vous avez besoin.',
+          description: 'Chaque forfait inclut tout ce dont vous avez besoin pour gérer votre liste d\'attente.',
         },
         includedItems: [
-          '1 mois d\'essai gratuit sur toutes les formules - sans carte de crédit',
-          'Messagerie SMS illimitée incluse - sans frais cachés',
-          'Le forfait s\'adapte automatiquement à votre capacité d\'accueil',
-          'Résiliez à tout moment - pas de contrat longue durée',
+          '1 mois d\'essai gratuit - sans carte de crédit',
+          'SMS illimités - pas de frais par message',
+          'Toutes fonctionnalités incluses - pas de restrictions',
+          'Assistance à l\'intégration incluse',
+          'Annulez à tout moment - pas de contrat longue durée',
         ],
         faqSection: {
-          title: 'FAQ Tarification',
-          description: 'Questions fréquentes sur la facturation, les essais et les crédits.',
+          title: 'Questions fréquentes',
+          description: 'Questions courantes sur les tarifs, la facturation et les fonctionnalités.',
         },
       },
     },
     footer: {
       tagline: 'QuickCheck',
       description:
-        "Listes d'attente numériques, SMS bidirectionnels et tableaux de bord pour garder vos tables remplies et vos clients informés.",
+        'Listes d\'attente numériques avec SMS bidirectionnels pour garder vos tables remplies et vos clients informés.',
       columns: [
         {
           title: 'Produit',
           links: [
-            // supprimé : { label: 'Comment ça marche', href: '/how-it-works' }
             { label: 'Fonctionnalités', href: '/features' },
             { label: 'Tarifs', href: '/pricing' },
-            { label: 'Sécurité & conformité', href: '#' },
+          ],
+        },
+        {
+          title: 'Nous contacter',
+          links: [
+            { label: 'Contactez-nous', href: '/contact' },
+            { label: 'info@quickcheckin.ca', href: 'mailto:info@quickcheckin.ca' },
+            { label: '+1 647-221-6677', href: 'tel:+16472216677' },
           ],
         },
       ],
       legal: [
         { label: 'Politique de confidentialité', href: '/privacy' },
-        { label: "Conditions d'utilisation", href: '/terms' },
+        { label: 'Conditions d\'utilisation', href: '/terms' },
       ],
-      copyright:
-        '\u00A9 ' + CURRENT_YEAR + ' QuickCheck. Tous droits réservés.',
+      copyright: '\u00A9 ' + CURRENT_YEAR + ' QuickCheck. Tous droits réservés.',
     },
   },
 }
@@ -980,19 +917,12 @@ export const useHero = () => useMarketingContent().landing.hero
 export const usePricingPreview = () => useMarketingContent().landing.pricingPreview
 
 // ---------- Named re-exports for components ----------
-export const partnerLogos = [...PARTNER_LOGOS]
-export const socialProofBrands = [...SOCIAL_PROOF_BRANDS]
-
-// Components often read these directly:
 export const homeFeatureHighlights = content.en.landing.features.highlights
 export const problemPoints = content.en.landing.problemOutcome.problems
 export const positiveOutcomes = content.en.landing.problemOutcome.outcomes
 export const complianceHighlights = content.en.landing.reliability.highlights
-export const testimonials = content.en.landing.testimonials.quotes
 
 // Features & Pricing pages need these:
 export const featureClusters = content.en.pages.features.clusters
 export const pricingPlans = content.en.pages.pricing.plans
-export const usageNotes = content.en.pages.pricing.usageNotes
-export const comparisonMatrix = content.en.pages.pricing.comparison
 export const pricingFaq = content.en.pages.pricing.faq

@@ -12,7 +12,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
  * @returns {object} - { priceId, plan, amount, currency }
  */
 const getPriceForRestaurant = (country, seatCapacity) => {
-  const plan = seatCapacity >= 50 ? 'large' : 'small';
+  const plan = seatCapacity > 50 ? 'large' : 'small';
   const amount = plan === 'small' ? 299 : 499;
   const currency = country === 'CA' ? 'CAD' : 'USD';
 
