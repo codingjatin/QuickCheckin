@@ -337,7 +337,7 @@ const content: Record<Language, MarketingContent> = {
             name: 'Large',
             price: '$499',
             cadence: 'per month',
-            description: 'For restaurants with 51 or more seats.',
+            description: 'For restaurants with 51 seats or more.',
             highlight: 'All features included',
             featured: true,
             cta: { label: 'Start free trial', href: '/pricing' },
@@ -468,7 +468,7 @@ const content: Record<Language, MarketingContent> = {
             name: 'Large',
             price: '$499',
             cadence: 'per month',
-            description: 'For restaurants with 51 or more seats.',
+            description: 'For restaurants with 51 seats or more.',
             highlight: '1-month free trial',
             features: [
               'Self check-in kiosk',
@@ -504,7 +504,7 @@ const content: Record<Language, MarketingContent> = {
           { question: 'Can I cancel anytime?', answer: 'Yes. You can cancel your subscription at any time with no cancellation fees.' },
           { question: 'Are SMS messages included?', answer: 'Yes! Unlimited SMS messaging is fully included in your plan with no additional charges.' },
           { question: 'Is onboarding included?', answer: 'Yes. Guided onboarding is included with all plans to help you get started smoothly.' },
-          { question: 'How do I know which plan to choose?', answer: 'Choose based on your restaurant\'s seating capacity. 50 seats or less = Small plan. 51+ seats = Large plan. Both plans include identical features.' },
+          { question: 'How do I know which plan to choose?', answer: 'Choose based on your restaurant\'s seating capacity. 50 seats or less = Small plan. 51 seats or more = Large plan.  Both plans include identical features.' },
         ],
         whatsIncluded: {
           title: "What's Included",

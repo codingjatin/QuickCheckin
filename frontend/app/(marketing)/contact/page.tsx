@@ -106,7 +106,7 @@ const STRINGS = {
       },
       {
         q: 'What is the pricing?',
-        a: 'We have two simple plans: Small ($299/month) for 50 seats or less, and Large ($499/month) for 51+ seats. Both include all features and unlimited SMS.',
+        a: 'We have two simple plans: Small ($299/month) for 50 seats or less, and Large ($499/month) for 51 seats or more. Both include all features and unlimited SMS.',
       },
     ],
     // autoresponse

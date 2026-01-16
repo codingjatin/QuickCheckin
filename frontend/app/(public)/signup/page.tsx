@@ -32,7 +32,7 @@ function SignupForm() {
   const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     restaurantName: '',
@@ -215,17 +215,15 @@ function SignupForm() {
           <div className="mb-8 flex items-center justify-between">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center flex-1">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  step < currentStep ? 'bg-primary border-primary text-white' :
-                  step === currentStep ? 'border-primary text-primary' :
-                  'border-border text-muted'
-                }`}>
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${step < currentStep ? 'bg-primary border-primary text-white' :
+                    step === currentStep ? 'border-primary text-primary' :
+                      'border-border text-muted'
+                  }`}>
                   {step < currentStep ? <Check size={20} /> : step}
                 </div>
                 {step < 3 && (
-                  <div className={`h-0.5 flex-1 mx-2 ${
-                    step < currentStep ? 'bg-primary' : 'bg-border'
-                  }`} />
+                  <div className={`h-0.5 flex-1 mx-2 ${step < currentStep ? 'bg-primary' : 'bg-border'
+                    }`} />
                 )}
               </div>
             ))}
@@ -323,10 +321,9 @@ function SignupForm() {
                         required
                         value={formData.businessNumber}
                         onChange={handleChange}
-                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink ${
-                          businessNumberAvailable === false ? 'border-red-500' : 
-                          businessNumberAvailable === true ? 'border-green-500' : 'border-border'
-                        }`}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-off text-ink ${businessNumberAvailable === false ? 'border-red-500' :
+                            businessNumberAvailable === true ? 'border-green-500' : 'border-border'
+                          }`}
                         placeholder={formData.country === 'US' ? '12-3456789' : '123456789RC0001'}
                       />
                       {verifyingBusinessNumber && (
@@ -371,12 +368,11 @@ function SignupForm() {
                   <div>
                     <label className="block text-sm font-medium text-ink mb-2">Seat Capacity *</label>
                     <div className="space-y-3">
-                      <label 
-                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
-                          formData.seatCapacity <= 50 
-                            ? 'border-primary bg-primary/5 ring-2 ring-primary' 
+                      <label
+                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${formData.seatCapacity <= 50
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
                             : 'border-border hover:border-primary/50'
-                        }`}
+                          }`}
                       >
                         <input
                           type="radio"
@@ -396,13 +392,12 @@ function SignupForm() {
                           </div>
                         )}
                       </label>
-                      
-                      <label 
-                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
-                          formData.seatCapacity > 50 
-                            ? 'border-primary bg-primary/5 ring-2 ring-primary' 
+
+                      <label
+                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${formData.seatCapacity > 50
+                            ? 'border-primary bg-primary/5 ring-2 ring-primary'
                             : 'border-border hover:border-primary/50'
-                        }`}
+                          }`}
                       >
                         <input
                           type="radio"
@@ -413,7 +408,7 @@ function SignupForm() {
                           className="sr-only"
                         />
                         <div className="flex-1">
-                          <p className="font-medium text-ink">51 or more seats</p>
+                          <p className="font-medium text-ink">51 seats or more</p>
                           <p className="text-sm text-muted">Large Plan - $499 {currency}/month</p>
                         </div>
                         {formData.seatCapacity > 50 && (

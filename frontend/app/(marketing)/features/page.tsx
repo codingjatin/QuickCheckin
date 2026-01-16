@@ -64,7 +64,7 @@ export default function FeaturesPage() {
             align="left"
             eyebrow="Simple pricing"
             title="All features, every plan"
-            description="Both Small and Large plans include all features. Choose based on your seating capacity—50 seats or less, or 51+ seats."
+            description="Both Small and Large plans include all features. Choose based on your seating capacity—50 seats or less, or 51 seats or more."
           />
 
           <div className="grid gap-6 lg:grid-cols-3">
