@@ -221,17 +221,6 @@ export default function TablesPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-panel border border-border shadow-soft">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-info" />
-              <div>
-                <p className="text-2xl font-bold">{stats.reserved}</p>
-                <p className="text-xs text-muted">{t('reserved')}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Unavailable Stats */}
          <Card className="bg-panel border border-border shadow-soft">

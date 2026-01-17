@@ -127,7 +127,7 @@ const STRINGS = {
     avgReply: 'Délai moyen de réponse : ~2 heures',
     commitment: 'Nous sommes engagés pour votre succès.',
     responseWindow: 'Nous répondons généralement sous 2 à 24 heures.',
-    compose: 'Composer',
+    compose: 'Rédiger',
     copy: 'Copier',
     copied: 'Copié',
     call: 'Appeler',
@@ -190,7 +190,7 @@ const STRINGS = {
       },
       {
         q: 'Quels sont les tarifs ?',
-        a: 'Deux forfaits simples : Small (299 $/mois) pour 50 places ou moins, et Large (499 $/mois) pour 51+ places. Les deux incluent toutes les fonctionnalités et SMS illimités.',
+        a: 'Deux forfaits simples : Petit (299 $/mois) pour 50 places ou moins, et Grand (499 $/mois) pour 51 places ou plus. Les deux incluent toutes les fonctionnalités et SMS illimités.',
       },
     ],
     // autoresponse

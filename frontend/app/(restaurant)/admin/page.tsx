@@ -11,11 +11,12 @@ import { useSSE } from '@/hooks/useSSE';
 import { useTranslation } from '@/lib/i18n';
 import { Clock, Users, MessageCircle, CheckCircle, X, Phone, Loader2, Wifi, WifiOff, Table as TableIcon, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { isAuthenticated, userRole, isLoading: authLoading, restaurantData } = useAuthStore();
   
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -541,7 +542,7 @@ export default function AdminDashboard() {
                           </span>
                           <span className="flex items-center">
                             <Clock className="h-4 w-4 mr-1" />
-                            {formatDistanceToNow(new Date(booking.checkInTime || booking.createdAt), { addSuffix: true })}
+                            {formatDistanceToNow(new Date(booking.checkInTime || booking.createdAt), { addSuffix: true, locale: language === 'fr' ? fr : undefined })}
                           </span>
                         </div>
                       </div>
@@ -671,7 +672,7 @@ export default function AdminDashboard() {
                             <>
                               <span>•</span>
                               <Clock className="h-3 w-3" />
-                              <span>{formatDistanceToNow(new Date(tableBooking.seatedAt), { addSuffix: false })}</span>
+                              <span>{formatDistanceToNow(new Date(tableBooking.seatedAt), { addSuffix: false, locale: language === 'fr' ? fr : undefined })}</span>
                             </>
                           )}
                         </div>

@@ -167,6 +167,7 @@ type LandingContent = {
     description: string
     primaryCta: ButtonLink
     secondaryCta: ButtonLink
+    trustBadges: string[]
   }
 }
 
@@ -189,6 +190,11 @@ type PricingContent = {
 type FeaturesContent = {
   hero: PageHeroContent
   clusters: FeatureCluster[]
+  simplePricing: {
+    eyebrow: string
+    title: string
+    description: string
+  }
   planHighlights: string[]
 }
 
@@ -376,6 +382,7 @@ const content: Record<Language, MarketingContent> = {
           'Sign up for a free trial or schedule a guided demo to see how QuickCheck keeps guests informed and your dining room at capacity.',
         primaryCta: { label: 'Start free trial', href: '/pricing' },
         secondaryCta: { label: 'Talk to sales', href: '/contact' },
+        trustBadges: ['Reliable performance', 'Realtime monitoring'],
       },
     },
     pages: {
@@ -428,6 +435,11 @@ const content: Record<Language, MarketingContent> = {
             ],
           },
         ],
+        simplePricing: {
+          eyebrow: 'Simple pricing',
+          title: 'All features, every plan',
+          description: 'Both Small and Large plans include all features. Choose based on your seating capacity—50 seats or less, or 51 seats or more.',
+        },
         planHighlights: [
           'All features included in both Small and Large plans.',
           'Unlimited SMS messaging - no per-message fees.',
@@ -554,7 +566,7 @@ const content: Record<Language, MarketingContent> = {
 
   fr: {
     announcement:
-      'QuickCheck - Gestion digitale des listes d\'attente pour restaurants modernes. Commencez votre essai gratuit d\'1 mois !',
+      'QuickCheck - Gestion digitale des listes d\'attente pour les restaurants modernes. Commencez votre essai gratuit d\'1 mois !',
     nav: {
       links: [
         { label: 'Accueil', href: '/' },
@@ -568,7 +580,7 @@ const content: Record<Language, MarketingContent> = {
     landing: {
       hero: {
         eyebrow: 'Listes d\'attente numériques qui répondent',
-        title: 'Un système moderne de liste d\'attente et de réservation numérique pour restaurants.',
+        title: 'Un système moderne de liste d\'attente et de réservation numérique pour les restaurants.',
         description:
           'Réduisez les abandons, avertissez automatiquement les clients et suivez l\'occupation des tables en temps réel. QuickCheck remplace les carnets papier par des SMS automatisés.',
         primaryCta: { label: 'Essai gratuit', href: '/pricing' },
@@ -617,11 +629,11 @@ const content: Record<Language, MarketingContent> = {
         successMessage: 'Prévisualisation mise à jour pour {{number}}.',
         fallbackGuest: 'votre invité',
         placeholder: '06 12 34 56 78',
-        replyHint: 'Réponses possibles : O pour confirmer, N pour libérer, STOP pour se désinscrire.',
+        replyHint: 'Réponses possibles : Y pour confirmer, N pour libérer, STOP pour se désinscrire.',
         messages: [
           { title: 'Confirmation', body: 'Merci d\'avoir rejoint la liste d\'attente QuickCheck ! Nous vous avertirons quand votre table sera prête.', from: 'quickcheck' },
-          { title: 'Table prête', body: 'Votre table est prête. Répondez O pour la garder 15 minutes ou N pour la libérer.', from: 'quickcheck' },
-          { title: 'Réponse client', body: 'O', from: 'guest' },
+          { title: 'Table prête', body: 'Votre table est prête. Répondez Y pour la garder 15 minutes ou N pour la libérer.', from: 'quickcheck' },
+          { title: 'Réponse client', body: 'Y', from: 'guest' },
           { title: 'Confirmé', body: 'Merci pour votre confirmation ! Votre table est réservée. Veuillez arriver dans les 15 minutes.', from: 'quickcheck' },
         ],
       },
@@ -714,6 +726,7 @@ const content: Record<Language, MarketingContent> = {
           'Inscrivez-vous pour un essai gratuit ou planifiez une démo guidée pour découvrir comment QuickCheck garde vos clients informés et votre salle à pleine capacité.',
         primaryCta: { label: 'Essai gratuit', href: '/pricing' },
         secondaryCta: { label: 'Contacter les ventes', href: '/contact' },
+        trustBadges: ['Performance fiable', 'Surveillance en temps réel'],
       },
     },
     pages: {
@@ -766,8 +779,13 @@ const content: Record<Language, MarketingContent> = {
             ],
           },
         ],
+        simplePricing: {
+          eyebrow: 'Tarification simple',
+          title: 'Toutes les fonctionnalités, chaque forfait',
+          description: 'Les forfaits Petit et Grand incluent toutes les fonctionnalités. Choisissez selon votre capacité d\'accueil : 50 places ou moins, ou 51 places et plus.',
+        },
         planHighlights: [
-          'Toutes les fonctionnalités incluses dans les forfaits Small et Large.',
+          'Toutes les fonctionnalités incluses dans les forfaits Petit et Grand.',
           'Messagerie SMS illimitée - pas de frais par message.',
           'Assistance à l\'intégration incluse avec chaque forfait.',
         ],
@@ -842,7 +860,7 @@ const content: Record<Language, MarketingContent> = {
           { question: 'Puis-je annuler à tout moment ?', answer: 'Oui. Vous pouvez annuler votre abonnement à tout moment sans frais d\'annulation.' },
           { question: 'Les SMS sont-ils inclus ?', answer: 'Oui ! La messagerie SMS illimitée est entièrement incluse dans votre forfait sans frais supplémentaires.' },
           { question: 'L\'intégration est-elle incluse ?', answer: 'Oui, l\'assistance à l\'intégration est incluse avec tous les forfaits pour vous aider à démarrer.' },
-          { question: 'Comment choisir le bon forfait ?', answer: 'Choisissez en fonction de la capacité de votre restaurant. 50 places ou moins = forfait Small. 51+ places = forfait Large. Les deux forfaits incluent les mêmes fonctionnalités.' },
+          { question: 'Comment choisir le bon forfait ?', answer: 'Choisissez en fonction de la capacité de votre restaurant. 50 places ou moins = forfait Petit. 51+ places = forfait Grand. Les deux forfaits incluent les mêmes fonctionnalités.' },
         ],
         whatsIncluded: {
           title: 'Ce qui est inclus',

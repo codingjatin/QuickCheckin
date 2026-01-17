@@ -62,9 +62,9 @@ export default function FeaturesPage() {
         <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 sm:px-6 lg:px-8">
           <SectionHeading
             align="left"
-            eyebrow="Simple pricing"
-            title="All features, every plan"
-            description="Both Small and Large plans include all features. Choose based on your seating capacity—50 seats or less, or 51 seats or more."
+            eyebrow={features.simplePricing.eyebrow}
+            title={features.simplePricing.title}
+            description={features.simplePricing.description}
           />
 
           <div className="grid gap-6 lg:grid-cols-3">

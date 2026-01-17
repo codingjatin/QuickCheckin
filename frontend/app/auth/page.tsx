@@ -9,10 +9,12 @@ import { LoginForm } from "@/components/auth/login-form";
 import { OtpForm } from "@/components/auth/otp-form";
 import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 export default function AuthPage() {
   const router = useRouter();
   const { isAuthenticated, userRole, currentStep } = useAuthStore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (isAuthenticated && userRole) {
@@ -62,12 +64,12 @@ export default function AuthPage() {
 
           <div className="mt-8 pt-6 border-t border-border/50 flex justify-between text-xs text-muted">
             <span>
-              Don't have any account? 
+              {t('noAccount')}{' '}
               <span
                 className="underline cursor-pointer hover:text-primary"
                 onClick={() => handleRedirect('/signup')}
               >
-                Sign up
+                {t('signUp')}
               </span>
             </span>
           </div>
