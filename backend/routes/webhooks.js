@@ -196,7 +196,7 @@ async function handlePaymentSucceeded(invoice) {
   if (!restaurant) return;
 
   restaurant.lastPaymentDate = new Date();
-  restaurant.subscriptionStatus = 'active';
+  // restaurant.subscriptionStatus = 'active'; // REmoved to rely on subscription.updated event
   restaurant.isActive = true;
   await restaurant.save();
 

@@ -27,6 +27,9 @@ import {
   Trash2,
   Loader2,
   ShieldCheck,
+  CreditCard,
+  Target,
+  Crown,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -45,6 +48,7 @@ type GetRestaurantsResponse = {
     businessNumber?: string;
     logo?: string | null;
     isActive: boolean;
+    subscriptionStatus: string;
     createdAt: string;
     updatedAt?: string;
     createdBy?: { _id: string; email: string };
@@ -69,6 +73,7 @@ type CreatedRestaurant = {
   businessNumber?: string;
   logo?: string | null;
   isActive: boolean;
+  subscriptionStatus: string;
   createdAt: string;
 };
 
@@ -81,6 +86,7 @@ type RestaurantUI = {
   phone?: string;
   businessNumber?: string;
   isActive: boolean;
+  subscriptionStatus: string;
   createdAt?: string;
 };
 
@@ -123,6 +129,8 @@ export default function RestaurantsPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState<'all' | 'paid' | 'trial' | 'legacy'>('all');
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newRestaurant, setNewRestaurant] = useState<CreateRestaurantPayload>({
@@ -152,6 +160,7 @@ export default function RestaurantsPage() {
         phone: r.phone,
         businessNumber: r.businessNumber,
         isActive: !!r.isActive,
+        subscriptionStatus: r.subscriptionStatus || 'legacy-free',
         createdAt: r.createdAt,
       }));
       setRestaurants(mapped);
@@ -166,13 +175,38 @@ export default function RestaurantsPage() {
     loadRestaurants();
   }, []);
 
+  // Compute Stats
+  const stats = useMemo(() => {
+    return {
+      all: restaurants.length,
+      paid: restaurants.filter((r) => r.subscriptionStatus === 'active').length,
+      trial: restaurants.filter((r) => r.subscriptionStatus === 'trialing').length,
+      legacy: restaurants.filter((r) => r.subscriptionStatus === 'legacy-free').length,
+    };
+  }, [restaurants]);
+
   const filtered = useMemo(() => {
+    let result = restaurants;
+
+    // 1. Filter by Tab
+    if (activeTab === 'paid') {
+      result = result.filter((r) => r.subscriptionStatus === 'active');
+    } else if (activeTab === 'trial') {
+      result = result.filter((r) => r.subscriptionStatus === 'trialing');
+    } else if (activeTab === 'legacy') {
+      result = result.filter((r) => r.subscriptionStatus === 'legacy-free');
+    }
+
+    // 2. Filter by Search
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return restaurants;
-    return restaurants.filter(
-      (r) => r.name.toLowerCase().includes(q) || r.city.toLowerCase().includes(q)
-    );
-  }, [restaurants, searchTerm]);
+    if (q) {
+      result = result.filter(
+        (r) => r.name.toLowerCase().includes(q) || r.city.toLowerCase().includes(q)
+      );
+    }
+
+    return result;
+  }, [restaurants, searchTerm, activeTab]);
 
   // Create (POST /api/super-admin/restaurants)
   const addRestaurant = async () => {
@@ -195,6 +229,7 @@ export default function RestaurantsPage() {
           phone: created.phone,
           businessNumber: created.businessNumber,
           isActive: !!created.isActive,
+          subscriptionStatus: created.subscriptionStatus || 'legacy-free',
           createdAt: created.createdAt,
         },
         ...prev,
@@ -368,6 +403,83 @@ export default function RestaurantsPage() {
         </Dialog>
       </div>
 
+      {/* Stats / Filter Tabs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* All Tab */}
+        <Card
+          className={`cursor-pointer transition-all ${
+            activeTab === 'all'
+              ? 'border-primary shadow-md bg-panel'
+              : 'border-border bg-panel hover:bg-off'
+          }`}
+          onClick={() => setActiveTab('all')}
+        >
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted">All Restaurants</p>
+              <p className="text-2xl font-bold">{stats.all}</p>
+            </div>
+            <Building className={`h-8 w-8 ${activeTab === 'all' ? 'text-primary' : 'text-muted'}`} />
+          </CardContent>
+        </Card>
+
+        {/* Paid Tab */}
+        <Card
+          className={`cursor-pointer transition-all ${
+            activeTab === 'paid'
+              ? 'border-emerald-500 shadow-md bg-panel'
+              : 'border-border bg-panel hover:bg-off'
+          }`}
+          onClick={() => setActiveTab('paid')}
+        >
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted">Paid Users</p>
+              <p className="text-2xl font-bold">{stats.paid}</p>
+            </div>
+            <CreditCard
+              className={`h-8 w-8 ${activeTab === 'paid' ? 'text-emerald-500' : 'text-muted'}`}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Trial Tab */}
+        <Card
+          className={`cursor-pointer transition-all ${
+            activeTab === 'trial'
+              ? 'border-blue-500 shadow-md bg-panel'
+              : 'border-border bg-panel hover:bg-off'
+          }`}
+          onClick={() => setActiveTab('trial')}
+        >
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted">Free Trial</p>
+              <p className="text-2xl font-bold">{stats.trial}</p>
+            </div>
+            <Target className={`h-8 w-8 ${activeTab === 'trial' ? 'text-blue-500' : 'text-muted'}`} />
+          </CardContent>
+        </Card>
+
+        {/* Legacy Tab */}
+        <Card
+          className={`cursor-pointer transition-all ${
+            activeTab === 'legacy'
+              ? 'border-amber-500 shadow-md bg-panel'
+              : 'border-border bg-panel hover:bg-off'
+          }`}
+          onClick={() => setActiveTab('legacy')}
+        >
+          <CardContent className="p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted">Legacy Free</p>
+              <p className="text-2xl font-bold">{stats.legacy}</p>
+            </div>
+            <Crown className={`h-8 w-8 ${activeTab === 'legacy' ? 'text-amber-500' : 'text-muted'}`} />
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted" />
@@ -412,6 +524,22 @@ export default function RestaurantsPage() {
                       <CardTitle className="flex items-center gap-2">
                         <Building className="h-5 w-5 text-ink/70" />
                         <span>{r.name}</span>
+                        {/* Plan Badge */}
+                        {r.subscriptionStatus === 'active' && (
+                          <Badge variant="outline" className="border-emerald-500 text-emerald-600 bg-emerald-50">
+                            Paid
+                          </Badge>
+                        )}
+                        {r.subscriptionStatus === 'trialing' && (
+                          <Badge variant="outline" className="border-blue-500 text-blue-600 bg-blue-50">
+                            Trial
+                          </Badge>
+                        )}
+                        {r.subscriptionStatus === 'legacy-free' && (
+                          <Badge variant="outline" className="border-amber-500 text-amber-600 bg-amber-50">
+                            Legacy
+                          </Badge>
+                        )}
                       </CardTitle>
                       <CardDescription className="flex flex-wrap items-center gap-4 mt-2 text-muted">
                         <span className="flex items-center">
@@ -522,7 +650,11 @@ export default function RestaurantsPage() {
           <Building className="h-12 w-12 text-muted mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">No restaurants found</h3>
           <p className="text-muted">
-            {searchTerm ? 'Try adjusting your search term' : 'Add your first restaurant to get started'}
+            {searchTerm
+              ? 'Try adjusting your search term'
+              : activeTab !== 'all'
+              ? `No ${activeTab} restaurants found`
+              : 'Add your first restaurant to get started'}
           </p>
         </div>
       )}
