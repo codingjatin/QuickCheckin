@@ -102,12 +102,23 @@ const calculateWaitTime = async (restaurantId, partySize) => {
     }
 
 
-    // 3. Simulate The Queue (Virtual Seating)
+    // 3. Simulate The Queue (Virtual Seating) - STRICT TABLE MATCHING
     // ---------------------------------------------------------
     for (const booking of activeBookings) {
-      // Find compatible tables for this booking
-      // Logic: Table Capacity >= Booking Party Size
-      const compatibleTables = tables.filter(t => t.capacity >= booking.partySize);
+      // STRICT MATCHING: Prefer exact capacity match
+      const exactMatchTables = tables.filter(t => t.capacity === booking.partySize);
+      
+      // Fallback: If no exact match exists, use smallest table that fits
+      let compatibleTables;
+      if (exactMatchTables.length > 0) {
+        compatibleTables = exactMatchTables;
+      } else {
+        // Find smallest table that can fit the party
+        const largerTables = tables.filter(t => t.capacity >= booking.partySize);
+        compatibleTables = largerTables.length > 0 
+          ? [largerTables.sort((a, b) => a.capacity - b.capacity)[0]] 
+          : [];
+      }
 
       if (compatibleTables.length > 0) {
         // Find the one that becomes free EARLIEST
@@ -133,15 +144,32 @@ const calculateWaitTime = async (restaurantId, partySize) => {
 
         // Update timeline
         tableTimeline.set(bestTable._id.toString(), newFreeTime);
+        console.log(`[WaitTime] Queue Sim: Booking (Party ${booking.partySize}) -> Table ${bestTable.tableNumber} (Cap ${bestTable.capacity}), NewFreeAt: ${newFreeTime.toISOString()}`);
       }
       // If no compatible tables, this booking is stuck (phantom), we ignore it for simulation to prevent blocking
     }
 
 
-    // 4. Calculate "My" Wait Time (Post-Simulation)
+    // 4. Calculate "My" Wait Time (Post-Simulation) - STRICT TABLE MATCHING
     // ---------------------------------------------------------
     // Now the timeline reflects the state AFTER all current waiters are served.
-    const myCompatibleTables = tables.filter(t => t.capacity >= partySize);
+    
+    // STRICT MATCHING: First look for exact capacity match
+    const exactMatchTables = tables.filter(t => t.capacity === partySize);
+    
+    let myCompatibleTables;
+    if (exactMatchTables.length > 0) {
+      // Use only exact-match tables
+      myCompatibleTables = exactMatchTables;
+      console.log(`[WaitTime] STRICT: Found ${exactMatchTables.length} exact-match tables for party of ${partySize}`);
+    } else {
+      // Fallback: No exact match exists, use smallest table that fits
+      const largerTables = tables.filter(t => t.capacity >= partySize);
+      myCompatibleTables = largerTables.length > 0
+        ? [largerTables.sort((a, b) => a.capacity - b.capacity)[0]]
+        : [];
+      console.log(`[WaitTime] STRICT: No exact-match tables for party of ${partySize}, using smallest fit: ${myCompatibleTables.map(t => t.tableNumber).join(', ')}`);
+    }
 
     if (myCompatibleTables.length === 0) {
       return { waitTime: 60, message: 'No suitable tables available' };
