@@ -54,18 +54,27 @@ const createStripeCustomer = async ({ email, name, phone, metadata }) => {
 /**
  * Create Stripe Subscription with trial
  */
-const createStripeSubscription = async ({ customerId, priceId, trialDays = 30 }) => {
+const createStripeSubscription = async ({ customerId, priceId, trialDays = 30, trialEnd }) => {
   try {
-    const subscription = await stripe.subscriptions.create({
+    const subscriptionData = {
       customer: customerId,
       items: [{ price: priceId }],
-      trial_period_days: trialDays,
       payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
       metadata: {
         source: 'quickcheck_signup'
       }
-    });
+    };
+
+    // If a specific timestamp is provided, use it (for testing/overrides)
+    if (trialEnd) {
+      subscriptionData.trial_end = trialEnd;
+    } else {
+      // Otherwise use the standard day count
+      subscriptionData.trial_period_days = trialDays;
+    }
+
+    const subscription = await stripe.subscriptions.create(subscriptionData);
     return { success: true, subscription };
   } catch (error) {
     console.error('Stripe subscription creation error:', error);
