@@ -267,7 +267,19 @@ const signup = async (req, res) => {
     }
 
     // Check business number uniqueness BEFORE Stripe
-    const existing = await Restaurant.findOne({ businessNumber: businessNumber.trim() });
+    // Identity Lock: Normalize business number (remove dashes/spaces)
+    const cleanBusinessNumber = businessNumber.trim().replace(/[^0-9]/g, '');
+    
+    // Check for existing business number (using normalized version)
+    // We search for both raw input AND normalized version to be safe, 
+    // though DB should ideally store normalized.
+    const existing = await Restaurant.findOne({ 
+      $or: [
+        { businessNumber: cleanBusinessNumber },
+        { businessNumber: businessNumber.trim() }
+      ]
+    });
+
     if (existing) {
       return res.status(409).json({message: 'This business is already registered.' });
     }
@@ -276,6 +288,28 @@ const signup = async (req, res) => {
     const existingEmail = await Restaurant.findOne({ email: email.toLowerCase() });
     if (existingEmail) {
       return res.status(409).json({ message: 'This email is already registered.' });
+    }
+
+    // Payment Lock: Validate Key Card Country Matches Selected Country
+    try {
+      const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+      const cardCountry = paymentMethod.card.country; // e.g., 'US', 'CA'
+
+      // Check for currency cheating
+      if (country === 'CA' && cardCountry !== 'CA') {
+        return res.status(400).json({ 
+          message: 'Payment Lock: you selected Canada (CAD pricing), but your card was not issued in Canada. Please use a Canadian card or select United States.' 
+        });
+      }
+
+      if (country === 'US' && cardCountry !== 'US') {
+        return res.status(400).json({ 
+          message: 'Payment Lock: You selected United States, but your card was not issued in the US. Please use a US card.' 
+        });
+      }
+    } catch (stripeError) {
+      console.error('Stripe payment method retrieval error:', stripeError);
+      return res.status(400).json({ message: 'Invalid payment method details.' });
     }
 
     // Get pricing based on seat capacity
@@ -287,7 +321,7 @@ const signup = async (req, res) => {
       name: restaurantName,
       phone: formatPhoneNumber(phone),
       metadata: {
-        businessNumber,
+        businessNumber: cleanBusinessNumber, // Save properly normalized ID
         country,
         state: state || '',
         city,
@@ -340,7 +374,7 @@ const signup = async (req, res) => {
       country,
       state,
       city,
-      businessNumber: businessNumber.trim(),
+      businessNumber: cleanBusinessNumber, // Store ONLY the normalized ID
       email: email.toLowerCase(),
       phone,
       seatCapacity,

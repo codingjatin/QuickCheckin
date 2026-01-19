@@ -109,8 +109,11 @@ function SignupForm() {
     setCurrentStep(prev => Math.max(1, prev - 1));
   };
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     if (!stripe || !elements) {
       toast.error('Stripe is not loaded. Please refresh the page.');
@@ -158,7 +161,10 @@ function SignupForm() {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.message || 'Signup failed');
+        // Show specific error from backend (e.g. Payment Lock message)
+        const errorMsg = data.message || 'Signup failed';
+        setError(errorMsg);
+        toast.error(errorMsg);
         setLoading(false);
         return;
       }
@@ -168,7 +174,9 @@ function SignupForm() {
 
     } catch (error: any) {
       console.error('Signup error:', error);
-      toast.error(error.message || 'Signup failed. Please try again.');
+      const errorMsg = error.message || 'Signup failed. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -472,6 +480,13 @@ function SignupForm() {
                       Your card will not be charged during the 30-day trial
                     </p>
                   </div>
+
+                  {error && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex gap-3 text-red-600 text-sm">
+                      <div className="shrink-0">⚠️</div>
+                      <div>{error}</div>
+                    </div>
+                  )}
 
                   <button
                     type="submit"
