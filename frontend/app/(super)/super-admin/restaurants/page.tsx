@@ -49,6 +49,7 @@ type GetRestaurantsResponse = {
     logo?: string | null;
     isActive: boolean;
     subscriptionStatus: string;
+    subscriptionPlan?: string;
     createdAt: string;
     updatedAt?: string;
     createdBy?: { _id: string; email: string };
@@ -87,6 +88,7 @@ type RestaurantUI = {
   businessNumber?: string;
   isActive: boolean;
   subscriptionStatus: string;
+  subscriptionPlan?: string;
   createdAt?: string;
 };
 
@@ -129,7 +131,7 @@ export default function RestaurantsPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'all' | 'paid' | 'trial' | 'legacy'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'paid' | 'small' | 'large' | 'free'>('all');
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -161,6 +163,7 @@ export default function RestaurantsPage() {
         businessNumber: r.businessNumber,
         isActive: !!r.isActive,
         subscriptionStatus: r.subscriptionStatus || 'legacy-free',
+        subscriptionPlan: r.subscriptionPlan,
         createdAt: r.createdAt,
       }));
       setRestaurants(mapped);
@@ -179,9 +182,11 @@ export default function RestaurantsPage() {
   const stats = useMemo(() => {
     return {
       all: restaurants.length,
+      active: restaurants.filter((r) => r.isActive).length,
       paid: restaurants.filter((r) => r.subscriptionStatus === 'active').length,
-      trial: restaurants.filter((r) => r.subscriptionStatus === 'trialing').length,
-      legacy: restaurants.filter((r) => r.subscriptionStatus === 'legacy-free').length,
+      small: restaurants.filter((r) => r.subscriptionPlan === 'small').length,
+      large: restaurants.filter((r) => r.subscriptionPlan === 'large').length,
+      free: restaurants.filter((r) => r.subscriptionStatus === 'trialing' || r.subscriptionStatus === 'legacy-free').length,
     };
   }, [restaurants]);
 
@@ -189,12 +194,16 @@ export default function RestaurantsPage() {
     let result = restaurants;
 
     // 1. Filter by Tab
-    if (activeTab === 'paid') {
+    if (activeTab === 'active') {
+      result = result.filter((r) => r.isActive);
+    } else if (activeTab === 'paid') {
       result = result.filter((r) => r.subscriptionStatus === 'active');
-    } else if (activeTab === 'trial') {
-      result = result.filter((r) => r.subscriptionStatus === 'trialing');
-    } else if (activeTab === 'legacy') {
-      result = result.filter((r) => r.subscriptionStatus === 'legacy-free');
+    } else if (activeTab === 'small') {
+      result = result.filter((r) => r.subscriptionPlan === 'small');
+    } else if (activeTab === 'large') {
+      result = result.filter((r) => r.subscriptionPlan === 'large');
+    } else if (activeTab === 'free') {
+      result = result.filter((r) => r.subscriptionStatus === 'trialing' || r.subscriptionStatus === 'legacy-free');
     }
 
     // 2. Filter by Search
@@ -403,79 +412,113 @@ export default function RestaurantsPage() {
         </Dialog>
       </div>
 
-      {/* Stats / Filter Tabs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats / Filter Tabs - Scrollable for many items */}
+      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
         {/* All Tab */}
         <Card
-          className={`cursor-pointer transition-all ${
+          className={`min-w-[160px] cursor-pointer transition-all ${
             activeTab === 'all'
               ? 'border-primary shadow-md bg-panel'
               : 'border-border bg-panel hover:bg-off'
           }`}
           onClick={() => setActiveTab('all')}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted">All Restaurants</p>
-              <p className="text-2xl font-bold">{stats.all}</p>
+          <CardContent className="p-4 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-sm text-muted font-medium">All</p>
+              <Building className={`h-5 w-5 ${activeTab === 'all' ? 'text-primary' : 'text-muted'}`} />
             </div>
-            <Building className={`h-8 w-8 ${activeTab === 'all' ? 'text-primary' : 'text-muted'}`} />
+            <p className="text-2xl font-bold">{stats.all}</p>
+          </CardContent>
+        </Card>
+
+        {/* Active Tab */}
+        <Card
+          className={`min-w-[160px] cursor-pointer transition-all ${
+            activeTab === 'active'
+              ? 'border-emerald-500 shadow-md bg-panel'
+              : 'border-border bg-panel hover:bg-off'
+          }`}
+          onClick={() => setActiveTab('active')}
+        >
+          <CardContent className="p-4 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-sm text-muted font-medium">Active</p>
+              <Power className={`h-5 w-5 ${activeTab === 'active' ? 'text-emerald-500' : 'text-muted'}`} />
+            </div>
+            <p className="text-2xl font-bold">{stats.active}</p>
           </CardContent>
         </Card>
 
         {/* Paid Tab */}
         <Card
-          className={`cursor-pointer transition-all ${
+          className={`min-w-[160px] cursor-pointer transition-all ${
             activeTab === 'paid'
-              ? 'border-emerald-500 shadow-md bg-panel'
+              ? 'border-emerald-600 shadow-md bg-panel'
               : 'border-border bg-panel hover:bg-off'
           }`}
           onClick={() => setActiveTab('paid')}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted">Paid Users</p>
-              <p className="text-2xl font-bold">{stats.paid}</p>
+          <CardContent className="p-4 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-sm text-muted font-medium">Paid Users</p>
+              <CreditCard className={`h-5 w-5 ${activeTab === 'paid' ? 'text-emerald-600' : 'text-muted'}`} />
             </div>
-            <CreditCard
-              className={`h-8 w-8 ${activeTab === 'paid' ? 'text-emerald-500' : 'text-muted'}`}
-            />
+            <p className="text-2xl font-bold">{stats.paid}</p>
           </CardContent>
         </Card>
 
-        {/* Trial Tab */}
+        {/* Small Plan Tab */}
         <Card
-          className={`cursor-pointer transition-all ${
-            activeTab === 'trial'
+          className={`min-w-[160px] cursor-pointer transition-all ${
+            activeTab === 'small'
+              ? 'border-purple-500 shadow-md bg-panel'
+              : 'border-border bg-panel hover:bg-off'
+          }`}
+          onClick={() => setActiveTab('small')}
+        >
+          <CardContent className="p-4 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-sm text-muted font-medium">Small Plan</p>
+              <Target className={`h-5 w-5 ${activeTab === 'small' ? 'text-purple-500' : 'text-muted'}`} />
+            </div>
+            <p className="text-2xl font-bold">{stats.small}</p>
+          </CardContent>
+        </Card>
+
+        {/* Large Plan Tab */}
+        <Card
+          className={`min-w-[160px] cursor-pointer transition-all ${
+            activeTab === 'large'
+              ? 'border-indigo-500 shadow-md bg-panel'
+              : 'border-border bg-panel hover:bg-off'
+          }`}
+          onClick={() => setActiveTab('large')}
+        >
+          <CardContent className="p-4 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-sm text-muted font-medium">Large Plan</p>
+              <Crown className={`h-5 w-5 ${activeTab === 'large' ? 'text-indigo-500' : 'text-muted'}`} />
+            </div>
+            <p className="text-2xl font-bold">{stats.large}</p>
+          </CardContent>
+        </Card>
+
+        {/* Free Tab */}
+        <Card
+          className={`min-w-[160px] cursor-pointer transition-all ${
+            activeTab === 'free'
               ? 'border-blue-500 shadow-md bg-panel'
               : 'border-border bg-panel hover:bg-off'
           }`}
-          onClick={() => setActiveTab('trial')}
+          onClick={() => setActiveTab('free')}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted">Free Trial</p>
-              <p className="text-2xl font-bold">{stats.trial}</p>
+          <CardContent className="p-4 flex flex-col justify-between h-full">
+            <div className="flex justify-between items-start mb-2">
+              <p className="text-sm text-muted font-medium">Free / Trial</p>
+              <ShieldCheck className={`h-5 w-5 ${activeTab === 'free' ? 'text-blue-500' : 'text-muted'}`} />
             </div>
-            <Target className={`h-8 w-8 ${activeTab === 'trial' ? 'text-blue-500' : 'text-muted'}`} />
-          </CardContent>
-        </Card>
-
-        {/* Legacy Tab */}
-        <Card
-          className={`cursor-pointer transition-all ${
-            activeTab === 'legacy'
-              ? 'border-amber-500 shadow-md bg-panel'
-              : 'border-border bg-panel hover:bg-off'
-          }`}
-          onClick={() => setActiveTab('legacy')}
-        >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted">Legacy Free</p>
-              <p className="text-2xl font-bold">{stats.legacy}</p>
-            </div>
-            <Crown className={`h-8 w-8 ${activeTab === 'legacy' ? 'text-amber-500' : 'text-muted'}`} />
+            <p className="text-2xl font-bold">{stats.free}</p>
           </CardContent>
         </Card>
       </div>
