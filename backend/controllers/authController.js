@@ -354,23 +354,10 @@ const signup = async (req, res) => {
     }
 
     // Create Stripe Subscription
-    // CHECK FOR SPECIAL USER TO OVERRIDE TRIAL
-    let trialEndTimestamp = undefined;
-    
-    // Hardcoded override for testing: "1234567" gets trial until Jan 20, 8:10 AM
-    if (cleanBusinessNumber === '1234567') {
-       // Target: Jan 20, 2026 08:10:00 IST (+05:30)
-       // ISO String for that exact time
-       const targetDate = new Date('2026-01-20T08:10:00+05:30');
-       trialEndTimestamp = Math.floor(targetDate.getTime() / 1000);
-       console.log(`[Special Override] Setting trial end to ${targetDate.toString()} for user ${cleanBusinessNumber}`);
-    }
-
     const subscriptionResult = await createStripeSubscription({
       customerId: customer.id,
       priceId,
-      trialDays: 30, // Default fall back
-      trialEnd: trialEndTimestamp // Will take precedence if set
+      trialDays: 30
     });
 
     if (!subscriptionResult.success) {
