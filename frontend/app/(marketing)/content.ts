@@ -285,12 +285,12 @@ const content: Record<Language, MarketingContent> = {
         successMessage: 'Preview updated for {{number}}.',
         fallbackGuest: 'your guest',
         placeholder: '(555) 123-4567',
-        replyHint: 'Reply options: Y to confirm, N to release, STOP to opt out.',
+        // replyHint: 'Reply options: Y to confirm, N to release, STOP to opt out.',
         messages: [
           { title: 'Confirmation', body: "Thanks for joining the QuickCheck waitlist! We'll text you when your table is ready.", from: 'quickcheck' },
           { title: 'Table ready', body: 'Your table is ready at Willow & Rye. Reply Y to hold it for 15 minutes or N to release.', from: 'quickcheck' },
           { title: 'Guest reply', body: 'Y', from: 'guest' },
-          { title: 'Confirmed', body: 'Thanks for confirming! Your table is being held. Please arrive within 15 minutes.', from: 'quickcheck' },
+          // { title: 'Confirmed', body: 'Thanks for confirming! Your table is being held. Please arrive within 15 minutes.', from: 'quickcheck' },
         ],
       },
       integrations: {
@@ -629,12 +629,12 @@ const content: Record<Language, MarketingContent> = {
         successMessage: 'Prévisualisation mise à jour pour {{number}}.',
         fallbackGuest: 'votre invité',
         placeholder: '06 12 34 56 78',
-        replyHint: 'Réponses possibles : Y pour confirmer, N pour libérer, STOP pour se désinscrire.',
+        // replyHint: 'Réponses possibles : Y pour confirmer, N pour libérer, STOP pour se désinscrire.',
         messages: [
           { title: 'Confirmation', body: 'Merci d\'avoir rejoint la liste d\'attente QuickCheck ! Nous vous avertirons quand votre table sera prête.', from: 'quickcheck' },
           { title: 'Table prête', body: 'Votre table est prête. Répondez Y pour la garder 15 minutes ou N pour la libérer.', from: 'quickcheck' },
           { title: 'Réponse client', body: 'Y', from: 'guest' },
-          { title: 'Confirmé', body: 'Merci pour votre confirmation ! Votre table est réservée. Veuillez arriver dans les 15 minutes.', from: 'quickcheck' },
+          // { title: 'Confirmé', body: 'Merci pour votre confirmation ! Votre table est réservée. Veuillez arriver dans les 15 minutes.', from: 'quickcheck' },
         ],
       },
       integrations: {
