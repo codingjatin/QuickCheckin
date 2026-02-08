@@ -609,7 +609,9 @@ export function useTranslation() {
   const { language } = useI18nStore();
   
   const t = (key: keyof typeof translations.en): string => {
-    return translations[language][key] || translations.en[key] || key;
+    const translation = translations[language][key];
+    if (translation !== undefined) return translation;
+    return translations.en[key] || key;
   };
   
   return { t, language };
