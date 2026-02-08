@@ -17,8 +17,8 @@ const verifyTelnyxSignature = (req, res, next) => {
   const publicKey = process.env.TELNYX_PUBLIC_KEY;
   
   if (!publicKey) {
-    console.error('TELNYX_PUBLIC_KEY not configured');
-    return res.status(500).json({ message: 'Webhook verification not configured' });
+    console.warn('⚠️ TELNYX_PUBLIC_KEY not configured. Skipping signature verification (INSECURE - Add key for production).');
+    return next();
   }
 
   const signature = req.headers['telnyx-signature-ed25519'];

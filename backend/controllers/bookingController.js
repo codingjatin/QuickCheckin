@@ -101,7 +101,7 @@ const createBooking = async (req, res) => {
       // Format and send confirmation SMS
       const formattedPhone = formatPhoneNumber(customerPhone);
       const message = formatSmsTemplate(restaurant.smsTemplates?.confirmation || 
-        'Hi {name}, your table for {partySize} is confirmed at {restaurant}. Estimated wait: {waitTime} minutes.', {
+        'Hi {name} You’re on the waitlist at {restaurant} for a table of {partySize}.\nEstimated wait time: {waitTime} minutes. We’ll text you when your table is ready.', {
         name: customerName,
         partySize: partySize.toString(),
         restaurant: restaurant.name,
@@ -186,7 +186,7 @@ const notifyCustomer = async (req, res) => {
     // Send notification SMS using template
     const formattedPhone = formatPhoneNumber(booking.customerPhone);
     const message = formatSmsTemplate(restaurant.smsTemplates?.tableReady || 
-      'Hi {name}! Your table for {partySize} at {restaurant} is ready. Please arrive within {gracePeriod} minutes.', {
+      'Hi {name} Your table for {partySize} at {restaurant} is ready.\nPlease arrive within {gracePeriod} minutes.\nReply Y to confirm or N to cancel.', {
       name: booking.customerName,
       partySize: booking.partySize.toString(),
       restaurant: restaurant.name,
@@ -355,7 +355,7 @@ const cancelBooking = async (req, res) => {
     // Send cancellation SMS
     const formattedPhone = formatPhoneNumber(booking.customerPhone);
     const message = formatSmsTemplate(restaurant.smsTemplates?.cancelled || 
-      'Hi {name}, your reservation at {restaurant} has been cancelled. We hope to see you another time!', {
+      'Hi {name}, your booking at {restaurant} has been cancelled. We hope to see you another time!', {
       name: booking.customerName,
       restaurant: restaurant.name
     });
@@ -503,9 +503,9 @@ const handleCustomerResponse = async (req, res) => {
       booking.confirmationReceivedAt = new Date();
       await booking.save();
       
-      const message = `Thank you for confirming! We'll hold your table for ${restaurant.gracePeriodMinutes || 15} minutes. See you soon!`;
-      await sendSMS(from, message);
-      await logMessage(restaurant._id, booking._id, from, booking.customerName, 'outbound', 'response', message);
+      // CONFIRMATION SMS REMOVED AS REQUESTED
+      // No outbound SMS sent here, but logic remains (timers cancelled, status updated)
+      console.log(`[Booking] Confirmed booking ${booking._id} via SMS reply Y. No response sent.`);
       
     } else if (response === 'N' || response === 'NO') {
       // Cancel the follow-up and auto-cancel timers
@@ -517,6 +517,7 @@ const handleCustomerResponse = async (req, res) => {
         if (table) {
           table.status = 'available';
           table.currentBookingId = null;
+          table.seatedAt = null;
           await table.save();
         }
       }
@@ -524,7 +525,7 @@ const handleCustomerResponse = async (req, res) => {
       booking.status = 'cancelled';
       await booking.save();
       
-      const message = `Your booking at ${restaurant.name} has been cancelled. We hope to see you another time!`;
+      const message = `Hi ${booking.customerName}! Your table at ${restaurant.name} has been cancelled as requested.\nThanks for letting us know. You’re welcome to re-join the waitlist anytime`;
       await sendSMS(from, message);
       await logMessage(restaurant._id, booking._id, from, booking.customerName, 'outbound', 'cancelled', message);
       

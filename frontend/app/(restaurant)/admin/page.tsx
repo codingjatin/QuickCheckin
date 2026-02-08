@@ -13,6 +13,7 @@ import { Clock, Users, MessageCircle, CheckCircle, X, Phone, Loader2, Wifi, Wifi
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -31,8 +32,7 @@ export default function AdminDashboard() {
   const [selectedTableId, setSelectedTableId] = useState<string>('');
   const [showTableModal, setShowTableModal] = useState(false);
   
-  // Track bookings being removed for animation
-  const [removingBookingIds, setRemovingBookingIds] = useState<Set<string>>(new Set());
+
 
   const restaurantId = restaurantData?.id;
 
@@ -175,18 +175,10 @@ export default function AdminDashboard() {
         setSelectedBooking(null);
         setSelectedTableId('');
         
-        // Add to removing set for animation
-        setRemovingBookingIds(prev => new Set(prev).add(bookingId));
-        
-        // Wait for animation then refresh data
-        setTimeout(() => {
-          setRemovingBookingIds(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(bookingId);
-            return newSet;
-          });
-          fetchData();
-        }, 400);
+        // Refresh data immediately, animation handled by AnimatePresence
+        setSelectedBooking(null);
+        setSelectedTableId('');
+        fetchData();
       }
     } catch (error) {
       toast.error(t('failedToSeat'));
@@ -505,111 +497,114 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <div className="space-y-4">
-              {activeBookings.map((booking, index) => {
-                const bookingId = booking._id || booking.id;
-                const isActionLoading = actionLoading === bookingId;
+              <AnimatePresence mode="popLayout">
+                {activeBookings.map((booking, index) => {
+                  const bookingId = booking._id || booking.id;
+                  const isActionLoading = actionLoading === bookingId;
 
-                return (
-                  <div
-                    key={bookingId}
-                    className={`flex items-center justify-between p-4 border border-border rounded-lg hover:bg-off transition-all duration-300 ease-out ${
-                      removingBookingIds.has(bookingId) 
-                        ? 'opacity-0 transform -translate-x-full max-h-0 py-0 my-0 border-0 overflow-hidden' 
-                        : 'opacity-100 transform translate-x-0 max-h-40'
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-primary">{index + 1}</span>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium">{booking.customerName}</h3>
-                          {booking.isCustomParty && (
-                            <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs">
-                              {t('customParty')}
-                            </Badge>
-                          )}
+                  return (
+                    <motion.div
+                      key={bookingId}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0, overflow: 'hidden' }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-off bg-panel"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-semibold text-primary">{index + 1}</span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
-                          <span className="flex items-center">
-                            <Users className="h-4 w-4 mr-1" />
-                            {t('partyOf')} {booking.partySize}
-                          </span>
-                          <span className="flex items-center">
-                            <Phone className="h-4 w-4 mr-1" />
-                            {booking.customerPhone}
-                          </span>
-                          <span className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {formatDistanceToNow(new Date(booking.checkInTime || booking.createdAt), { addSuffix: true, locale: language === 'fr' ? fr : undefined })}
-                          </span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium">{booking.customerName}</h3>
+                            {booking.isCustomParty && (
+                              <Badge className="bg-amber-100 text-amber-800 border-amber-300 text-xs">
+                                {t('customParty')}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
+                            <span className="flex items-center">
+                              <Users className="h-4 w-4 mr-1" />
+                              {t('partyOf')} {booking.partySize}
+                            </span>
+                            <span className="flex items-center">
+                              <Phone className="h-4 w-4 mr-1" />
+                              {booking.customerPhone}
+                            </span>
+                            <span className="flex items-center">
+                              <Clock className="h-4 w-4 mr-1" />
+                              {formatDistanceToNow(new Date(booking.checkInTime || booking.createdAt), { addSuffix: true, locale: language === 'fr' ? fr : undefined })}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                      <Badge className={`${getStatusColor(booking.status)} rounded-md`}>
-                        {getStatusText(booking.status)}
-                      </Badge>
+                      <div className="flex items-center gap-3">
+                        <Badge className={`${getStatusColor(booking.status)} rounded-md`}>
+                          {getStatusText(booking.status)}
+                        </Badge>
 
-                      {booking.status === 'waiting' && (
-                        <Button
-                          size="sm"
-                          className="bg-primary hover:bg-primary-600 text-white"
-                          onClick={() => handleNotify(booking)}
-                          disabled={isActionLoading}
-                        >
-                          {isActionLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <MessageCircle className="h-4 w-4 mr-1" />
-                              {t('notify') || 'Table Ready'}
-                            </>
-                          )}
-                        </Button>
-                      )}
+                        {booking.status === 'waiting' && (
+                          <Button
+                            size="sm"
+                            className="bg-primary hover:bg-primary-600 text-white"
+                            onClick={() => handleNotify(booking)}
+                            disabled={isActionLoading}
+                          >
+                            {isActionLoading ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <MessageCircle className="h-4 w-4 mr-1" />
+                                {t('notify') || 'Table Ready'}
+                              </>
+                            )}
+                          </Button>
+                        )}
 
-                      {['notified', 'confirmed'].includes(booking.status) && (
-                        <Button
-                          size="sm"
-                          onClick={() => openTableSelector(booking)}
-                          className="bg-success hover:bg-success/90 text-white"
-                          disabled={isActionLoading}
-                        >
-                          {isActionLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              {t('markSeated') || 'Mark Seated'}
-                            </>
-                          )}
-                        </Button>
-                      )}
+                        {['notified', 'confirmed'].includes(booking.status) && (
+                          <Button
+                            size="sm"
+                            onClick={() => openTableSelector(booking)}
+                            className="bg-success hover:bg-success/90 text-white"
+                            disabled={isActionLoading}
+                          >
+                            {isActionLoading ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                {t('markSeated') || 'Mark Seated'}
+                              </>
+                            )}
+                          </Button>
+                        )}
 
-                      {['waiting', 'notified', 'confirmed'].includes(booking.status) && (
-                        <Button 
-                          size="sm" 
-                          variant="destructive" 
-                          onClick={() => handleCancel(booking)}
-                          disabled={isActionLoading}
-                        >
-                          {isActionLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <X className="h-4 w-4 mr-1" />
-                              {t('cancel') || 'Cancel'}
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                        {['waiting', 'notified', 'confirmed'].includes(booking.status) && (
+                          <Button 
+                            size="sm" 
+                            variant="destructive" 
+                            onClick={() => handleCancel(booking)}
+                            disabled={isActionLoading}
+                          >
+                            {isActionLoading ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <>
+                                <X className="h-4 w-4 mr-1" />
+                                {t('cancel') || 'Cancel'}
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             </div>
           )}
         </CardContent>

@@ -66,7 +66,7 @@ const startNotificationTimers = (bookingId, app) => {
         const restaurant = booking.restaurantId;
         const formattedPhone = formatPhoneNumber(booking.customerPhone);
         
-        const message = `Hi ${booking.customerName}! We're still holding your table. Are you on your way? Reply Y to confirm or N to cancel.`;
+        const message = `Hi ${booking.customerName} We’re still holding your table at ${restaurant.name}.\nPlease arrive within the next 7 minutes or your table may be released.\nReply Y to confirm or N to cancel.`;
         
         await sendSMS(formattedPhone, message);
         
@@ -137,7 +137,7 @@ const startNotificationTimers = (bookingId, app) => {
         
         // Send cancellation SMS
         const formattedPhone = formatPhoneNumber(booking.customerPhone);
-        const message = `Your table at ${restaurant.name} has been released as we didn't hear back from you. Please re-join the waitlist if you'd still like to dine with us.`;
+        const message = `Hi ${booking.customerName}\nYour table at ${restaurant.name} has been released because we did not see you arrive within the confirmed time window.\nPlease re-join the waitlist if you’d still like to dine with us.`;
         
         await sendSMS(formattedPhone, message);
         
