@@ -135,26 +135,28 @@ export function LiveDemoSection() {
                       {m.title}
                     </div>
 
-                    {/* message bubble */}
-                    <div
-                      className={[
-                        'relative mt-2 max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm',
-                        isGuest
-                          ? 'self-end rounded-br-md bg-primary text-white'
-                          : 'self-start rounded-bl-md border border-border bg-white text-ink',
-                      ].join(' ')}
-                    >
-                      <p>{m.body}</p>
+                    {/* message bubble - only show if there is body text */}
+                    {m.body ? (
+                      <div
+                        className={[
+                          'relative mt-2 max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm',
+                          isGuest
+                            ? 'self-end rounded-br-md bg-primary text-white'
+                            : 'self-start rounded-bl-md border border-border bg-white text-ink',
+                        ].join(' ')}
+                      >
+                        <p>{m.body}</p>
 
-                      {/* reply hint (only show on last bubble if available and if quickcheck message) */}
-                      {idx === live.messages.length - 1 && live.replyHint && !isGuest ? (
-                        <div
-                          className='mt-3 rounded-lg px-3 py-2 text-[11px] bg-off/70 text-muted border border-border/70'
-                        >
-                          {live.replyHint}
-                        </div>
-                      ) : null}
-                    </div>
+                        {/* reply hint (only show on last bubble if available and if quickcheck message) */}
+                        {idx === live.messages.length - 1 && live.replyHint && !isGuest ? (
+                          <div
+                            className='mt-3 rounded-lg px-3 py-2 text-[11px] bg-off/70 text-muted border border-border/70'
+                          >
+                            {live.replyHint}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                   )
                 })}

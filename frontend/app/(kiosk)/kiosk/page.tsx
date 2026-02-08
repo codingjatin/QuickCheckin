@@ -639,14 +639,16 @@ function KioskContent() {
                       </div>
                       
                       {/* Incoming Message 2 */}
-                      <div className="flex justify-start">
-                        <div className="bg-ink/10 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[85%]">
-                          <p className="text-sm text-ink">
-                            {t('holdTableMessage')}
-                          </p>
-                          <p className="text-[10px] text-muted mt-1">{t('now')}</p>
+                      {t('holdTableMessage') && (
+                        <div className="flex justify-start">
+                          <div className="bg-ink/10 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[85%]">
+                            <p className="text-sm text-ink">
+                              {t('holdTableMessage')}
+                            </p>
+                            <p className="text-[10px] text-muted mt-1">{t('now')}</p>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                     
                     {/* Input Area */}

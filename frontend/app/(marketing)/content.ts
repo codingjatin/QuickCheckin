@@ -290,7 +290,7 @@ const content: Record<Language, MarketingContent> = {
           { title: 'Confirmation', body: "Thanks for joining the QuickCheck waitlist! We'll text you when your table is ready.", from: 'quickcheck' },
           { title: 'Table ready', body: 'Your table is ready at Willow & Rye. Reply Y to hold it for 15 minutes or N to release.', from: 'quickcheck' },
           { title: 'Guest reply', body: 'Y', from: 'guest' },
-          // { title: 'Confirmed', body: 'Thanks for confirming! Your table is being held. Please arrive within 15 minutes.', from: 'quickcheck' },
+          { title: 'Confirmed', body: '', from: 'quickcheck' },
         ],
       },
       integrations: {
@@ -634,7 +634,7 @@ const content: Record<Language, MarketingContent> = {
           { title: 'Confirmation', body: 'Merci d\'avoir rejoint la liste d\'attente QuickCheck ! Nous vous avertirons quand votre table sera prête.', from: 'quickcheck' },
           { title: 'Table prête', body: 'Votre table est prête. Répondez Y pour la garder 15 minutes ou N pour la libérer.', from: 'quickcheck' },
           { title: 'Réponse client', body: 'Y', from: 'guest' },
-          // { title: 'Confirmé', body: 'Merci pour votre confirmation ! Votre table est réservée. Veuillez arriver dans les 15 minutes.', from: 'quickcheck' },
+          { title: 'Confirmé', body: '', from: 'quickcheck' },
         ],
       },
       integrations: {
