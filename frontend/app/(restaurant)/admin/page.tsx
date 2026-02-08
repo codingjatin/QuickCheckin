@@ -508,8 +508,21 @@ export default function AdminDashboard() {
                       layout
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0, overflow: 'hidden' }}
-                      transition={{ duration: 0.2 }}
+                      exit={{ 
+                        opacity: 0, 
+                        scale: 0.9, 
+                        backgroundColor: '#fee2e2', // red-100
+                        x: -100,
+                        height: 0, 
+                        marginBottom: 0, 
+                        overflow: 'hidden' 
+                      }}
+                      transition={{ 
+                        duration: 0.5, // Slower duration
+                        type: "spring",
+                        stiffness: 100,
+                        damping: 15
+                      }}
                       className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-off bg-panel"
                     >
                       <div className="flex items-center gap-4">
