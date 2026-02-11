@@ -37,10 +37,16 @@ export const translations = {
     heroSubtitle: 'Self check-in kiosks, instant SMS notifications, and real-time dashboards that transform your restaurant\'s customer experience.',
     tryKioskDemo: 'Try Kiosk Demo',
     viewAdminDashboard: 'View Admin Dashboard',
+    liveQueueFeed: 'Live Queue Feed',
+    simulatedPreview: 'Simulated preview only — no SMS is sent.',
+    smsDemo: 'SMS Demo',
+    previewFor: 'Preview for:',
     
     // Features
     featuresTitle: 'Everything You Need to Manage Waitlists',
     featuresSubtitle: 'From customer check-in to table management, QuickCheck handles it all seamlessly.',
+    coreModule: 'Core Module',
+    proReady: 'Pro-Ready',
     selfCheckIn: 'Self Check-In',
     selfCheckInDesc: 'Customers can join the waitlist themselves with our easy-to-use kiosk interface.',
     smsNotifications: 'SMS Notifications',
@@ -312,8 +318,12 @@ export const translations = {
     // Auth
     sending: 'Sending...',
     otpSmsNotice: 'You\'ll receive a 6-digit OTP via SMS to verify your number.',
+    copyright: '© 2025 QuickCheck. All rights reserved.',
+    followUs: 'Follow Us',
   },
   fr: {
+    copyright: '© 2025 QuickCheck. Tous droits réservés.',
+    followUs: 'Suivez-nous',
     // Navigation
     home: 'Accueil',
     kioskDemo: 'Démo Kiosque',
@@ -327,10 +337,16 @@ export const translations = {
     heroSubtitle: 'Kiosques d\'enregistrement automatique, notifications SMS instantanées et tableaux de bord en temps réel qui transforment l\'expérience client de votre restaurant.',
     tryKioskDemo: 'Essayer la Démo Kiosque',
     viewAdminDashboard: 'Voir le Tableau de Bord Admin',
+    liveQueueFeed: 'File d’attente en direct',
+    simulatedPreview: 'Aperçu simulé uniquement — aucun SMS n\'est envoyé.',
+    smsDemo: 'Démo SMS',
+    previewFor: 'Aperçu pour :',
     
     // Features
     featuresTitle: 'Tout ce dont vous avez besoin pour gérer les listes d\'attente',
     featuresSubtitle: 'De l\'enregistrement client à la gestion des tables, QuickCheck gère tout de manière transparente.',
+    coreModule: 'Module principal',
+    proReady: 'Prêt pour Pro',
     selfCheckIn: 'Enregistrement Automatique',
     selfCheckInDesc: 'Les clients peuvent rejoindre la liste d\'attente eux-mêmes avec notre interface de kiosque facile à utiliser.',
     smsNotifications: 'Notifications SMS',
@@ -455,8 +471,8 @@ export const translations = {
     stayNearby: 'Veuillez rester à proximité. Cela prend généralement environ 5 minutes.',
     restaurant: 'Restaurant',
     sms: 'SMS',
-    tableReadyMessage: 'Votre table est prête. Veuillez arriver dans 15 min. Répondez Y pour confirmer ou N pour annuler.',
-    confirmationReply: 'Y',
+    tableReadyMessage: 'Votre table est prête. Répondez O pour la garder 15 minutes ou N pour la libérer.',
+    confirmationReply: 'O',
     readLabel: 'Lu',
     holdTableMessage: '',
     now: 'Maintenant',

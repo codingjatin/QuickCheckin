@@ -501,7 +501,7 @@ const content: Record<Language, MarketingContent> = {
             description: 'For restaurant groups with multiple locations.',
             highlight: 'Volume discounts available',
             features: [
-              'All features from Small/Large plans',
+              'Toutes les fonctionnalités des forfaits Petit et Grand',
               'Multiple location management',
               'Centralized billing',
               'Volume-based pricing',
@@ -632,8 +632,8 @@ const content: Record<Language, MarketingContent> = {
         // replyHint: 'Réponses possibles : Y pour confirmer, N pour libérer, STOP pour se désinscrire.',
         messages: [
           { title: 'Confirmation', body: 'Merci d\'avoir rejoint la liste d\'attente QuickCheck ! Nous vous avertirons quand votre table sera prête.', from: 'quickcheck' },
-          { title: 'Table prête', body: 'Votre table est prête. Répondez Y pour la garder 15 minutes ou N pour la libérer.', from: 'quickcheck' },
-          { title: 'Réponse client', body: 'Y', from: 'guest' },
+          { title: 'Table prête', body: 'Votre table est prête. Répondez O pour la garder 15 minutes ou N pour la libérer.', from: 'quickcheck' },
+          { title: 'Réponse client', body: 'O', from: 'guest' },
           { title: 'Confirmé', body: '', from: 'quickcheck' },
         ],
       },
@@ -676,15 +676,16 @@ const content: Record<Language, MarketingContent> = {
           'Choisissez en fonction de la capacité de votre restaurant. Les deux forfaits incluent toutes les fonctionnalités, SMS illimités et 1 mois d\'essai gratuit.',
         plans: [
           {
-            name: 'Small',
+            name: 'Petit',
             price: '299 $',
             cadence: 'par mois',
             description: 'Pour les restaurants de 50 places ou moins.',
             highlight: 'Toutes fonctionnalités incluses',
+            featured: false,
             cta: { label: 'Essai gratuit', href: '/pricing' },
           },
           {
-            name: 'Large',
+            name: 'Grand',
             price: '499 $',
             cadence: 'par mois',
             description: 'Pour les restaurants de 51 places ou plus.',
@@ -747,7 +748,7 @@ const content: Record<Language, MarketingContent> = {
             summary: 'Enregistrement en libre-service qui informe les clients de l\'arrivée à l\'installation.',
             items: [
               { icon: Tablet, title: 'Kiosque libre-service', description: 'Les clients rejoignent la liste d\'attente avec leur taille de groupe, nom et téléphone.' },
-              { icon: UserRound, title: 'Walk-ins bienvenus', description: 'Ajoutez rapidement les clients sans réservation à la file.' },
+              { icon: UserRound, title: 'Clients sans réservation', description: 'Ajoutez rapidement les clients sans réservation à la file.' },
               { icon: UserCheck, title: 'Gestion des groupes', description: 'Associez automatiquement les groupes aux tables de taille appropriée.' },
             ],
           },
@@ -755,7 +756,7 @@ const content: Record<Language, MarketingContent> = {
             category: 'Messagerie SMS',
             summary: 'SMS bidirectionnels qui informent les clients et simplifient le travail du personnel.',
             items: [
-              { icon: MailCheck, title: 'Notifications automatiques', description: 'Alertes table prête envoyées automatiquement quand vous notifiez un client.' },
+              { icon: MailCheck, title: 'Notifications automatiques', description: 'Alertes “table prête” envoyées automatiquement lorsque vous informez un client.' },
               { icon: BellRing, title: 'Rappels intelligents', description: 'Messages de suivi si les clients ne répondent pas dans le délai défini.' },
               { icon: ShieldCheck, title: 'Conformité désinscription', description: 'Gestion automatique du mot-clé STOP pour la conformité TCPA.' },
             ],
@@ -766,22 +767,22 @@ const content: Record<Language, MarketingContent> = {
             items: [
               { icon: Timer, title: 'Estimations de temps d\'attente', description: 'Calculs automatiques du temps d\'attente basés sur la rotation des tables.' },
               { icon: LayoutDashboard, title: 'Tableau des statuts', description: 'Voyez toutes les tables d\'un coup d\'œil - disponible, occupée ou en nettoyage.' },
-              { icon: Settings2, title: 'Ajustements faciles', description: 'Le personnel peut modifier les statuts, marquer les absences ou installer les walk-ins instantanément.' },
+              { icon: Settings2, title: 'Ajustements faciles', description: 'Le personnel peut modifier les statuts, marquer les absences ou installer les clients sans réservation instantanément.' },
             ],
           },
           {
             category: 'Tableau de bord & analyses',
             summary: 'Comprenez vos opérations avec des données en temps réel.',
             items: [
-              { icon: Monitor, title: 'Tableau de bord live', description: 'Surveillez les temps d\'attente, la longueur de la file et les statuts des tables.' },
-              { icon: BarChart3, title: 'Insights performance', description: 'Suivez l\'efficacité de l\'installation et identifiez les heures de pointe.' },
+              { icon: Monitor, title: 'Tableau de bord en temps réel', description: 'Surveillez les temps d\'attente, la longueur de la file et les statuts des tables.' },
+              { icon: BarChart3, title: 'Indicateurs de performance', description: 'Suivez l\'efficacité de l\'installation et identifiez les heures de pointe.' },
               { icon: Building2, title: 'Historique des messages', description: 'Consultez toutes les conversations SMS avec les clients.' },
             ],
           },
         ],
         simplePricing: {
           eyebrow: 'Tarification simple',
-          title: 'Toutes les fonctionnalités, chaque forfait',
+          title: 'Toutes les fonctionnalités incluses dans chaque forfait',
           description: 'Les forfaits Petit et Grand incluent toutes les fonctionnalités. Choisissez selon votre capacité d\'accueil : 50 places ou moins, ou 51 places et plus.',
         },
         planHighlights: [
@@ -803,7 +804,7 @@ const content: Record<Language, MarketingContent> = {
         },
         plans: [
           {
-            name: 'Small',
+            name: 'Petit',
             price: '299 $',
             cadence: 'par mois',
             description: 'Pour les restaurants de 50 places ou moins.',
@@ -821,7 +822,7 @@ const content: Record<Language, MarketingContent> = {
             cta: { label: 'Essai gratuit', href: '/signup' },
           },
           {
-            name: 'Large',
+            name: 'Grand',
             price: '499 $',
             cadence: 'par mois',
             description: 'Pour les restaurants de 51 places ou plus.',
@@ -845,7 +846,7 @@ const content: Record<Language, MarketingContent> = {
             description: 'Pour les groupes de restauration avec plusieurs établissements.',
             highlight: 'Remises volume disponibles',
             features: [
-              'Toutes fonctionnalités Small/Large',
+              'Toutes les fonctionnalités des forfaits Petit et Grand',
               'Gestion multi-établissements',
               'Facturation centralisée',
               'Tarification basée sur le volume',

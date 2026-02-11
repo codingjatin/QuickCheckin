@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Facebook, Instagram, Linkedin } from "lucide-react"; // social icons
 
 import { useFooter } from "../content";
+import { useTranslation } from "@/lib/i18n";
 
 type LinkItem = { label: string; href: string };
 
@@ -24,6 +25,7 @@ function isValidLink(link: LinkItem) {
 }
 
 export function FooterSection() {
+  const { t } = useTranslation();
   const { tagline, description, columns, legal, copyright } = useFooter();
 
   // Remove the "Resources" column and re-map
@@ -94,7 +96,7 @@ export function FooterSection() {
           <div>
             {/* --- Social Media Links --- */}
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
-              Follow Us
+              {t('followUs')}
             </h3>
             <div className="flex items-center gap-4 text-muted mt-4">
               <Link

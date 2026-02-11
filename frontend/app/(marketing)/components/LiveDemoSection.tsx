@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useMarketingContent } from '../content'
+import { useTranslation } from '@/lib/i18n'
 
 export function LiveDemoSection() {
+  const { t } = useTranslation()
   const { landing } = useMarketingContent()
   const live = landing.liveDemo
 
@@ -51,7 +53,7 @@ export function LiveDemoSection() {
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-primary shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/50">
             <Smartphone className="h-3.5 w-3.5" />
-            SMS Demo
+            {t('smsDemo')}
           </div>
 
           <h2 className="font-display text-3xl font-bold text-ink sm:text-4xl">
@@ -106,7 +108,7 @@ export function LiveDemoSection() {
 
           {/* small note showing who the preview is for */}
           <p className="text-xs text-muted">
-            Preview for: <span className="font-semibold text-ink">{replacement}</span>
+            {t('previewFor')} <span className="font-semibold text-ink">{replacement}</span>
           </p>
         </div>
 
@@ -169,7 +171,7 @@ export function LiveDemoSection() {
 
           {/* tiny legend */}
           <div className="mt-4 text-center text-xs text-muted">
-            Simulated preview only — no SMS is sent.
+            {t('simulatedPreview')}
           </div>
         </div>
       </div>

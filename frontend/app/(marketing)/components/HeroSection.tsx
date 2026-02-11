@@ -6,7 +6,10 @@ import { Sparkles } from "lucide-react";
 
 import { useHero } from "../content";
 
+import { useTranslation } from "@/lib/i18n";
+
 export function HeroSection() {
+  const { t } = useTranslation();
   const { eyebrow, title, description, primaryCta, secondaryCta } = useHero();
 
   return (
@@ -60,7 +63,7 @@ export function HeroSection() {
           </div>
           <div className="absolute -top-6 right-6 flex items-center gap-3 rounded-full border border-border bg-panel px-4 py-2 shadow-soft">
             <span className="inline-flex h-2.5 w-2.5 rounded-full bg-success" aria-hidden />
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted">Live queue feed</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted">{t('liveQueueFeed')}</span>
           </div>
         </div>
       </div>

@@ -4,11 +4,14 @@ import { useMemo } from "react";
 import { useMarketingContent } from "../content";
 import { SectionHeading } from "./SectionHeading";
 
+import { useTranslation } from "@/lib/i18n";
+
 /**
  * Fancy feature tiles with gradient frames, soft glass panel,
  * and subtle parallax hover. Fully responsive & a11y-friendly.
  */
 export function FeaturesSection() {
+  const { t } = useTranslation();
   const { landing } = useMarketingContent();
   const { title, description, highlights } = landing.features;
 
@@ -83,7 +86,7 @@ export function FeaturesSection() {
                     <span className="h-1 w-8 rounded-full bg-gradient-to-r from-primary/70 to-secondary/70" />
                     <span className="select-none">
                       {/* decorative label (no link) */}
-                      {i % 2 === 0 ? "Core module" : "Pro-ready"}
+                      {i % 2 === 0 ? t('coreModule').toUpperCase() : t('proReady').toUpperCase()}
                     </span>
                   </div>
                 </article>
