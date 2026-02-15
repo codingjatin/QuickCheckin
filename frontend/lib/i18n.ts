@@ -30,7 +30,7 @@ export const translations = {
     RestaurantLogin: 'Restaurant Login',
     login: 'Login',
     logout: 'Logout',
-    
+
     // Landing Page
     heroTitle: 'Smart Digital Waitlists for',
     heroTitleHighlight: 'Modern Restaurants',
@@ -41,7 +41,7 @@ export const translations = {
     simulatedPreview: 'Simulated preview only — no SMS is sent.',
     smsDemo: 'SMS Demo',
     previewFor: 'Preview for:',
-    
+
     // Features
     featuresTitle: 'Everything You Need to Manage Waitlists',
     featuresSubtitle: 'From customer check-in to table management, QuickCheck handles it all seamlessly.',
@@ -55,7 +55,7 @@ export const translations = {
     realTimeDashboardDesc: 'Manage your entire waitlist and table status from one comprehensive dashboard.',
     smartAnalytics: 'Smart Analytics',
     smartAnalyticsDesc: 'Track wait times, customer satisfaction, and optimize your restaurant\'s flow.',
-    
+
     // How It Works
     howItWorksTitle: 'How It Works',
     howItWorksSubtitle: 'Three simple steps to revolutionize your restaurant\'s waitlist experience.',
@@ -65,10 +65,10 @@ export const translations = {
     automaticNotificationsDesc: 'When tables are ready, customers receive instant SMS notifications with response confirmations.',
     seamlessSeating: 'Seamless Seating',
     seamlessSeatingDesc: 'Staff manage the entire process through an intuitive dashboard with real-time updates and analytics.',
-    
+
     // Testimonials
     testimonialsTitle: 'Loved by Restaurant Owners',
-    
+
     // Auth
     welcomeToQuickCheck: 'Welcome to QuickCheck',
     enterMobileNumber: 'Enter your mobile number to get started',
@@ -90,7 +90,7 @@ export const translations = {
     accessing: 'Accessing:',
     panel: 'Panel',
     didntReceiveCode: 'Didn\'t receive the code? Resend',
-    
+
     // Kiosk
     welcomeJoinWaitlist: 'Welcome! Join the waitlist for',
     loggedInAs: 'Logged in as:',
@@ -115,13 +115,13 @@ export const translations = {
     currentWaitTime: 'Current wait time',
     minutes: 'minutes',
     addAnotherParty: 'Add Another Party',
-    
+
     // SMS Preview
     smsPreview: 'SMS Preview',
     tableReadyNotification: 'Table Ready Notification',
     customerResponse: 'Customer Response',
     reminderIfNoResponse: 'Reminder (if no response)',
-    
+
     // Admin Dashboard
     totalWaiting: 'Total Waiting',
     activeInQueue: 'Active in queue',
@@ -144,7 +144,7 @@ export const translations = {
     seated: 'Seated',
     cancelled: 'Cancelled',
     noShow: 'No Show',
-    
+
     // Common
     pleaseEnterName: 'Please enter your name',
     pleaseEnterPhone: 'Please enter your phone number',
@@ -155,7 +155,7 @@ export const translations = {
     verifying: 'Verifying...',
     invalidOtp: 'Invalid OTP. Please try again.',
     pleaseEnterCompleteOtp: 'Please enter the complete 6-digit OTP',
-    
+
     // Kiosk - Custom Party
     customPartySize: 'Custom Party Size (Larger Groups)',
     largePartyRequest: 'Large Party Request',
@@ -179,7 +179,7 @@ export const translations = {
     iMessage: 'iMessage',
     kioskTablesNotSetUp: 'Tables Not Set Up',
     pleaseContactStaff: 'Please contact staff for assistance or check back later.',
-    
+
     // Admin Navigation
     waitlist: 'Waitlist',
     tables: 'Tables',
@@ -188,7 +188,7 @@ export const translations = {
     settings: 'Settings',
     restaurantAdmin: 'Restaurant Admin',
     restaurantPanel: 'Restaurant Panel',
-    
+
     // Admin Dashboard Extended
     liveUpdatesActive: 'Live updates active',
     connecting: 'Connecting...',
@@ -217,7 +217,7 @@ export const translations = {
     failedToSeat: 'Failed to mark as seated',
     failedToCancel: 'Failed to cancel booking',
     pleaseSelectTable: 'Please select a table',
-    
+
     // Admin Settings
     restaurantSettings: 'Restaurant Settings',
     manageConfiguration: 'Manage your restaurant\'s configuration and preferences',
@@ -238,7 +238,7 @@ export const translations = {
     planUsageSmallLimit: 'Plan Usage (Small Limit: 50 seats)',
     needMoreSeats: 'Need more seats?',
     upgradeToLargeUnlimited: 'Upgrade to Large Plan for unlimited capacity.',
-    
+
     // Admin Tables
     tableManagement: 'Table Management',
     monitorSeatingCapacity: 'Monitor and manage your restaurant\'s seating capacity',
@@ -264,7 +264,7 @@ export const translations = {
     failedToSeatWalkIn: 'Failed to seat walk-in',
     tableUnavailable: 'Table Unavailable',
     unavailable: 'Unavailable',
-    
+
     // Admin Messages
     messageCenter: 'Message Center',
     viewSmsComms: 'View SMS communications with customers',
@@ -280,7 +280,7 @@ export const translations = {
     selectConversation: 'Select a conversation',
     noConversationSelected: 'No conversation selected',
     selectCustomerToView: 'Select a customer from the list to view their message history',
-    
+
     // Subscription
     subscriptionManagement: 'Subscription Management',
     paymentFailed: 'Payment Failed - Update your payment method to avoid service interruption',
@@ -314,12 +314,25 @@ export const translations = {
     updateFailed: 'Update failed',
     confirmUpgrade: 'Upgrade to Large plan? You will be charged the prorated difference immediately.',
     confirmDowngrade: 'Downgrade to Small plan? This will take effect at your next billing cycle.',
-    
+
     // Auth
     sending: 'Sending...',
     otpSmsNotice: 'You\'ll receive a 6-digit OTP via SMS to verify your number.',
     copyright: '© 2025 QuickCheck. All rights reserved.',
     followUs: 'Follow Us',
+    soundOn: 'Sound on (click to test)',
+    clickToEnableSound: 'Click to enable sound',
+    planSmall: 'Small',
+    planLarge: 'Large',
+    statusTrialing: 'Trialing',
+    statusActive: 'Active',
+    statusPastDue: 'Past Due',
+    eventRefunded: 'Refunded',
+    eventPaymentSucceeded: 'Payment Succeeded',
+    eventCreated: 'Created',
+    eventTrialStarted: 'Trial Started',
+    eventUpgraded: 'Upgraded',
+    eventDowngraded: 'Downgraded',
   },
   fr: {
     copyright: '© 2025 QuickCheck. Tous droits réservés.',
@@ -330,7 +343,7 @@ export const translations = {
     RestaurantLogin: 'Connexion au restaurant',
     login: 'Connexion',
     logout: 'Déconnexion',
-    
+
     // Landing Page
     heroTitle: 'Listes d\'attente numériques intelligentes pour',
     heroTitleHighlight: 'Restaurants Modernes',
@@ -341,7 +354,7 @@ export const translations = {
     simulatedPreview: 'Aperçu simulé uniquement — aucun SMS n\'est envoyé.',
     smsDemo: 'Démo SMS',
     previewFor: 'Aperçu pour :',
-    
+
     // Features
     featuresTitle: 'Tout ce dont vous avez besoin pour gérer les listes d\'attente',
     featuresSubtitle: 'De l\'enregistrement client à la gestion des tables, QuickCheck gère tout de manière transparente.',
@@ -355,7 +368,7 @@ export const translations = {
     realTimeDashboardDesc: 'Gérez toute votre liste d\'attente et le statut des tables depuis un tableau de bord complet.',
     smartAnalytics: 'Analyses Intelligentes',
     smartAnalyticsDesc: 'Suivez les temps d\'attente, la satisfaction client et optimisez le flux de votre restaurant.',
-    
+
     // How It Works
     howItWorksTitle: 'Comment ça marche',
     howItWorksSubtitle: 'Trois étapes simples pour révolutionner l\'expérience de liste d\'attente de votre restaurant.',
@@ -365,39 +378,39 @@ export const translations = {
     automaticNotificationsDesc: 'Quand les tables sont prêtes, les clients reçoivent des notifications SMS instantanées avec confirmations de réponse.',
     seamlessSeating: 'Placement Transparent',
     seamlessSeatingDesc: 'Le personnel gère tout le processus via un tableau de bord intuitif avec mises à jour en temps réel et analyses.',
-    
+
     // Testimonials
     testimonialsTitle: 'Aimé par les Propriétaires de Restaurants',
-    
+
     // Auth
     welcomeToQuickCheck: 'Bienvenue sur QuickCheck',
     enterMobileNumber: 'Entrez votre numéro de mobile pour commencer',
-    mobileNumber: 'Numéro de Mobile',
+    mobileNumber: 'Numéro de téléphone',
     accessType: 'Type d\'Accès',
     selectAccessType: 'Sélectionnez votre type d\'accès',
-    guestJoinWaitlist: 'Invité - Rejoindre la Liste d\'Attente',
-    adminRestaurantDashboard: 'Admin - Tableau de Bord Restaurant',
+    guestJoinWaitlist: 'Invité – Rejoindre la liste d\'attente',
+    adminRestaurantDashboard: 'Admin – Tableau de bord du restaurant',
     continue: 'Continuer',
-    verifyYourNumber: 'Vérifiez Votre Numéro',
+    verifyYourNumber: 'Vérifiez votre numéro',
     weveSentCode: 'Nous avons envoyé un code à 6 chiffres à',
-    enterOtpCode: 'Entrez le Code OTP',
+    enterOtpCode: 'Entrez le code à 6 chiffres',
     demoMode: 'Mode Démo',
     yourOtpIs: 'Votre OTP est :',
     verifyAndContinue: 'Vérifier et Continuer',
-    backToLogin: 'Retour à la Connexion',
+    backToLogin: 'Retour à la connexion',
     noAccount: "Vous n'avez pas de compte ?",
     signUp: 'S\'inscrire',
     accessing: 'Accès :',
-    panel: 'Panneau',
+    panel: 'Liste d\'attente',
     didntReceiveCode: 'Vous n\'avez pas reçu le code ? Renvoyer',
-    
+
     // Kiosk
     welcomeJoinWaitlist: 'Bienvenue ! Rejoignez la liste d\'attente de',
     loggedInAs: 'Connecté en tant que :',
     howManyPeople: 'Combien de personnes ?',
     selectPartySize: 'Sélectionnez la taille de votre groupe pour commencer',
     yourInformation: 'Vos informations',
-    wellTextYou: 'Nous vous enverrons un SMS quand votre table sera prête',
+    wellTextYou: 'Nous vous enverrons un SMS lorsque votre table sera prête.',
     yourName: 'Votre nom',
     enterYourName: 'Entrez votre nom',
     phoneNumber: 'Numéro de téléphone',
@@ -408,20 +421,20 @@ export const translations = {
     people: 'personnes',
     name: 'Nom :',
     phone: 'Téléphone :',
-    editDetails: 'Modifier les Détails',
-    joinWaitlist: 'Rejoindre la Liste d\'Attente',
+    editDetails: 'Modifier les détails',
+    joinWaitlist: 'Rejoindre la liste d\'attente',
     youreInLine: 'Vous êtes en file !',
-    weveSentTextMessage: 'Nous vous avons envoyé un message texte. Gardez votre téléphone à portée de main !',
+    weveSentTextMessage: 'Nous vous avons envoyé un SMS.',
     currentWaitTime: 'Temps d\'attente actuel',
     minutes: 'minutes',
-    addAnotherParty: 'Ajouter un Autre Groupe',
-    
+    addAnotherParty: 'Ajouter un autre groupe',
+
     // SMS Preview
     smsPreview: 'Aperçu SMS',
     tableReadyNotification: 'Notification Table Prête',
     customerResponse: 'Réponse Client',
     reminderIfNoResponse: 'Rappel (si pas de réponse)',
-    
+
     // Admin Dashboard
     totalWaiting: 'Total en Attente',
     activeInQueue: 'Actifs en file',
@@ -444,7 +457,7 @@ export const translations = {
     seated: 'Assis',
     cancelled: 'Annulé',
     noShow: 'Absent',
-    
+
     // Common
     pleaseEnterName: 'Veuillez entrer votre nom',
     pleaseEnterPhone: 'Veuillez entrer votre numéro de téléphone',
@@ -455,7 +468,7 @@ export const translations = {
     verifying: 'Vérification...',
     invalidOtp: 'OTP invalide. Veuillez réessayer.',
     pleaseEnterCompleteOtp: 'Veuillez entrer le code OTP complet à 6 chiffres',
-    
+
     // Kiosk - Custom Party
     customPartySize: 'Taille de groupe personnalisée (Grands groupes)',
     largePartyRequest: 'Demande de grand groupe',
@@ -471,7 +484,7 @@ export const translations = {
     stayNearby: 'Veuillez rester à proximité. Cela prend généralement environ 5 minutes.',
     restaurant: 'Restaurant',
     sms: 'SMS',
-    tableReadyMessage: 'Votre table est prête. Répondez O pour la garder 15 minutes ou N pour la libérer.',
+    tableReadyMessage: 'Votre table est prête. Répondez O pour la garder pendant 15 minutes ou N pour la libérer.',
     confirmationReply: 'O',
     readLabel: 'Lu',
     holdTableMessage: '',
@@ -479,7 +492,7 @@ export const translations = {
     iMessage: 'iMessage',
     kioskTablesNotSetUp: 'Tables non configurées',
     pleaseContactStaff: 'Veuillez contacter le personnel pour de l\'aide ou revenez plus tard.',
-    
+
     // Admin Navigation
     waitlist: 'Liste d\'attente',
     tables: 'Tables',
@@ -488,7 +501,7 @@ export const translations = {
     settings: 'Paramètres',
     restaurantAdmin: 'Admin du Restaurant',
     restaurantPanel: 'Panneau Restaurant',
-    
+
     // Admin Dashboard Extended
     liveUpdatesActive: 'Mises à jour en direct actives',
     connecting: 'Connexion en cours...',
@@ -517,13 +530,13 @@ export const translations = {
     failedToSeat: 'Échec du marquage comme assis',
     failedToCancel: 'Échec de l\'annulation de la réservation',
     pleaseSelectTable: 'Veuillez sélectionner une table',
-    
+
     // Admin Settings
     restaurantSettings: 'Paramètres du restaurant',
-    manageConfiguration: 'Gérez la configuration et les préférences de votre restaurant',
+    manageConfiguration: 'Contactez l’administrateur principal pour mettre à jour ces informations',
     saveChanges: 'Enregistrer les modifications',
     restaurantProfile: 'Profil du restaurant',
-    contactSuperAdmin: 'Contactez le Super Admin pour mettre à jour ces détails',
+    contactSuperAdmin: 'Contactez l\'administrateur principal pour mettre à jour ces informations',
     restaurantName: 'Nom du restaurant',
     address: 'Adresse',
     tableConfiguration: 'Configuration des tables',
@@ -535,10 +548,10 @@ export const translations = {
     failedToLoadSettings: 'Échec du chargement des paramètres',
     settingsSavedSuccess: 'Paramètres enregistrés avec succès !',
     failedToSaveSettings: 'Échec de l\'enregistrement des paramètres',
-    planUsageSmallLimit: 'Utilisation du forfait (Limite Small : 50 places)',
+    planUsageSmallLimit: 'Utilisation du forfait (Limite Petit : 50 places)',
     needMoreSeats: 'Besoin de plus de places ?',
-    upgradeToLargeUnlimited: 'Passez au forfait Large pour une capacité illimitée.',
-    
+    upgradeToLargeUnlimited: 'Passez au forfait Grand pour une capacité illimitée.',
+
     // Admin Tables
     tableManagement: 'Gestion des tables',
     monitorSeatingCapacity: 'Surveillez et gérez la capacité d\'accueil de votre restaurant',
@@ -559,12 +572,12 @@ export const translations = {
     beingCleaned: 'En cours de nettoyage...',
     failedToLoadTables: 'Échec du chargement des tables',
     failedToUpdateTableStatus: 'Échec de la mise à jour du statut de la table',
-    seatWalkIn: 'Placer client',
+    seatWalkIn: 'Placer un client',
     walkInSeatedSuccess: 'Client placé avec succès',
     failedToSeatWalkIn: 'Échec du placement du client',
     tableUnavailable: 'Table indisponible',
     unavailable: 'Indisponible',
-    
+
     // Admin Messages
     messageCenter: 'Centre de messages',
     viewSmsComms: 'Voir les communications SMS avec les clients',
@@ -573,14 +586,14 @@ export const translations = {
     sentToday: 'Envoyés aujourd\'hui',
     responses: 'Réponses',
     noMessagesYet: 'Aucun message pour le moment',
-    smsConversationsWillAppear: 'Les conversations SMS apparaîtront ici lorsque les clients seront notifiés',
+    smsConversationsWillAppear: 'Les conversations SMS apparaîtront ici lorsque des clients seront notifiés',
     conversations: 'Conversations',
     unknown: 'Inconnu',
     conversationWith: 'Conversation avec',
     selectConversation: 'Sélectionner une conversation',
     noConversationSelected: 'Aucune conversation sélectionnée',
     selectCustomerToView: 'Sélectionnez un client dans la liste pour voir son historique de messages',
-    
+
     // Subscription
     subscriptionManagement: 'Gestion de l\'abonnement',
     paymentFailed: 'Échec du paiement - Mettez à jour votre méthode de paiement pour éviter une interruption de service',
@@ -595,8 +608,8 @@ export const translations = {
     edit: 'Modifier',
     save: 'Enregistrer',
     nextBillingDate: 'Prochaine date de facturation',
-    upgradeToLarge: 'Passer au forfait Large',
-    downgradeToSmall: 'Passer au forfait Small',
+    upgradeToLarge: 'Passer au forfait Grand',
+    downgradeToSmall: 'Passer au forfait Petit',
     cancelScheduledDowngrade: 'Annuler la rétrogradation prévue',
     updatePaymentMethod: 'Mettre à jour la méthode de paiement',
     legacyPlan: 'Forfait Legacy - Gratuit à vie',
@@ -612,23 +625,36 @@ export const translations = {
     upgradeFailed: 'Échec de la mise à niveau',
     downgradeFailed: 'Échec de la rétrogradation',
     updateFailed: 'Échec de la mise à jour',
-    confirmUpgrade: 'Passer au forfait Large ? Vous serez facturé de la différence au prorata immédiatement.',
-    confirmDowngrade: 'Passer au forfait Small ? Cela prendra effet à votre prochain cycle de facturation.',
-    
+    confirmUpgrade: 'Passer au forfait Grand ? Vous serez facturé de la différence au prorata immédiatement.',
+    confirmDowngrade: 'Passer au forfait Petit ? Cela prendra effet à votre prochain cycle de facturation.',
+
     // Auth
     sending: 'Envoi en cours...',
-    otpSmsNotice: 'Vous recevrez un OTP à 6 chiffres par SMS pour vérifier votre numéro.',
+    otpSmsNotice: 'Vous recevrez un code à 6 chiffres par SMS pour vérifier votre numéro.',
+    soundOn: 'Son activé (cliquez pour tester)',
+    clickToEnableSound: 'Cliquez pour activer le son',
+    planSmall: 'Petit',
+    planLarge: 'Grand',
+    statusTrialing: 'En essai',
+    statusActive: 'Actif',
+    statusPastDue: 'En retard',
+    eventRefunded: 'Remboursé',
+    eventPaymentSucceeded: 'Paiement réussi',
+    eventCreated: 'Créé',
+    eventTrialStarted: 'Essai démarré',
+    eventUpgraded: 'Mis à niveau',
+    eventDowngraded: 'Rétrogradé',
   },
 };
 
 export function useTranslation() {
   const { language } = useI18nStore();
-  
+
   const t = (key: keyof typeof translations.en): string => {
     const translation = translations[language][key];
     if (translation !== undefined) return translation;
     return translations.en[key] || key;
   };
-  
+
   return { t, language };
 }

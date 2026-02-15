@@ -861,7 +861,7 @@ const content: Record<Language, MarketingContent> = {
           { question: 'Puis-je annuler à tout moment ?', answer: 'Oui. Vous pouvez annuler votre abonnement à tout moment sans frais d\'annulation.' },
           { question: 'Les SMS sont-ils inclus ?', answer: 'Oui ! La messagerie SMS illimitée est entièrement incluse dans votre forfait sans frais supplémentaires.' },
           { question: 'L\'intégration est-elle incluse ?', answer: 'Oui, l\'assistance à l\'intégration est incluse avec tous les forfaits pour vous aider à démarrer.' },
-          { question: 'Comment choisir le bon forfait ?', answer: 'Choisissez en fonction de la capacité de votre restaurant. 50 places ou moins = forfait Petit. 51+ places = forfait Grand. Les deux forfaits incluent les mêmes fonctionnalités.' },
+          { question: 'Comment choisir le bon forfait ?', answer: 'Choisissez en fonction de la capacité de votre restaurant. 50 places ou moins : forfait Petit. 51 places et plus : forfait Grand. Les deux forfaits incluent les mêmes fonctionnalités.' },
         ],
         whatsIncluded: {
           title: 'Ce qui est inclus',
@@ -870,9 +870,9 @@ const content: Record<Language, MarketingContent> = {
         includedItems: [
           '1 mois d\'essai gratuit - sans carte de crédit',
           'SMS illimités - pas de frais par message',
-          'Toutes fonctionnalités incluses - pas de restrictions',
+          'Toutes les fonctionnalités incluses \u2013 sans restrictions',
           'Assistance à l\'intégration incluse',
-          'Annulez à tout moment - pas de contrat longue durée',
+          'Annulez à tout moment \u2013 sans contrat à long terme',
         ],
         faqSection: {
           title: 'Questions fréquentes',

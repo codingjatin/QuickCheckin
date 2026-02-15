@@ -420,12 +420,12 @@ export default function AdminDashboard() {
               title="Click to test notification sound"
             >
               <Volume2 className="h-4 w-4 text-success" />
-              <span className="text-success">Sound on (click to test)</span>
+              <span className="text-success">{t('soundOn')}</span>
             </button>
           ) : (
             <>
               <VolumeX className="h-4 w-4 text-amber-500" />
-              <span className="text-amber-500 cursor-pointer" title="Click anywhere to enable sounds">Click to enable sound</span>
+              <span className="text-amber-500 cursor-pointer" title={t('clickToEnableSound')}>{t('clickToEnableSound')}</span>
             </>
           )}
         </div>

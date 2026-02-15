@@ -260,7 +260,7 @@ function KioskContent() {
                                 partySize === size ? 'text-white/80' : 'text-muted'
                               }`}>
                                 <Clock className="h-3 w-3" />
-                                ~{waitTimes[size] || 5}m
+                                ~{waitTimes[size] || 5} mint
                               </span>
                             </Button>
                           ))}

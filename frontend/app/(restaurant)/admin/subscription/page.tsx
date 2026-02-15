@@ -302,6 +302,26 @@ export default function SubscriptionPage() {
   }
 
   const { subscription, history } = data;
+
+  const planNameMap: Record<string, string> = {
+    small: t('planSmall' as any),
+    large: t('planLarge' as any),
+  };
+
+  const statusNameMap: Record<string, string> = {
+    trialing: t('statusTrialing' as any),
+    active: t('statusActive' as any),
+    past_due: t('statusPastDue' as any),
+  };
+
+  const eventNameMap: Record<string, string> = {
+    refunded: t('eventRefunded' as any),
+    payment_succeeded: t('eventPaymentSucceeded' as any),
+    created: t('eventCreated' as any),
+    trial_started: t('eventTrialStarted' as any),
+    upgraded: t('eventUpgraded' as any),
+    downgraded: t('eventDowngraded' as any),
+  };
   const isLegacy = subscription.plan === 'legacy-free';
   const isTrialing = subscription.status === 'trialing';
   const isPastDue = subscription.status === 'past_due';
@@ -330,7 +350,7 @@ export default function SubscriptionPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <p className="text-sm text-gray-600">{t('plan')}</p>
-            <p className="text-2xl font-bold capitalize">{subscription.plan}</p>
+            <p className="text-2xl font-bold capitalize">{planNameMap[subscription.plan] || subscription.plan}</p>
             {subscription.pendingPlanChange && (
               <p className="text-sm text-orange-600 mt-1">
                 {t('scheduledDowngrade')} {subscription.pendingPlanChange} {t('atNextBilling')}
@@ -346,7 +366,7 @@ export default function SubscriptionPage() {
               subscription.status === 'past_due' ? 'text-red-600' :
               'text-gray-600'
             }`}>
-              {subscription.status}
+              {statusNameMap[subscription.status] || subscription.status}
             </p>
           </div>
 
@@ -447,7 +467,7 @@ export default function SubscriptionPage() {
             {history.map((item) => (
               <div key={item._id} className="flex justify-between items-center border-b border-gray-200 pb-3">
                 <div>
-                  <p className="font-medium capitalize">{item.action.replace('_', ' ')}</p>
+                  <p className="font-medium capitalize">{eventNameMap[item.action] || item.action.replace('_', ' ')}</p>
                   <p className="text-sm text-gray-600">
                     {new Date(item.createdAt).toLocaleDateString()} {t('at')} {new Date(item.createdAt).toLocaleTimeString()}
                   </p>

@@ -264,7 +264,7 @@ export default function TablesPage() {
                   <Badge className={`${getTableStatusColor(table.status)} rounded-md`}>
                     <div className="flex items-center gap-1">
                       {getStatusIcon(table.status)}
-                      <span className="capitalize">{table.status}</span>
+                      <span className="capitalize">{t(table.status as any) || table.status}</span>
                     </div>
                   </Badge>
                 </div>

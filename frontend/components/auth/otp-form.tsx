@@ -104,15 +104,16 @@ export function OtpForm() {
       <div className="text-center text-sm text-muted">
         <p>
           {t("accessing")}{" "}
-          <span className="font-medium text-ink capitalize">{t(userRole || "guest")}</span>{" "}
-          {t("panel")}
+          <span className="font-medium text-ink capitalize">
+            {userRole === 'admin' ? t("adminRestaurantDashboard" as any) : `${t(userRole || "guest")} \u2013 ${t("panel")}`}
+          </span>
         </p>
         <button
           onClick={handleResendOTP}
           disabled={isLoading}
           className="mt-2 text-primary hover:underline disabled:opacity-50"
         >
-          Didn't receive code? Resend
+          {t('didntReceiveCode')}
         </button>
       </div>
     </motion.div>
