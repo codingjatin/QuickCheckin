@@ -19,7 +19,7 @@ import { useSSE } from '@/hooks/useSSE';
 type KioskStep = 'party-size' | 'details' | 'confirmation' | 'success' | 'custom-request' | 'custom-success';
 
 function KioskContent() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const router = useRouter();
   const [step, setStep] = useState<KioskStep>('party-size');
   const [partySize, setPartySize] = useState<number>(0);
@@ -36,7 +36,7 @@ function KioskContent() {
   const [waitTimes, setWaitTimes] = useState<Record<number, number>>({});
 
   const { logout, phoneNumber, restaurantData } = useAuthStore();
-  
+
   const restaurantId = restaurantData?.id || '';
 
   // Subscribe to SSE for real-time wait time updates
@@ -57,20 +57,20 @@ function KioskContent() {
         setLoadingSettings(false);
         return;
       }
-      
+
       try {
         const [settingsResult, waitTimesResult] = await Promise.all([
           apiClient.getSettings(restaurantId),
           apiClient.getWaitTimes(restaurantId)
         ]);
-        
+
         if (settingsResult.data?.tables && settingsResult.data.tables.length > 0) {
           // Extract unique capacities from tables and sort them
           const capacities = settingsResult.data.tables
             .filter(t => t.isActive)
             .map(t => t.capacity);
           const uniqueCapacities = [...new Set(capacities)].sort((a, b) => a - b);
-          
+
           if (uniqueCapacities.length > 0) {
             setAllowedPartySizes(uniqueCapacities);
             setTablesConfigured(true);
@@ -81,7 +81,7 @@ function KioskContent() {
           // No tables configured
           setTablesConfigured(false);
         }
-        
+
         if (waitTimesResult.data?.waitTimes) {
           setWaitTimes(waitTimesResult.data.waitTimes);
         }
@@ -136,15 +136,16 @@ function KioskContent() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
+
     try {
       const fullPhone = `${countryCode}${phone}`;
-      
+
       const { data, error } = await apiClient.createBooking(
         restaurantId,
         name,
         fullPhone,
-        partySize
+        partySize,
+        { language }
       );
 
       if (error) {
@@ -248,19 +249,17 @@ function KioskContent() {
                               key={size}
                               size="lg"
                               variant={partySize === size ? 'default' : 'outline'}
-                              className={`h-24 flex flex-col items-center justify-center gap-1 ${
-                                partySize === size
+                              className={`h-24 flex flex-col items-center justify-center gap-1 ${partySize === size
                                   ? 'bg-primary hover:bg-primary-600 text-white'
                                   : 'border-ink/15 text-ink hover:bg-off'
-                              }`}
+                                }`}
                               onClick={() => handlePartySizeSelect(size)}
                             >
                               <span className="text-2xl font-bold">{size}</span>
-                              <span className={`text-xs flex items-center gap-1 ${
-                                partySize === size ? 'text-white/80' : 'text-muted'
-                              }`}>
+                              <span className={`text-xs flex items-center gap-1 ${partySize === size ? 'text-white/80' : 'text-muted'
+                                }`}>
                                 <Clock className="h-3 w-3" />
-                                ~{waitTimes[size] || 5} mint
+                                ~{waitTimes[size] || 5} min
                               </span>
                             </Button>
                           ))}
@@ -292,7 +291,7 @@ function KioskContent() {
                   <p className="text-lg text-muted mb-6">
                     {t('forLargerGroups')}
                   </p>
-                  
+
                   <div className="space-y-4 mb-8 text-left">
                     <div>
                       <label className="block text-lg font-medium mb-2 text-ink">{t('partySizeLabel')} *</label>
@@ -361,7 +360,7 @@ function KioskContent() {
                           toast.error(t('pleaseFillAllFields'));
                           return;
                         }
-                        
+
                         setIsSubmitting(true);
                         try {
                           const fullPhone = `${countryCode}${phone}`;
@@ -370,7 +369,7 @@ function KioskContent() {
                             name,
                             fullPhone,
                             partySize,
-                            { skipSms: true, isCustomParty: true }
+                            { skipSms: true, isCustomParty: true, language }
                           );
 
                           if (error) {
@@ -604,7 +603,7 @@ function KioskContent() {
                         <Battery className="h-3 w-3" />
                       </div>
                     </div>
-                    
+
                     {/* Messages Header */}
                     <div className="bg-ink/5 px-4 py-3 border-b border-ink/10">
                       <div className="flex items-center gap-3">
@@ -617,7 +616,7 @@ function KioskContent() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Messages */}
                     <div className="p-4 space-y-3 min-h-[300px] bg-gradient-to-b from-white to-ink/5">
                       {/* Incoming Message 1 */}
@@ -629,7 +628,7 @@ function KioskContent() {
                           <p className="text-[10px] text-muted mt-1">{t('now')}</p>
                         </div>
                       </div>
-                      
+
                       {/* Outgoing Message */}
                       <div className="flex justify-end">
                         <div className="bg-primary text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[85%]">
@@ -637,7 +636,7 @@ function KioskContent() {
                           <p className="text-[10px] text-white/70 mt-1">{t('readLabel')}</p>
                         </div>
                       </div>
-                      
+
                       {/* Incoming Message 2 */}
                       {t('holdTableMessage') && (
                         <div className="flex justify-start">
@@ -650,7 +649,7 @@ function KioskContent() {
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Input Area */}
                     <div className="px-4 py-3 border-t border-ink/10 bg-white">
                       <div className="flex items-center gap-2">
@@ -664,7 +663,7 @@ function KioskContent() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Phone Label */}
                 <p className="text-center text-sm text-muted mt-4">{t('smsPreview')}</p>
               </div>

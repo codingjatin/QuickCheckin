@@ -63,6 +63,12 @@ const bookingSchema = new mongoose.Schema({
   isCustomParty: {
     type: Boolean,
     default: false
+  },
+  // Language preference for SMS (captured from kiosk language at booking time)
+  language: {
+    type: String,
+    enum: ['en', 'fr'],
+    default: 'en'
   }
 }, {
   timestamps: true

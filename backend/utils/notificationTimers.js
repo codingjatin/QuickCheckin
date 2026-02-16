@@ -10,6 +10,7 @@ const Booking = require('../models/Booking');
 const Table = require('../models/Table');
 const Message = require('../models/Message');
 const { sendSMS } = require('./telnyxService');
+const { getSmsTemplate } = require('./smsTemplates');
 
 // Store active timers by bookingId: { followUp: TimeoutId, autoCancel: TimeoutId }
 const activeTimers = new Map();
@@ -66,7 +67,10 @@ const startNotificationTimers = (bookingId, app) => {
         const restaurant = booking.restaurantId;
         const formattedPhone = formatPhoneNumber(booking.customerPhone);
         
-        const message = `Hi ${booking.customerName} We’re still holding your table at ${restaurant.name}.\nPlease arrive within the next 7 minutes or your table may be released.\nReply Y to confirm or N to cancel.`;
+        const message = getSmsTemplate('followUp', booking.language || 'en', {
+          name: booking.customerName,
+          restaurant: restaurant.name
+        });
         
         await sendSMS(formattedPhone, message);
         
@@ -137,7 +141,10 @@ const startNotificationTimers = (bookingId, app) => {
         
         // Send cancellation SMS
         const formattedPhone = formatPhoneNumber(booking.customerPhone);
-        const message = `Hi ${booking.customerName}\nYour table at ${restaurant.name} has been released because we did not see you arrive within the confirmed time window.\nPlease re-join the waitlist if you’d still like to dine with us.`;
+        const message = getSmsTemplate('autoCancel', booking.language || 'en', {
+          name: booking.customerName,
+          restaurant: restaurant.name
+        });
         
         await sendSMS(formattedPhone, message);
         

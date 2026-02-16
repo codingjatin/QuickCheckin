@@ -289,9 +289,9 @@ export default function TablesPage() {
                           className="bg-primary hover:bg-primary-600 text-white"
                         >
                            {updatingTableId === table._id ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                           ) : (
-                            <Footprints className="h-4 w-4 mr-2" />
+                            <Footprints className="h-4 w-4 mr-1" />
                           )}
                           {t('seatWalkIn') || 'Walk-In'}
                         </Button>

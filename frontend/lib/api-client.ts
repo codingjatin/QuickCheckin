@@ -177,7 +177,7 @@ class ApiClient {
     customerName: string,
     customerPhone: string,
     partySize: number,
-    options?: { skipSms?: boolean; isCustomParty?: boolean }
+    options?: { skipSms?: boolean; isCustomParty?: boolean; language?: string }
   ) {
     return this.request<{
       message: string;
@@ -197,7 +197,8 @@ class ApiClient {
         customerPhone, 
         partySize,
         skipSms: options?.skipSms,
-        isCustomParty: options?.isCustomParty
+        isCustomParty: options?.isCustomParty,
+        language: options?.language
       }),
     });
   }

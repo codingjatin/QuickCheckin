@@ -6,6 +6,7 @@ const PartyDuration = require('../models/PartyDuration');
 const { calculateWaitTime, getWaitTimeRange } = require('../utils/waitTimeCalculator');
 const { sendSMS } = require('../utils/telnyxService');
 const { formatPhoneNumber } = require('../utils/helpers');
+const { getSmsTemplate } = require('../utils/smsTemplates');
 const { startNotificationTimers, cancelTimers } = require('../utils/notificationTimers');
 
 // Helper to log SMS to Message model
@@ -27,15 +28,6 @@ const logMessage = async (restaurantId, bookingId, customerPhone, customerName, 
   } catch (error) {
     console.error('Error logging message:', error);
   }
-};
-
-// Helper to replace template variables
-const formatSmsTemplate = (template, variables) => {
-  let result = template;
-  for (const [key, value] of Object.entries(variables)) {
-    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
-  }
-  return result;
 };
 
 // Helper to broadcast wait time updates via SSE
@@ -71,7 +63,7 @@ const broadcastWaitTimeUpdate = async (req, restaurantId) => {
 const createBooking = async (req, res) => {
   try {
     const { restaurantId } = req.params;
-    const { customerName, customerPhone, partySize, skipSms, isCustomParty } = req.body;
+    const { customerName, customerPhone, partySize, skipSms, isCustomParty, language } = req.body;
     
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant || !restaurant.isActive) {
@@ -83,7 +75,7 @@ const createBooking = async (req, res) => {
     const waitTime = waitResult.waitTime;
     const estimatedSeatingTime = new Date(Date.now() + waitTime * 60 * 1000);
     
-    // Create booking
+    // Create booking with language preference from kiosk
     const booking = new Booking({
       restaurantId,
       customerName,
@@ -91,17 +83,17 @@ const createBooking = async (req, res) => {
       partySize,
       waitTime,
       estimatedSeatingTime,
-      isCustomParty: isCustomParty || false
+      isCustomParty: isCustomParty || false,
+      language: language || 'en'
     });
     
     await booking.save();
     
     // Only send SMS if skipSms is not true
     if (!skipSms) {
-      // Format and send confirmation SMS
+      // Format and send confirmation SMS in customer's language
       const formattedPhone = formatPhoneNumber(customerPhone);
-      const message = formatSmsTemplate(restaurant.smsTemplates?.confirmation || 
-        'Hi {name} You’re on the waitlist at {restaurant} for a table of {partySize}.\nEstimated wait time: {waitTime} minutes. We’ll text you when your table is ready.', {
+      const message = getSmsTemplate('confirmation', language || 'en', {
         name: customerName,
         partySize: partySize.toString(),
         restaurant: restaurant.name,
@@ -184,9 +176,9 @@ const notifyCustomer = async (req, res) => {
     await booking.save();
     
     // Send notification SMS using template
+    // Send notification SMS in customer's language
     const formattedPhone = formatPhoneNumber(booking.customerPhone);
-    const message = formatSmsTemplate(restaurant.smsTemplates?.tableReady || 
-      'Hi {name} Your table for {partySize} at {restaurant} is ready.\nPlease arrive within {gracePeriod} minutes.\nReply Y to confirm or N to cancel.', {
+    const message = getSmsTemplate('tableReady', booking.language || 'en', {
       name: booking.customerName,
       partySize: booking.partySize.toString(),
       restaurant: restaurant.name,
@@ -353,9 +345,9 @@ const cancelBooking = async (req, res) => {
     await booking.save();
     
     // Send cancellation SMS
+    // Send cancellation SMS in customer's language
     const formattedPhone = formatPhoneNumber(booking.customerPhone);
-    const message = formatSmsTemplate(restaurant.smsTemplates?.cancelled || 
-      'Hi {name}, your booking at {restaurant} has been cancelled. We hope to see you another time!', {
+    const message = getSmsTemplate('cancelled', booking.language || 'en', {
       name: booking.customerName,
       restaurant: restaurant.name
     });
@@ -494,8 +486,10 @@ const handleCustomerResponse = async (req, res) => {
     );
     
     const response = body.trim().toUpperCase();
+    const lang = booking.language || 'en';
     
-    if (response === 'Y' || response === 'YES') {
+    // Accept Y/YES (English) or O/OUI (French) as confirmation
+    if (response === 'Y' || response === 'YES' || response === 'O' || response === 'OUI') {
       // Cancel the follow-up and auto-cancel timers
       cancelTimers(booking._id.toString());
       
@@ -505,9 +499,9 @@ const handleCustomerResponse = async (req, res) => {
       
       // CONFIRMATION SMS REMOVED AS REQUESTED
       // No outbound SMS sent here, but logic remains (timers cancelled, status updated)
-      console.log(`[Booking] Confirmed booking ${booking._id} via SMS reply Y. No response sent.`);
+      console.log(`[Booking] Confirmed booking ${booking._id} via SMS reply ${response}. No response sent.`);
       
-    } else if (response === 'N' || response === 'NO') {
+    } else if (response === 'N' || response === 'NO' || response === 'NON') {
       // Cancel the follow-up and auto-cancel timers
       cancelTimers(booking._id.toString());
       
@@ -525,12 +519,15 @@ const handleCustomerResponse = async (req, res) => {
       booking.status = 'cancelled';
       await booking.save();
       
-      const message = `Hi ${booking.customerName}! Your table at ${restaurant.name} has been cancelled as requested.\nThanks for letting us know. You’re welcome to re-join the waitlist anytime`;
+      const message = getSmsTemplate('cancelledByCustomer', lang, {
+        name: booking.customerName,
+        restaurant: restaurant.name
+      });
       await sendSMS(from, message);
       await logMessage(restaurant._id, booking._id, from, booking.customerName, 'outbound', 'cancelled', message);
       
     } else {
-      const message = `Invalid response. Please reply Y (Yes) or N (No) to confirm your booking.`;
+      const message = getSmsTemplate('invalidResponse', lang);
       await sendSMS(from, message);
       await logMessage(restaurant._id, booking._id, from, booking.customerName, 'outbound', 'response', message);
       

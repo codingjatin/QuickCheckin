@@ -119,7 +119,7 @@ function PaymentMethodUpdate({ restaurantId, onSuccess }: { restaurantId: string
 
 export default function SubscriptionPage() {
   const { restaurantData } = useAuthStore();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   // Handle both 'id' and '_id' field names
   const restaurantId = restaurantData?.id || restaurantData?._id || '';
 
@@ -339,7 +339,7 @@ export default function SubscriptionPage() {
 
       {isTrialing && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-blue-800">🎉 {t('freeTrialUntil')} {new Date(subscription.trialEnd!).toLocaleDateString()}</p>
+          <p className="text-blue-800">🎉 {t('freeTrialUntil')} {new Date(subscription.trialEnd!).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US')}</p>
         </div>
       )}
 
@@ -403,7 +403,7 @@ export default function SubscriptionPage() {
           {subscription.nextBillingDate && (
             <div>
               <p className="text-sm text-gray-600">{t('nextBillingDate')}</p>
-              <p className="text-lg font-semibold">{new Date(subscription.nextBillingDate).toLocaleDateString()}</p>
+              <p className="text-lg font-semibold">{new Date(subscription.nextBillingDate).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US')}</p>
             </div>
           )}
         </div>
@@ -469,7 +469,7 @@ export default function SubscriptionPage() {
                 <div>
                   <p className="font-medium capitalize">{eventNameMap[item.action] || item.action.replace('_', ' ')}</p>
                   <p className="text-sm text-gray-600">
-                    {new Date(item.createdAt).toLocaleDateString()} {t('at')} {new Date(item.createdAt).toLocaleTimeString()}
+                    {new Date(item.createdAt).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US')} {t('at')} {new Date(item.createdAt).toLocaleTimeString(language === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: language !== 'fr' })}
                   </p>
                   {item.fromPlan && item.toPlan && (
                     <p className="text-sm text-gray-500">{item.fromPlan} → {item.toPlan}</p>
