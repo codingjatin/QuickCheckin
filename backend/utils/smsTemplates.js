@@ -70,6 +70,14 @@ const getSmsTemplate = (templateKey, language = 'en', variables = {}) => {
   }
 
   let result = template;
+  
+  // Format name if present
+  if (variables.name) {
+    variables.name = variables.name
+      .toLowerCase()
+      .replace(/(?:^|\s|-)\S/g, l => l.toUpperCase());
+  }
+
   for (const [key, value] of Object.entries(variables)) {
     result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
   }

@@ -515,7 +515,7 @@ export const translations = {
     assignTableFor: 'Attribuer une table pour',
     noAvailableTablesForParty: 'Aucune table disponible pour un groupe de',
     pleaseWaitForTable: 'Veuillez attendre qu\'une table se libère',
-    availableTablesCapacity: 'Tables disponibles (Capacité ≥',
+    availableTablesCapacity: 'Tables disponibles (capacité ≥',
     selectATable: '-- Sélectionnez une table --',
     table: 'Table',
     seats: 'Places',
